@@ -9,12 +9,12 @@ import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Archer;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Healer;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Hero;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Magician;
-import com.neolab.heroesGame.enumerations.HeroActions;
 import com.neolab.heroesGame.server.answers.Answer;
 
 import java.util.*;
 
 import static com.neolab.heroesGame.arena.SquareCoordinate.coordinateDoesntMatters;
+import static com.neolab.heroesGame.enumerations.HeroActions.*;
 
 public class BattleArena {
     private final Map<Integer, Army> armies;
@@ -56,13 +56,13 @@ public class BattleArena {
 
     public Army getEnemyArmy(final int playerId) {
         final Integer botArmyId = armies.keySet().stream()
-                .filter(id -> id != playerId).findFirst().get();
+                .filter(id -> id != playerId).findFirst().orElseThrow();
 
         return armies.get(botArmyId);
     }
 
     public Integer getEnemyId(final Integer playerId) {
-        return armies.keySet().stream().filter(id -> !id.equals(playerId)).findFirst().get();
+        return armies.keySet().stream().filter(id -> !id.equals(playerId)).findFirst().orElseThrow();
     }
 
     public boolean noOneCanAct() {
@@ -91,10 +91,10 @@ public class BattleArena {
     private List<Answer> getHeroAction(final SquareCoordinate activeHeroCoordinate,
                                        final Hero activeHero, final int activePlayerId) {
         final List<Answer> answers = new ArrayList<>();
-        answers.add(new Answer(activeHeroCoordinate, HeroActions.DEFENCE, coordinateDoesntMatters, activePlayerId));
+        answers.add(new Answer(activeHeroCoordinate, DEFENCE, coordinateDoesntMatters, activePlayerId));
 
         if (activeHero instanceof Magician) {
-            answers.add(new Answer(activeHeroCoordinate, HeroActions.ATTACK, coordinateDoesntMatters, activePlayerId));
+            answers.add(new Answer(activeHeroCoordinate, ATTACK, coordinateDoesntMatters, activePlayerId));
 
         } else if (activeHero instanceof Archer) {
             answers.addAll(getArcherAction(activeHeroCoordinate, activePlayerId));
@@ -115,7 +115,7 @@ public class BattleArena {
         final List<Answer> answers = new ArrayList<>();
         getEnemyArmy(activePlayerId).getHeroes().keySet()
                 .forEach(target -> answers
-                        .add(new Answer(activeHeroCoordinate, HeroActions.ATTACK, target, activePlayerId)));
+                        .add(new Answer(activeHeroCoordinate, ATTACK, target, activePlayerId)));
         return answers;
     }
 
@@ -124,10 +124,11 @@ public class BattleArena {
      */
     private List<Answer> getHealAction(final SquareCoordinate activeHeroCoordinate, final int activePlayerId) {
         final List<Answer> answers = new ArrayList<>();
-        getArmy(activePlayerId).getHeroes().entrySet().stream()
-                .filter((x -> x.getValue().isInjure()))
-                .map(x -> answers
-                        .add(new Answer(activeHeroCoordinate, HeroActions.HEAL, x.getKey(), activePlayerId)));
+        getArmy(activePlayerId).getHeroes().forEach((key, value) -> {
+            if (value.isInjure()) {
+                answers.add(new Answer(activeHeroCoordinate, HEAL, key, activePlayerId));
+            }
+        });
         return answers;
     }
 
@@ -138,7 +139,7 @@ public class BattleArena {
         final List<Answer> answers = new ArrayList<>();
         AnswerValidator.getCorrectTargetForFootman(activeHeroCoordinate, getEnemyArmy(activePlayerId))
                 .forEach((target -> answers
-                        .add(new Answer(activeHeroCoordinate, HeroActions.ATTACK, target, activePlayerId))));
+                        .add(new Answer(activeHeroCoordinate, ATTACK, target, activePlayerId))));
         return answers;
     }
 
