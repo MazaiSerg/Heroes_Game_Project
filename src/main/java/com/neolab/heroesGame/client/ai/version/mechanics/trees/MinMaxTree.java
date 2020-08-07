@@ -23,6 +23,10 @@ public class MinMaxTree extends ATree {
         return ((NodeMinMax) getCurrentNode()).getDepth() == maxDepth;
     }
 
+    public int getCurrentDepth() {
+        return ((NodeMinMax) getCurrentNode()).getDepth();
+    }
+
     public void setHeuristic(final int heuristic) {
         ((NodeMinMax) getCurrentNode()).setHeuristic(heuristic);
     }

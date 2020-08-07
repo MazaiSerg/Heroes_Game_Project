@@ -78,11 +78,11 @@ public class SelfPlayRoom extends Thread {
      * @throws IOException    Проблемы с отображением картинки для пользователя
      */
     private void askPlayerProcess() throws HeroExceptions, IOException {
-        battleArena.toLog();
+        //battleArena.toLog();
         final Answer answer = currentPlayer.getAnswer(battleArena);
         answerProcessor.handleAnswer(answer);
-        answer.toLog();
-        answerProcessor.getActionEffect().toLog();
+        //answer.toLog();
+        //answerProcessor.getActionEffect().toLog();
     }
 
     private Optional<Player> someoneWhoWin() {

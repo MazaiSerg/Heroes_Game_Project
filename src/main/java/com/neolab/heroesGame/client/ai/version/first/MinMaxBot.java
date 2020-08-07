@@ -24,6 +24,8 @@ public class MinMaxBot extends Player {
     private static final Logger LOGGER = LoggerFactory.getLogger(MinMaxBot.class);
     private final long SEED = 5916;
     private static final int MAX_DEPTH = 6;
+    private static final int MAX_TIME = 1000;
+    private int maxDepthForFastWork;
     private final Random RANDOM = new Random(SEED);
 
     public MinMaxBot(final int id) {
@@ -36,8 +38,9 @@ public class MinMaxBot extends Player {
         final BattleArena arena = BattleArena.getCopyFromOriginalClass(board);
         final MinMaxTree tree = new MinMaxTree();
         final GameProcessor processor = new GameProcessor(getId(), arena.getCopy());
+        countMaxDepthForFastWork(arena);
         recursiveSimulation(processor, tree, Integer.MAX_VALUE);
-        LOGGER.info("На обход дерева глубиной {} потрачено {}мс", MAX_DEPTH, System.currentTimeMillis() - startTime);
+        LOGGER.info("На обход дерева глубиной {} потрачено {}мс", maxDepthForFastWork, System.currentTimeMillis() - startTime);
         return tree.getBestHeuristicAnswer();
     }
 
@@ -61,8 +64,8 @@ public class MinMaxBot extends Player {
      */
     private int recursiveSimulation(final GameProcessor processor, final MinMaxTree tree,
                                     final int prevHeuristic) throws HeroExceptions {
-        if (tree.isMaxDepth(MAX_DEPTH) || processor.matchOver() != GameEvent.NOTHING_HAPPEN) {
-            final int heuristic = calculateHeuristic(processor.getBoard());
+        if (tree.isMaxDepth(maxDepthForFastWork) || processor.matchOver() != GameEvent.NOTHING_HAPPEN) {
+            final int heuristic = calculateHeuristic(processor.getBoard(), tree.getCurrentDepth());
             tree.setHeuristic(heuristic);
             return heuristic;
         }
@@ -73,7 +76,9 @@ public class MinMaxBot extends Player {
         int heuristic = isItThisBot ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 
         for (final ANode node : tree.getCurrentNode().getChildren()) {
-            final int nodeHeuristic = goDownToChild(processor, tree, prevHeuristic, node);
+            final int nodeHeuristic = goDownToChild(processor, tree, heuristic, node);
+            //LOGGER.trace("вышли из узла {}, значение узла {}, текущее значение {}, ходит бот {}",
+            //       ((NodeMinMax)node).getDepth(), nodeHeuristic, heuristic, isItThisBot);
             if (isItThisBot ? prevHeuristic < nodeHeuristic : prevHeuristic > nodeHeuristic) {
                 tree.setHeuristic(nodeHeuristic);
                 return nodeHeuristic;
@@ -110,23 +115,21 @@ public class MinMaxBot extends Player {
      * ценность юнита представляет собой сумму текущего здоровья юнита, умноженную на ожидаемый урон
      * для повышения ценности убийства юнитов и ценности сохранения юнита в живых добавляем его максимальное здоровье,
      * умноженное на его урон;
-     * для варлордов даем еще сверху 4000 очков ценности
      */
-    private int calculateHeuristic(final BattleArena arena) {
+    private int calculateHeuristic(final BattleArena arena, final int depth) {
         final Army botArmy = arena.getArmy(getId());
         final Army enemyArmy = arena.getEnemyArmy(getId());
         if (botArmy.getHeroes().isEmpty()) {
-            return Integer.MIN_VALUE;
+            return Integer.MIN_VALUE / depth;
         }
         if (enemyArmy.getHeroes().isEmpty()) {
-            return Integer.MAX_VALUE;
+            return Integer.MAX_VALUE / depth;
         }
 
         final AtomicInteger heuristic = new AtomicInteger(0);
         botArmy.getHeroes().values().forEach(hero -> {
             final int delta = hero.getDamage() * hero.getHp() * (hero instanceof Magician ? enemyArmy.getHeroes().size() : 1)
-                    + hero.getHpMax() * hero.getDamage()
-                    + (hero instanceof IWarlord ? 4000 : 0);
+                    + hero.getHpMax() * hero.getDamage() / 4;
             heuristic.addAndGet(delta);
         });
 
@@ -137,5 +140,25 @@ public class MinMaxBot extends Player {
             heuristic.addAndGet(delta);
         });
         return heuristic.get();
+    }
+
+    private void countMaxDepthForFastWork(BattleArena arena) {
+        final int numbersActionForOne = 4;
+        final long maxCountNode = 200_000_000L;
+        final int numbersHero = Math.min(arena.getArmy(getId()).getHeroes().size(),
+                arena.getEnemyArmy(getId()).getHeroes().size());
+        int numbersAvailableHero = Math.max(arena.getArmy(getId()).getAvailableHeroes().size(),
+                arena.getEnemyArmy(getId()).getAvailableHeroes().size());
+        long countNode = 1;
+        maxDepthForFastWork = 0;
+        while (true) {
+            countNode *= numbersAvailableHero * numbersActionForOne * numbersAvailableHero * numbersActionForOne;
+            if (countNode > maxCountNode) {
+                break;
+            }
+            numbersAvailableHero = numbersAvailableHero == 1 ? numbersHero : numbersAvailableHero - 1;
+            maxDepthForFastWork++;
+        }
+        maxDepthForFastWork += Math.pow(2, (6 - numbersHero));
     }
 }
