@@ -73,7 +73,7 @@ public class MinMaxBot extends Player {
         int heuristic = isItThisBot ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 
         for (final ANode node : tree.getCurrentNode().getChildren()) {
-            final int nodeHeuristic = goDownToChild(processor, tree, prevHeuristic, node);
+            final int nodeHeuristic = goDownToChild(processor, tree, heuristic, node);
             if (isItThisBot ? prevHeuristic < nodeHeuristic : prevHeuristic > nodeHeuristic) {
                 tree.setHeuristic(nodeHeuristic);
                 return nodeHeuristic;
