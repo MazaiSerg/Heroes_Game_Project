@@ -11,6 +11,7 @@ import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Magician;
 
 import java.util.*;
 
+import static com.neolab.heroesGame.client.ai.version.mechanics.arena.Answer.getAnswer;
 import static com.neolab.heroesGame.client.ai.version.mechanics.arena.SquareCoordinate.coordinateDoesntMatters;
 import static com.neolab.heroesGame.client.ai.version.mechanics.arena.SquareCoordinate.getSquareCoordinate;
 import static com.neolab.heroesGame.enumerations.HeroActions.*;
@@ -89,10 +90,10 @@ public class BattleArena {
     private List<Answer> getHeroAction(final SquareCoordinate activeHeroCoordinate,
                                        final Hero activeHero, final int activePlayerId) {
         final List<Answer> answers = new ArrayList<>();
-        answers.add(new Answer(activeHeroCoordinate, DEFENCE, coordinateDoesntMatters, activePlayerId));
+        answers.add(getAnswer(activeHeroCoordinate, DEFENCE, coordinateDoesntMatters));
 
         if (activeHero instanceof Magician) {
-            answers.add(new Answer(activeHeroCoordinate, ATTACK, coordinateDoesntMatters, activePlayerId));
+            answers.add(getAnswer(activeHeroCoordinate, ATTACK, coordinateDoesntMatters));
 
         } else if (activeHero instanceof Archer) {
             answers.addAll(getArcherAction(activeHeroCoordinate, activePlayerId));
@@ -113,7 +114,7 @@ public class BattleArena {
         final List<Answer> answers = new ArrayList<>();
         getEnemyArmy(activePlayerId).getHeroes().keySet()
                 .forEach(target -> answers
-                        .add(new Answer(activeHeroCoordinate, ATTACK, target, activePlayerId)));
+                        .add(getAnswer(activeHeroCoordinate, ATTACK, target)));
         return answers;
     }
 
@@ -124,7 +125,7 @@ public class BattleArena {
         final List<Answer> answers = new ArrayList<>();
         getArmy(activePlayerId).getHeroes().forEach((key, value) -> {
             if (value.isInjure()) {
-                answers.add(new Answer(activeHeroCoordinate, HEAL, key, activePlayerId));
+                answers.add(getAnswer(activeHeroCoordinate, HEAL, key));
             }
         });
         return answers;
@@ -137,7 +138,7 @@ public class BattleArena {
         final List<Answer> answers = new ArrayList<>();
         AnswerValidator.getCorrectTargetForFootman(activeHeroCoordinate, getEnemyArmy(activePlayerId))
                 .forEach((target -> answers
-                        .add(new Answer(activeHeroCoordinate, ATTACK, target, activePlayerId))));
+                        .add(getAnswer(activeHeroCoordinate, ATTACK, target))));
         return answers;
     }
 

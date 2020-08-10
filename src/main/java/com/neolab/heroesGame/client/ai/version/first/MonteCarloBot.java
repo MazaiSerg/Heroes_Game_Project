@@ -80,7 +80,7 @@ public class MonteCarloBot extends Player {
             recursiveSimulation(processor, tree);
             tree.toRoot();
         }
-        return tree.getBestAction().getCommonAnswer();
+        return tree.getBestAction().getCommonAnswer(getId());
     }
 
     @Override
@@ -143,7 +143,7 @@ public class MonteCarloBot extends Player {
     /**
      * Задаем базовую "важность" действия
      */
-    private double modificate(final Answer answer, final GameProcessor processor) {
+    private double modificate(final @NotNull Answer answer, final GameProcessor processor) {
         if (answer.getAction() == HeroActions.DEFENCE) {
             if (answer.getActiveHeroCoordinate().getY() == 0) {
                 return geneticCoefficients.get(0);

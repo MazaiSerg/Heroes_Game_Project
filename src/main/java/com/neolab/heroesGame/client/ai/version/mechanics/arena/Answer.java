@@ -3,25 +3,57 @@ package com.neolab.heroesGame.client.ai.version.mechanics.arena;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.neolab.heroesGame.enumerations.HeroActions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.neolab.heroesGame.client.ai.version.mechanics.arena.SquareCoordinate.coordinateDoesntMatters;
+import static com.neolab.heroesGame.client.ai.version.mechanics.arena.SquareCoordinate.getSquareCoordinate;
+import static com.neolab.heroesGame.enumerations.HeroActions.*;
 
 public class Answer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Answer.class);
+    static final private Map<SquareCoordinate, Answer> defenses;
+    static final private Map<SquareCoordinate, Map<SquareCoordinate, Answer>> attack;
+    static final private Map<SquareCoordinate, Map<SquareCoordinate, Answer>> heals;
+
+    static {
+        defenses = new HashMap<>();
+        attack = new HashMap<>();
+        heals = new HashMap<>();
+        for (int i = 0; i < 6; i++) {
+            final SquareCoordinate activeUnit = getSquareCoordinate(i);
+            defenses.put(activeUnit, new Answer(activeUnit, DEFENCE, coordinateDoesntMatters));
+
+            final Map<SquareCoordinate, Answer> allAttacksForActiveUnit = new HashMap<>();
+            for (int j = 0; j < 6; j++) {
+                allAttacksForActiveUnit.put(getSquareCoordinate(j), new Answer(activeUnit, ATTACK, getSquareCoordinate(j)));
+            }
+            if (i < 3) {
+                allAttacksForActiveUnit.put(coordinateDoesntMatters, new Answer(activeUnit, ATTACK, coordinateDoesntMatters));
+            }
+            attack.put(activeUnit, allAttacksForActiveUnit);
+
+            if (i < 3) {
+                final Map<SquareCoordinate, Answer> allHealsForActiveUnit = new HashMap<>();
+                for (int j = 0; j < 6; j++) {
+                    allHealsForActiveUnit.put(getSquareCoordinate(j), new Answer(activeUnit, HEAL, getSquareCoordinate(j)));
+                }
+                heals.put(activeUnit, allHealsForActiveUnit);
+            }
+        }
+    }
+
+
     private final SquareCoordinate activeHeroCoordinate;
     private final HeroActions action;
     private final SquareCoordinate targetUnitCoordinate;
-    private final int playerId;
 
     @JsonCreator
-    public Answer(@JsonProperty("activeHeroCoordinate") final SquareCoordinate activeHeroCoordinate,
-                  @JsonProperty("action") final HeroActions action,
-                  @JsonProperty("targetUnitCoordinate") final SquareCoordinate targetUnitCoordinate,
-                  @JsonProperty("playerId") final int playerId) {
-        this.playerId = playerId;
+    private Answer(@JsonProperty("activeHeroCoordinate") final SquareCoordinate activeHeroCoordinate,
+                   @JsonProperty("action") final HeroActions action,
+                   @JsonProperty("targetUnitCoordinate") final SquareCoordinate targetUnitCoordinate) {
         this.action = action;
         this.activeHeroCoordinate = activeHeroCoordinate;
         this.targetUnitCoordinate = targetUnitCoordinate;
@@ -39,43 +71,17 @@ public class Answer {
         return targetUnitCoordinate;
     }
 
-    public int getPlayerId() {
-        return playerId;
+    public static @NotNull Answer getAnswer(final SquareCoordinate activeHeroCoordinate, final HeroActions action,
+                                            final SquareCoordinate target) {
+        return switch (action) {
+            case DEFENCE -> defenses.get(activeHeroCoordinate);
+            case HEAL -> heals.get(activeHeroCoordinate).get(target);
+            case ATTACK -> attack.get(activeHeroCoordinate).get(target);
+        };
     }
 
-    public com.neolab.heroesGame.server.answers.Answer getCommonAnswer() {
+    public com.neolab.heroesGame.server.answers.Answer getCommonAnswer(final int playerId) {
         return new com.neolab.heroesGame.server.answers.Answer(activeHeroCoordinate.toCommonCoordinate(), action,
                 targetUnitCoordinate.toCommonCoordinate(), playerId);
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder log = new StringBuilder();
-        log.append(String.format("Игрок <%d> запросил действие %s юнитом на позиции (%d, %d)",
-                playerId, action, activeHeroCoordinate.getX(), activeHeroCoordinate.getY()));
-        if (action != HeroActions.DEFENCE) {
-            log.append(String.format(" на юнита на позиции (%d, %d)", targetUnitCoordinate.getX(), targetUnitCoordinate.getY()));
-        }
-        return log.toString();
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        final Answer answer = (Answer) o;
-        return playerId == answer.playerId &&
-                Objects.equals(activeHeroCoordinate, answer.activeHeroCoordinate) &&
-                action == answer.action &&
-                Objects.equals(targetUnitCoordinate, answer.targetUnitCoordinate);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(activeHeroCoordinate, action, targetUnitCoordinate, playerId);
-    }
-
-    public void toLog() {
-        LOGGER.info(this.toString());
     }
 }

@@ -32,6 +32,10 @@ public class SquareCoordinate {
         return y;
     }
 
+    public static SquareCoordinate getSquareCoordinate(final int index) {
+        return allCoordinates.get(index);
+    }
+
     public static SquareCoordinate getSquareCoordinate(final int x, final int y) {
         return allCoordinates.get(x + y * 3);
     }

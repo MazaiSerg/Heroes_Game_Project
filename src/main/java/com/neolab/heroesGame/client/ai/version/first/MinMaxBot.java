@@ -45,7 +45,7 @@ public class MinMaxBot extends Player {
                     maxDepthForFastWork, System.currentTimeMillis() - startTime, arena.getArmy(getId()).getHeroes().size(),
                     arena.getArmy(getId()).getAvailableHeroes().size());
         }
-        return tree.getBestHeuristicAnswer().getCommonAnswer();
+        return tree.getBestHeuristicAnswer().getCommonAnswer(getId());
     }
 
     @Override
