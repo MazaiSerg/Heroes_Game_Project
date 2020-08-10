@@ -11,7 +11,6 @@ import com.neolab.heroesGame.client.ai.version.mechanics.nodes.ANode;
 import com.neolab.heroesGame.client.ai.version.mechanics.trees.MinMaxTree;
 import com.neolab.heroesGame.enumerations.GameEvent;
 import com.neolab.heroesGame.errors.HeroExceptions;
-import com.neolab.heroesGame.server.answers.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +32,8 @@ public class MinMaxBot extends Player {
     }
 
     @Override
-    public Answer getAnswer(final com.neolab.heroesGame.arena.BattleArena board) throws HeroExceptions {
+    public com.neolab.heroesGame.server.answers.Answer getAnswer(
+            final com.neolab.heroesGame.arena.BattleArena board) throws HeroExceptions {
         final long startTime = System.currentTimeMillis();
         final BattleArena arena = BattleArena.getCopyFromOriginalClass(board);
         final MinMaxTree tree = new MinMaxTree();
@@ -45,7 +45,7 @@ public class MinMaxBot extends Player {
                     maxDepthForFastWork, System.currentTimeMillis() - startTime, arena.getArmy(getId()).getHeroes().size(),
                     arena.getArmy(getId()).getAvailableHeroes().size());
         }
-        return tree.getBestHeuristicAnswer();
+        return tree.getBestHeuristicAnswer().getCommonAnswer();
     }
 
     @Override

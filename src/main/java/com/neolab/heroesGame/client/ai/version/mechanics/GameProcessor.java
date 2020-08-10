@@ -1,20 +1,21 @@
 package com.neolab.heroesGame.client.ai.version.mechanics;
 
-import com.neolab.heroesGame.arena.SquareCoordinate;
+import com.neolab.heroesGame.client.ai.version.mechanics.arena.Answer;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.Army;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.BattleArena;
+import com.neolab.heroesGame.client.ai.version.mechanics.arena.SquareCoordinate;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Hero;
 import com.neolab.heroesGame.enumerations.GameEvent;
 import com.neolab.heroesGame.enumerations.HeroErrorCode;
 import com.neolab.heroesGame.errors.HeroExceptions;
-import com.neolab.heroesGame.server.answers.Answer;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static com.neolab.heroesGame.client.ai.version.mechanics.arena.SquareCoordinate.coordinateDoesntMatters;
+
 public class GameProcessor {
-    private final SquareCoordinate coordinateDoesntMatters = new SquareCoordinate(-1, -1);
     private int roundCounter = 0;
     private static final int MAX_ROUND = 15;
     private int waitingPlayerId;

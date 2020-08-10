@@ -1,8 +1,8 @@
 package com.neolab.heroesGame.client.ai.version.mechanics.trees;
 
+import com.neolab.heroesGame.client.ai.version.mechanics.arena.Answer;
 import com.neolab.heroesGame.client.ai.version.mechanics.nodes.ANode;
 import com.neolab.heroesGame.client.ai.version.mechanics.nodes.NodeMinMax;
-import com.neolab.heroesGame.server.answers.Answer;
 
 import java.util.List;
 

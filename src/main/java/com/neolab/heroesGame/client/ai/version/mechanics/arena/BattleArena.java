@@ -3,17 +3,16 @@ package com.neolab.heroesGame.client.ai.version.mechanics.arena;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.neolab.heroesGame.arena.SquareCoordinate;
 import com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Archer;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Healer;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Hero;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Magician;
-import com.neolab.heroesGame.server.answers.Answer;
 
 import java.util.*;
 
-import static com.neolab.heroesGame.arena.SquareCoordinate.coordinateDoesntMatters;
+import static com.neolab.heroesGame.client.ai.version.mechanics.arena.SquareCoordinate.coordinateDoesntMatters;
+import static com.neolab.heroesGame.client.ai.version.mechanics.arena.SquareCoordinate.getSquareCoordinate;
 import static com.neolab.heroesGame.enumerations.HeroActions.*;
 
 public class BattleArena {
@@ -49,11 +48,6 @@ public class BattleArena {
     public void removeUsedHeroesById(final int heroId, final int armyId) {
         armies.get(armyId).removeAvailableHeroById(heroId);
     }
-
-    public void returnHeroToAvailable(SquareCoordinate activeHeroCoordinate, final int armyId) {
-        armies.get(armyId).returnHeroToAvailable(activeHeroCoordinate);
-    }
-
     public void endRound() {
         armies.values().forEach(Army::roundIsOver);
     }
@@ -63,10 +57,6 @@ public class BattleArena {
                 .filter(id -> id != playerId).findFirst().orElseThrow();
 
         return armies.get(botArmyId);
-    }
-
-    public void setEnemyArmy(Army army, int waitingPlayerId) {
-        armies.put(waitingPlayerId, army);
     }
 
     public Integer getEnemyId(final Integer playerId) {
@@ -201,7 +191,7 @@ public class BattleArena {
         final StringBuilder stringBuilder = new StringBuilder();
         final Map<Integer, Optional<Hero>> heroes = new HashMap<>();
         for (int x = 0; x < 3; x++) {
-            heroes.put(x, army.getHero(new SquareCoordinate(x, y)));
+            heroes.put(x, army.getHero(getSquareCoordinate(x, y)));
         }
         stringBuilder.append("|");
         for (int x = 0; x < 3; x++) {

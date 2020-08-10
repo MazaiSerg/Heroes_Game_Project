@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.neolab.heroesGame.aditional.HeroConfigManager;
 import com.neolab.heroesGame.aditional.PropertyUtils;
-import com.neolab.heroesGame.arena.SquareCoordinate;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.Army;
+import com.neolab.heroesGame.client.ai.version.mechanics.arena.SquareCoordinate;
 
 import java.io.IOException;
 import java.util.Properties;

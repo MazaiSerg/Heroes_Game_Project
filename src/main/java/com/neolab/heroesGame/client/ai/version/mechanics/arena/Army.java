@@ -4,11 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.neolab.heroesGame.aditional.SquareCoordinateKeyDeserializer;
-import com.neolab.heroesGame.aditional.SquareCoordinateKeySerializer;
-import com.neolab.heroesGame.arena.SquareCoordinate;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Hero;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.IWarlord;
 import com.neolab.heroesGame.enumerations.HeroErrorCode;
@@ -22,12 +17,8 @@ import java.util.Optional;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Army {
 
-    @JsonSerialize(keyUsing = SquareCoordinateKeySerializer.class)
-    @JsonDeserialize(keyUsing = SquareCoordinateKeyDeserializer.class)
     private final Map<SquareCoordinate, Hero> heroes;
     private IWarlord warlord;
-    @JsonSerialize(keyUsing = SquareCoordinateKeySerializer.class)
-    @JsonDeserialize(keyUsing = SquareCoordinateKeyDeserializer.class)
     private Map<SquareCoordinate, Hero> availableHeroes;
 
     public Army(final Map<SquareCoordinate, Hero> heroes) throws HeroExceptions {
@@ -164,19 +155,21 @@ public class Army {
     }
 
     private static Map<SquareCoordinate, Hero> getCloneAvailableMapFromOriginalClass(
-            final Map<SquareCoordinate, com.neolab.heroesGame.heroes.Hero> availableHeroes,
+            final Map<com.neolab.heroesGame.arena.SquareCoordinate, com.neolab.heroesGame.heroes.Hero> availableHeroes,
             final Map<SquareCoordinate, Hero> heroes) {
 
         final Map<SquareCoordinate, Hero> clone = new HashMap<>();
-        availableHeroes.keySet().forEach((key) -> clone.put(key, heroes.get(key)));
+        availableHeroes.keySet().forEach((key) -> clone.put(SquareCoordinate.getSquareCoordinate(key),
+                heroes.get(SquareCoordinate.getSquareCoordinate(key))));
         return clone;
     }
 
-    private static Map<SquareCoordinate, Hero> getCloneMapFromOriginalClass(final Map<SquareCoordinate,
+    private static Map<SquareCoordinate, Hero> getCloneMapFromOriginalClass(final Map<com.neolab.heroesGame.arena.SquareCoordinate,
             com.neolab.heroesGame.heroes.Hero> heroes) {
 
         final Map<SquareCoordinate, Hero> clone = new HashMap<>();
-        heroes.keySet().forEach((key) -> clone.put(key, Hero.getCopyFromOriginalClasses(heroes.get(key))));
+        heroes.keySet().forEach((key) -> clone.put(SquareCoordinate.getSquareCoordinate(key),
+                Hero.getCopyFromOriginalClasses(heroes.get(key))));
         return clone;
     }
 
@@ -218,7 +211,7 @@ public class Army {
         final StringBuilder stringBuilder = new StringBuilder();
         final Map<Integer, Optional<Hero>> heroes = new HashMap<>();
         for (int x = 0; x < 3; x++) {
-            heroes.put(x, getHero(new SquareCoordinate(x, y)));
+            heroes.put(x, getHero(SquareCoordinate.getSquareCoordinate(x, y)));
         }
         stringBuilder.append("|");
         for (int x = 0; x < 3; x++) {

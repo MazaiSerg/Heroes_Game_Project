@@ -1,9 +1,9 @@
 package com.neolab.heroesGame.client.ai.version.mechanics.heroes;
 
 import com.fasterxml.jackson.annotation.*;
-import com.neolab.heroesGame.arena.SquareCoordinate;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.Army;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.BattleArena;
+import com.neolab.heroesGame.client.ai.version.mechanics.arena.SquareCoordinate;
 import com.neolab.heroesGame.enumerations.HeroErrorCode;
 import com.neolab.heroesGame.errors.HeroExceptions;
 import org.slf4j.Logger;
