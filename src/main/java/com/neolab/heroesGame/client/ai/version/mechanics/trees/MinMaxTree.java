@@ -24,7 +24,7 @@ public class MinMaxTree extends ATree {
     }
 
     public void setHeuristic(final int heuristic) {
-        ((NodeMinMax) getCurrentNode()).setHeuristic(heuristic);
+        ((NodeMinMax) getCurrentNode()).setHeuristicValue(heuristic);
     }
 
     /**
@@ -36,7 +36,7 @@ public class MinMaxTree extends ATree {
         final List<ANode> children = getCurrentNode().getChildren();
         NodeMinMax temp = new NodeMinMax();
         for (final ANode child : children) {
-            if (temp.getHeuristic() < ((NodeMinMax) child).getHeuristic()) {
+            if (temp.getHeuristicValue() < ((NodeMinMax) child).getHeuristicValue()) {
                 temp = ((NodeMinMax) child);
             }
         }

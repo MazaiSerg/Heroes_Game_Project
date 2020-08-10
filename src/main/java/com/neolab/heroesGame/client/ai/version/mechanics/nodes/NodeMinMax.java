@@ -6,7 +6,7 @@ import java.util.Objects;
 
 public class NodeMinMax extends ANode {
     private final int depth;
-    private int heuristic = Integer.MIN_VALUE;
+    private int heuristicValue = Integer.MIN_VALUE;
 
     public NodeMinMax(final Answer prevAnswer, final ANode parent) {
         super(prevAnswer, parent);
@@ -27,12 +27,12 @@ public class NodeMinMax extends ANode {
         return depth;
     }
 
-    public int getHeuristic() {
-        return heuristic;
+    public int getHeuristicValue() {
+        return heuristicValue;
     }
 
-    public void setHeuristic(final int heuristic) {
-        this.heuristic = heuristic;
+    public void setHeuristicValue(final int heuristicValue) {
+        this.heuristicValue = heuristicValue;
     }
 
     @Override
@@ -42,11 +42,11 @@ public class NodeMinMax extends ANode {
         if (!super.equals(o)) return false;
         NodeMinMax that = (NodeMinMax) o;
         return depth == that.depth &&
-                heuristic == that.heuristic;
+                heuristicValue == that.heuristicValue;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), depth, heuristic);
+        return Objects.hash(super.hashCode(), depth, heuristicValue);
     }
 }

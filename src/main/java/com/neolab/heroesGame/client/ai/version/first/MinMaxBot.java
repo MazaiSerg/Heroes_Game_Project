@@ -55,12 +55,12 @@ public class MinMaxBot extends Player {
     /**
      * Рекурсивная функция - строит симуляционное дерево заданной глубины.
      *
-     * @param tree          текущее дерево
-     * @param prevHeuristic текущее значение эвристики уровнем выше
+     * @param tree               текущее дерево
+     * @param prevHeuristicValue текущее значение эвристики уровнем выше
      * @return эвристику либо терминального узла, либо узла с максимальной глубины
      */
     private int recursiveSimulation(final GameProcessor processor, final MinMaxTree tree,
-                                    final int prevHeuristic) throws HeroExceptions {
+                                    final int prevHeuristicValue) throws HeroExceptions {
         if (tree.isMaxDepth(MAX_DEPTH) || processor.matchOver() != GameEvent.NOTHING_HAPPEN) {
             final int heuristic = calculateHeuristic(processor.getBoard());
             tree.setHeuristic(heuristic);
@@ -70,22 +70,22 @@ public class MinMaxBot extends Player {
         final boolean isItThisBot = processor.getActivePlayerId() == getId();
         tree.createAllChildren(processor.getAllActionsForCurrentPlayer());
         final BattleArena arena = processor.getBoard().getCopy();
-        int heuristic = isItThisBot ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        int heuristicValue = isItThisBot ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 
         for (final ANode node : tree.getCurrentNode().getChildren()) {
-            final int nodeHeuristic = goDownToChild(processor, tree, heuristic, node);
-            if (isItThisBot ? prevHeuristic < nodeHeuristic : prevHeuristic > nodeHeuristic) {
-                tree.setHeuristic(nodeHeuristic);
-                return nodeHeuristic;
+            final int nodeHeuristicValue = goDownToChild(processor, tree, heuristicValue, node);
+            if (isItThisBot ? prevHeuristicValue < nodeHeuristicValue : prevHeuristicValue > nodeHeuristicValue) {
+                tree.setHeuristic(nodeHeuristicValue);
+                return nodeHeuristicValue;
             }
-            if (isItThisBot ? nodeHeuristic > heuristic : nodeHeuristic < heuristic) {
-                heuristic = nodeHeuristic;
+            if (isItThisBot ? nodeHeuristicValue > heuristicValue : nodeHeuristicValue < heuristicValue) {
+                heuristicValue = nodeHeuristicValue;
             }
             processor.setBoard(arena.getCopy());
         }
 
-        tree.setHeuristic(heuristic);
-        return heuristic;
+        tree.setHeuristic(heuristicValue);
+        return heuristicValue;
     }
 
     /**
@@ -93,16 +93,16 @@ public class MinMaxBot extends Player {
      * Если после возвращения назад id игрока отличается, то меняем текущего и ждущего игроков
      */
     private int goDownToChild(final GameProcessor processor, final MinMaxTree tree,
-                              final int prevHeuristic, final ANode child) throws HeroExceptions {
+                              final int prevHeuristicValue, final ANode child) throws HeroExceptions {
         final int currentPlayerId = processor.getActivePlayerId();
         processor.handleAnswer(child.getPrevAnswer());
         tree.downToChild(child);
-        final int nodeHeuristic = recursiveSimulation(processor, tree, prevHeuristic);
+        final int nodeHeuristicValue = recursiveSimulation(processor, tree, prevHeuristicValue);
         tree.upToParent();
         if (currentPlayerId != processor.getActivePlayerId()) {
             processor.swapActivePlayer();
         }
-        return nodeHeuristic;
+        return nodeHeuristicValue;
     }
 
     /**
