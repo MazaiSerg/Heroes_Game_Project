@@ -139,71 +139,36 @@ public abstract class Hero implements Cloneable {
     }
 
     public static Hero getCopyFromOriginalClasses(com.neolab.heroesGame.heroes.Hero hero) {
-        com.neolab.heroesGame.heroes.IWarlord iWarlord;
         if (hero instanceof com.neolab.heroesGame.heroes.Archer) {
-            return new Archer(hero.getUnitId(), hero.getHpDefault(), hero.getHpMax(), hero.getHp(),
-                    hero.getDamageDefault(), hero.getDamage(), hero.getArmor(), hero.getArmorDefault(),
-                    hero.isDefence());
+            return new Archer(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
+                    hero.getDamage(), hero.getArmor(), hero.isDefence());
 
         } else if (hero instanceof com.neolab.heroesGame.heroes.Healer) {
-            return new Healer(hero.getUnitId(), hero.getHpDefault(), hero.getHpMax(), hero.getHp(),
-                    hero.getDamageDefault(), hero.getDamage(), hero.getArmor(), hero.getArmorDefault(),
-                    hero.isDefence());
+            return new Healer(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
+                    hero.getDamage(), hero.getArmor(), hero.isDefence());
 
         } else if (hero instanceof com.neolab.heroesGame.heroes.WarlordVampire) {
-            iWarlord = (com.neolab.heroesGame.heroes.IWarlord) hero;
-            return new WarlordVampire(hero.getUnitId(), hero.getHpDefault(), hero.getHpMax(), hero.getHp(),
-                    hero.getDamageDefault(), hero.getDamage(), hero.getArmor(), hero.getArmorDefault(),
-                    hero.isDefence(), iWarlord.getImproveCoefficient());
+            return new WarlordVampire(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
+                    hero.getDamage(), hero.getArmor(), hero.isDefence());
 
         } else if (hero instanceof com.neolab.heroesGame.heroes.WarlordFootman) {
-            iWarlord = (com.neolab.heroesGame.heroes.IWarlord) hero;
-            return new WarlordFootman(hero.getUnitId(), hero.getHpDefault(), hero.getHpMax(), hero.getHp(),
-                    hero.getDamageDefault(), hero.getDamage(), hero.getArmor(), hero.getArmorDefault(),
-                    hero.isDefence(), iWarlord.getImproveCoefficient());
+            return new WarlordFootman(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
+                    hero.getDamage(), hero.getArmor(), hero.isDefence());
 
         } else if (hero instanceof com.neolab.heroesGame.heroes.WarlordMagician) {
-            iWarlord = (com.neolab.heroesGame.heroes.IWarlord) hero;
-            return new WarlordMagician(hero.getUnitId(), hero.getHpDefault(), hero.getHpMax(), hero.getHp(),
-                    hero.getDamageDefault(), hero.getDamage(), hero.getArmor(), hero.getArmorDefault(),
-                    hero.isDefence(), iWarlord.getImproveCoefficient());
+            return new WarlordMagician(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
+                    hero.getDamage(), hero.getArmor(), hero.isDefence());
 
         } else if (hero instanceof com.neolab.heroesGame.heroes.Footman) {
-            return new Footman(hero.getUnitId(), hero.getHpDefault(), hero.getHpMax(), hero.getHp(),
-                    hero.getDamageDefault(), hero.getDamage(), hero.getArmor(), hero.getArmorDefault(),
-                    hero.isDefence());
+            return new Footman(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
+                    hero.getDamage(), hero.getArmor(), hero.isDefence());
 
         } else if (hero instanceof com.neolab.heroesGame.heroes.Magician) {
-            return new Magician(hero.getUnitId(), hero.getHpDefault(), hero.getHpMax(), hero.getHp(),
-                    hero.getDamageDefault(), hero.getDamage(), hero.getArmor(), hero.getArmorDefault(),
-                    hero.isDefence());
+            return new Magician(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
+                    hero.getDamage(), hero.getArmor(), hero.isDefence());
         }
         //Никогда не должно возникать
         throw new AssertionError();
-        return switch (hero.getClassName()) {
-            case "Лучник" -> new Archer(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
-                    hero.getDamage(), hero.getArmor(),
-                    hero.isDefence());
-            case "Лекарь" -> new Healer(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
-                    hero.getDamage(), hero.getArmor(),
-                    hero.isDefence());
-            case "Мечник" -> new Footman(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
-                    hero.getDamage(), hero.getArmor(),
-                    hero.isDefence());
-            case "Маг" -> new Magician(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
-                    hero.getDamage(), hero.getArmor(),
-                    hero.isDefence());
-            case "Вампир" -> new WarlordVampire(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
-                    hero.getDamage(), hero.getArmor(),
-                    hero.isDefence());
-            case "Генерал" -> new WarlordFootman(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
-                    hero.getDamage(), hero.getArmor(),
-                    hero.isDefence());
-            case "Архимаг" -> new WarlordMagician(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
-                    hero.getDamage(), hero.getArmor(),
-                    hero.isDefence());
-            default -> null;
-        };
     }
 
     @JsonIgnore

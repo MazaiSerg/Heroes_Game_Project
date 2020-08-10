@@ -69,34 +69,34 @@ public class MinMaxBot extends Player {
     private int recursiveSimulation(final GameProcessor processor, final MinMaxTree tree,
                                     final int prevHeuristicValue) throws HeroExceptions {
         if (tree.isMaxDepth(MAX_DEPTH) || processor.matchOver() != GameEvent.NOTHING_HAPPEN) {
-            final int heuristic = calculateHeuristic(processor.getBoard());
-            tree.setHeuristic(heuristic);
-            return heuristic;
+            final int heuristicValue = calculateHeuristic(processor.getBoard(), prevHeuristicValue);
+            tree.setHeuristic(heuristicValue);
+            return heuristicValue;
         }
 
         final boolean isItThisBot = processor.getActivePlayerId() == getId();
         tree.createAllChildren(processor.getAllActionsForCurrentPlayer());
         final BattleArena arena = processor.getBoard().getCopy();
         final int currentRound = processor.getRoundCounter();
-        int heuristic = isItThisBot ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        int heuristicValuee = isItThisBot ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 
         for (final ANode node : tree.getCurrentNode().getChildren()) {
-            final int nodeHeuristic = goDownToChild(processor, tree, heuristic, node);
+            final int nodeHeuristicValue = goDownToChild(processor, tree, heuristicValuee, node);
             //LOGGER.trace("вышли из узла {}, значение узла {}, текущее значение {}, ходит бот {}",
-            //       ((NodeMinMax)node).getDepth(), nodeHeuristic, heuristic, isItThisBot);
-            if (isItThisBot ? prevHeuristic < nodeHeuristic : prevHeuristic > nodeHeuristic) {
-                tree.setHeuristic(nodeHeuristic);
-                return nodeHeuristic;
+            //       ((NodeMinMax)node).getDepth(), nodeHeuristic, heuristicValuee, isItThisBot);
+            if (isItThisBot ? prevHeuristicValue < nodeHeuristicValue : prevHeuristicValue > nodeHeuristicValue) {
+                tree.setHeuristic(nodeHeuristicValue);
+                return nodeHeuristicValue;
             }
-            if (isItThisBot ? nodeHeuristic > heuristic : nodeHeuristic < heuristic) {
-                heuristic = nodeHeuristic;
+            if (isItThisBot ? nodeHeuristicValue > heuristicValuee : nodeHeuristicValue < heuristicValuee) {
+                heuristicValuee = nodeHeuristicValue;
             }
             processor.setBoard(arena.getCopy());
             processor.setRoundCounter(currentRound);
         }
 
-        tree.setHeuristic(heuristic);
-        return heuristic;
+        tree.setHeuristic(heuristicValuee);
+        return heuristicValuee;
     }
 
     /**
