@@ -11,7 +11,6 @@ import com.neolab.heroesGame.client.ai.version.mechanics.nodes.ANode;
 import com.neolab.heroesGame.client.ai.version.mechanics.trees.MinMaxTree;
 import com.neolab.heroesGame.enumerations.GameEvent;
 import com.neolab.heroesGame.errors.HeroExceptions;
-import com.neolab.heroesGame.server.answers.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +23,8 @@ public class MinMaxBot extends Player {
     private static final Logger LOGGER = LoggerFactory.getLogger(MinMaxBot.class);
     private final long SEED = 5916;
     private static final int MAX_DEPTH = 6;
+    private static final int MAX_TIME = 1000;
+    private int maxDepthForFastWork;
     private final Random RANDOM = new Random(SEED);
 
     public MinMaxBot(final int id) {
@@ -31,14 +32,20 @@ public class MinMaxBot extends Player {
     }
 
     @Override
-    public Answer getAnswer(final com.neolab.heroesGame.arena.BattleArena board) throws HeroExceptions {
+    public com.neolab.heroesGame.server.answers.Answer getAnswer(
+            final com.neolab.heroesGame.arena.BattleArena board) throws HeroExceptions {
         final long startTime = System.currentTimeMillis();
         final BattleArena arena = BattleArena.getCopyFromOriginalClass(board);
         final MinMaxTree tree = new MinMaxTree();
         final GameProcessor processor = new GameProcessor(getId(), arena.getCopy());
+        countMaxDepthForFastWork(arena);
         recursiveSimulation(processor, tree, Integer.MAX_VALUE);
-        LOGGER.info("На обход дерева глубиной {} потрачено {}мс", MAX_DEPTH, System.currentTimeMillis() - startTime);
-        return tree.getBestHeuristicAnswer();
+        if (System.currentTimeMillis() - startTime > MAX_TIME) {
+            LOGGER.info("На обход дерева глубиной {} потрачено {}мс. Размер армии - {}, количество доступных юнитов - {}",
+                    maxDepthForFastWork, System.currentTimeMillis() - startTime, arena.getArmy(getId()).getHeroes().size(),
+                    arena.getArmy(getId()).getAvailableHeroes().size());
+        }
+        return tree.getBestHeuristicAnswer().getCommonAnswer(getId());
     }
 
     @Override
@@ -70,22 +77,26 @@ public class MinMaxBot extends Player {
         final boolean isItThisBot = processor.getActivePlayerId() == getId();
         tree.createAllChildren(processor.getAllActionsForCurrentPlayer());
         final BattleArena arena = processor.getBoard().getCopy();
-        int heuristicValue = isItThisBot ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        final int currentRound = processor.getRoundCounter();
+        int heuristic = isItThisBot ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 
         for (final ANode node : tree.getCurrentNode().getChildren()) {
-            final int nodeHeuristicValue = goDownToChild(processor, tree, heuristicValue, node);
-            if (isItThisBot ? prevHeuristicValue < nodeHeuristicValue : prevHeuristicValue > nodeHeuristicValue) {
-                tree.setHeuristic(nodeHeuristicValue);
-                return nodeHeuristicValue;
+            final int nodeHeuristic = goDownToChild(processor, tree, heuristic, node);
+            //LOGGER.trace("вышли из узла {}, значение узла {}, текущее значение {}, ходит бот {}",
+            //       ((NodeMinMax)node).getDepth(), nodeHeuristic, heuristic, isItThisBot);
+            if (isItThisBot ? prevHeuristic < nodeHeuristic : prevHeuristic > nodeHeuristic) {
+                tree.setHeuristic(nodeHeuristic);
+                return nodeHeuristic;
             }
-            if (isItThisBot ? nodeHeuristicValue > heuristicValue : nodeHeuristicValue < heuristicValue) {
-                heuristicValue = nodeHeuristicValue;
+            if (isItThisBot ? nodeHeuristic > heuristic : nodeHeuristic < heuristic) {
+                heuristic = nodeHeuristic;
             }
             processor.setBoard(arena.getCopy());
+            processor.setRoundCounter(currentRound);
         }
 
-        tree.setHeuristic(heuristicValue);
-        return heuristicValue;
+        tree.setHeuristic(heuristic);
+        return heuristic;
     }
 
     /**
@@ -110,23 +121,21 @@ public class MinMaxBot extends Player {
      * ценность юнита представляет собой сумму текущего здоровья юнита, умноженную на ожидаемый урон
      * для повышения ценности убийства юнитов и ценности сохранения юнита в живых добавляем его максимальное здоровье,
      * умноженное на его урон;
-     * для варлордов даем еще сверху 4000 очков ценности
      */
-    private int calculateHeuristic(final BattleArena arena) {
+    private int calculateHeuristic(final BattleArena arena, final int depth) {
         final Army botArmy = arena.getArmy(getId());
         final Army enemyArmy = arena.getEnemyArmy(getId());
         if (botArmy.getHeroes().isEmpty()) {
-            return Integer.MIN_VALUE;
+            return Integer.MIN_VALUE / depth;
         }
         if (enemyArmy.getHeroes().isEmpty()) {
-            return Integer.MAX_VALUE;
+            return Integer.MAX_VALUE / depth;
         }
 
         final AtomicInteger heuristic = new AtomicInteger(0);
         botArmy.getHeroes().values().forEach(hero -> {
             final int delta = hero.getDamage() * hero.getHp() * (hero instanceof Magician ? enemyArmy.getHeroes().size() : 1)
-                    + hero.getHpMax() * hero.getDamage()
-                    + (hero instanceof IWarlord ? 4000 : 0);
+                    + hero.getHpMax() * hero.getDamage() / 4;
             heuristic.addAndGet(delta);
         });
 
@@ -137,5 +146,45 @@ public class MinMaxBot extends Player {
             heuristic.addAndGet(delta);
         });
         return heuristic.get();
+    }
+
+    private void countMaxDepthForFastWork(BattleArena arena) {
+        /*
+        final long maxCountNode = 200_000_000L;
+        final int numbersHero = Math.max(arena.getArmy(getId()).getHeroes().size(),
+                arena.getEnemyArmy(getId()).getHeroes().size());
+        int numbersAvailableHero = Math.max(arena.getArmy(getId()).getAvailableHeroes().size(),
+                arena.getEnemyArmy(getId()).getAvailableHeroes().size());
+        long countNode = 1;
+        int numbersActionForOne = 2 + numbersAvailableHero / 3;
+        maxDepthForFastWork = 0;
+        while (true) {
+            countNode *= numbersAvailableHero * numbersActionForOne * numbersAvailableHero * numbersActionForOne;
+            if (countNode > maxCountNode) {
+                break;
+            }
+            numbersAvailableHero = numbersAvailableHero == 1 ? numbersHero : numbersAvailableHero - 1;
+            maxDepthForFastWork++;
+            numbersActionForOne = 2 + numbersAvailableHero / 3;
+        }
+        maxDepthForFastWork = Math.max(maxDepthForFastWork, 4);
+        maxDepthForFastWork += (6 - numbersHero);
+
+         */
+        final int numbersHero = arena.getArmy(getId()).getHeroes().size() +
+                arena.getEnemyArmy(getId()).getHeroes().size();
+        int numbersAvailableHero = arena.getArmy(getId()).getAvailableHeroes().size() +
+                arena.getEnemyArmy(getId()).getAvailableHeroes().size();
+        if (numbersAvailableHero >= 7 || (numbersHero >= 10 && numbersAvailableHero <= 2)) {
+            maxDepthForFastWork = 4;
+            return;
+        }
+
+        if (numbersHero >= 9) {
+            maxDepthForFastWork = 4;
+            return;
+        }
+
+        maxDepthForFastWork = 6;
     }
 }

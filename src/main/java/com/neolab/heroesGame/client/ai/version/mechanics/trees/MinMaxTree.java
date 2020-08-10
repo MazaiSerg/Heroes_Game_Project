@@ -1,8 +1,8 @@
 package com.neolab.heroesGame.client.ai.version.mechanics.trees;
 
+import com.neolab.heroesGame.client.ai.version.mechanics.arena.Answer;
 import com.neolab.heroesGame.client.ai.version.mechanics.nodes.ANode;
 import com.neolab.heroesGame.client.ai.version.mechanics.nodes.NodeMinMax;
-import com.neolab.heroesGame.server.answers.Answer;
 
 import java.util.List;
 
@@ -21,6 +21,10 @@ public class MinMaxTree extends ATree {
 
     public boolean isMaxDepth(final int maxDepth) {
         return ((NodeMinMax) getCurrentNode()).getDepth() == maxDepth;
+    }
+
+    public int getCurrentDepth() {
+        return ((NodeMinMax) getCurrentNode()).getDepth();
     }
 
     public void setHeuristic(final int heuristic) {

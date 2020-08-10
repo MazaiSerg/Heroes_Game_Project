@@ -1,6 +1,6 @@
 package com.neolab.heroesGame.client.ai.version.mechanics.nodes;
 
-import com.neolab.heroesGame.server.answers.Answer;
+import com.neolab.heroesGame.client.ai.version.mechanics.arena.Answer;
 
 import java.util.ArrayList;
 import java.util.List;

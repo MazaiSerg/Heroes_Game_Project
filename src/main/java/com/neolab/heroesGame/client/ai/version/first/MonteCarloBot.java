@@ -4,6 +4,7 @@ import com.neolab.heroesGame.aditional.CommonFunction;
 import com.neolab.heroesGame.client.ai.Player;
 import com.neolab.heroesGame.client.ai.PlayerBot;
 import com.neolab.heroesGame.client.ai.version.mechanics.GameProcessor;
+import com.neolab.heroesGame.client.ai.version.mechanics.arena.Answer;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.BattleArena;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Hero;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Magician;
@@ -11,7 +12,6 @@ import com.neolab.heroesGame.client.ai.version.mechanics.trees.SimulationsTree;
 import com.neolab.heroesGame.enumerations.GameEvent;
 import com.neolab.heroesGame.enumerations.HeroActions;
 import com.neolab.heroesGame.errors.HeroExceptions;
-import com.neolab.heroesGame.server.answers.Answer;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +62,9 @@ public class MonteCarloBot extends Player {
     }
 
     @Override
-    public Answer getAnswer(final com.neolab.heroesGame.arena.@NotNull BattleArena board) throws HeroExceptions {
+    public com.neolab.heroesGame.server.answers.Answer getAnswer(
+            final com.neolab.heroesGame.arena.@NotNull BattleArena board) throws HeroExceptions {
+
         final long startTime = System.currentTimeMillis();
         if (board.getArmy(getId()).getHeroes().size() == board.getArmy(getId()).getAvailableHeroes().size()) {
             currentRound++;
@@ -78,7 +80,7 @@ public class MonteCarloBot extends Player {
             recursiveSimulation(processor, tree);
             tree.toRoot();
         }
-        return tree.getBestAction();
+        return tree.getBestAction().getCommonAnswer(getId());
     }
 
     @Override
@@ -141,7 +143,7 @@ public class MonteCarloBot extends Player {
     /**
      * Задаем базовую "важность" действия
      */
-    private double modificate(final Answer answer, final GameProcessor processor) {
+    private double modificate(final @NotNull Answer answer, final GameProcessor processor) {
         if (answer.getAction() == HeroActions.DEFENCE) {
             if (answer.getActiveHeroCoordinate().getY() == 0) {
                 return geneticCoefficients.get(0);

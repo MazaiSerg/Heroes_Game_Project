@@ -2,30 +2,41 @@ package com.neolab.heroesGame.client.ai.version.mechanics.heroes;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.neolab.heroesGame.aditional.HeroConfigManager;
+import com.neolab.heroesGame.aditional.PropertyUtils;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.Army;
-import com.neolab.heroesGame.arena.SquareCoordinate;
+import com.neolab.heroesGame.client.ai.version.mechanics.arena.SquareCoordinate;
 
-import java.util.Map;
+import java.io.IOException;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class WarlordVampire extends Magician implements IWarlord {
+    static private Properties prop = null;
+    static private final Integer hpDefault;
+    static private final Integer damageDefault;
+    static private final Float armorDefault;
+    private static final Float improveCoefficient = 0.05f;
 
-    private float improveCoefficient = 0.05f;
-
-    public WarlordVampire(final int hp, final int damage, final float precision, final float armor) {
-        super(hp, damage, precision, armor);
+    static {
+        try {
+            prop = HeroConfigManager.getHeroConfig();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        hpDefault = PropertyUtils.getIntegerFromProperty(prop, "warlord.vampire.hp");
+        damageDefault = PropertyUtils.getIntegerFromProperty(prop, "warlord.vampire.damage");
+        armorDefault = PropertyUtils.getFloatFromProperty(prop, "warlord.vampire.armor");
     }
 
     @JsonCreator
-    protected WarlordVampire(@JsonProperty("unitId") final int unitId, @JsonProperty("hpDefault") final int hpDefault,
+    protected WarlordVampire(@JsonProperty("unitId") final int unitId,
                              @JsonProperty("hpMax") final int hpMax, @JsonProperty("hp") final int hp,
-                             @JsonProperty("damageDefault") final int damageDefault, @JsonProperty("damage") final int damage,
-                             @JsonProperty("armor") final float armor, @JsonProperty("armorDefault") final float armorDefault,
-                             @JsonProperty("defence") final boolean defence,
-                             @JsonProperty("improveCoefficient") final float improveCoefficient) {
-        super(unitId, hpDefault, hpMax, hp, damageDefault, damage, armor, armorDefault, defence);
-        this.improveCoefficient = improveCoefficient;
+                             @JsonProperty("damage") final int damage,
+                             @JsonProperty("armor") final float armor,
+                             @JsonProperty("defence") final boolean defence) {
+        super(unitId, hpMax, hp, damage, armor, defence);
     }
 
     public float getImproveCoefficient() {
@@ -40,6 +51,21 @@ public class WarlordVampire extends Magician implements IWarlord {
     @Override
     public String getClassName() {
         return "Вампир";
+    }
+
+    @Override
+    public float getArmorDefault() {
+        return armorDefault;
+    }
+
+    @Override
+    public int getHpDefault() {
+        return hpDefault;
+    }
+
+    @Override
+    public int getDamageDefault() {
+        return damageDefault;
     }
 
     @Override

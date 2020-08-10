@@ -21,13 +21,13 @@ import static java.lang.Thread.sleep;
 
 public class SelfPlayServer {
     public static final Integer NUMBER_TRIES = 10;
-    public static final Integer DIFFERENT_ARMIES = 10;
+    public static final Integer DIFFERENT_ARMIES = 20;
     public static final Integer ARMY_SIZE = 6;
     private static final long SEED = 87941;
     private static final Random RANDOM = new Random(SEED);
     private static final AtomicInteger countGame = new AtomicInteger(0);
     private static final AtomicInteger countEndGame = new AtomicInteger(0);
-    private static final Integer MAX_COUNT_GAME_ROOMS = 6;
+    private static final Integer MAX_COUNT_GAME_ROOMS = 5;
     final static long startTime = System.currentTimeMillis();
 
     /**

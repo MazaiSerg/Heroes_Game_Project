@@ -3,17 +3,17 @@ package com.neolab.heroesGame.client.ai.version.mechanics.arena;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.neolab.heroesGame.arena.SquareCoordinate;
 import com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Archer;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Healer;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Hero;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Magician;
-import com.neolab.heroesGame.server.answers.Answer;
 
 import java.util.*;
 
-import static com.neolab.heroesGame.arena.SquareCoordinate.coordinateDoesntMatters;
+import static com.neolab.heroesGame.client.ai.version.mechanics.arena.Answer.getAnswer;
+import static com.neolab.heroesGame.client.ai.version.mechanics.arena.SquareCoordinate.coordinateDoesntMatters;
+import static com.neolab.heroesGame.client.ai.version.mechanics.arena.SquareCoordinate.getSquareCoordinate;
 import static com.neolab.heroesGame.enumerations.HeroActions.*;
 
 public class BattleArena {
@@ -49,7 +49,6 @@ public class BattleArena {
     public void removeUsedHeroesById(final int heroId, final int armyId) {
         armies.get(armyId).removeAvailableHeroById(heroId);
     }
-
     public void endRound() {
         armies.values().forEach(Army::roundIsOver);
     }
@@ -91,10 +90,10 @@ public class BattleArena {
     private List<Answer> getHeroAction(final SquareCoordinate activeHeroCoordinate,
                                        final Hero activeHero, final int activePlayerId) {
         final List<Answer> answers = new ArrayList<>();
-        answers.add(new Answer(activeHeroCoordinate, DEFENCE, coordinateDoesntMatters, activePlayerId));
+        answers.add(getAnswer(activeHeroCoordinate, DEFENCE, coordinateDoesntMatters));
 
         if (activeHero instanceof Magician) {
-            answers.add(new Answer(activeHeroCoordinate, ATTACK, coordinateDoesntMatters, activePlayerId));
+            answers.add(getAnswer(activeHeroCoordinate, ATTACK, coordinateDoesntMatters));
 
         } else if (activeHero instanceof Archer) {
             answers.addAll(getArcherAction(activeHeroCoordinate, activePlayerId));
@@ -115,7 +114,7 @@ public class BattleArena {
         final List<Answer> answers = new ArrayList<>();
         getEnemyArmy(activePlayerId).getHeroes().keySet()
                 .forEach(target -> answers
-                        .add(new Answer(activeHeroCoordinate, ATTACK, target, activePlayerId)));
+                        .add(getAnswer(activeHeroCoordinate, ATTACK, target)));
         return answers;
     }
 
@@ -126,7 +125,7 @@ public class BattleArena {
         final List<Answer> answers = new ArrayList<>();
         getArmy(activePlayerId).getHeroes().forEach((key, value) -> {
             if (value.isInjure()) {
-                answers.add(new Answer(activeHeroCoordinate, HEAL, key, activePlayerId));
+                answers.add(getAnswer(activeHeroCoordinate, HEAL, key));
             }
         });
         return answers;
@@ -139,7 +138,7 @@ public class BattleArena {
         final List<Answer> answers = new ArrayList<>();
         AnswerValidator.getCorrectTargetForFootman(activeHeroCoordinate, getEnemyArmy(activePlayerId))
                 .forEach((target -> answers
-                        .add(new Answer(activeHeroCoordinate, ATTACK, target, activePlayerId))));
+                        .add(getAnswer(activeHeroCoordinate, ATTACK, target))));
         return answers;
     }
 
@@ -193,7 +192,7 @@ public class BattleArena {
         final StringBuilder stringBuilder = new StringBuilder();
         final Map<Integer, Optional<Hero>> heroes = new HashMap<>();
         for (int x = 0; x < 3; x++) {
-            heroes.put(x, army.getHero(new SquareCoordinate(x, y)));
+            heroes.put(x, army.getHero(getSquareCoordinate(x, y)));
         }
         stringBuilder.append("|");
         for (int x = 0; x < 3; x++) {

@@ -1,8 +1,8 @@
 package com.neolab.heroesGame.client.ai.version.mechanics.trees;
 
+import com.neolab.heroesGame.client.ai.version.mechanics.arena.Answer;
 import com.neolab.heroesGame.client.ai.version.mechanics.nodes.NodeMonteCarlo;
 import com.neolab.heroesGame.enumerations.GameEvent;
-import com.neolab.heroesGame.server.answers.Answer;
 
 import java.util.List;
 import java.util.Optional;
