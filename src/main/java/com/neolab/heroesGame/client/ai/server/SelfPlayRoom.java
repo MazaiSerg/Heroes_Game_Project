@@ -1,6 +1,5 @@
 package com.neolab.heroesGame.client.ai.server;
 
-import com.neolab.heroesGame.GamingProcess;
 import com.neolab.heroesGame.aditional.StatisticWriter;
 import com.neolab.heroesGame.arena.BattleArena;
 import com.neolab.heroesGame.client.ai.Player;
@@ -16,7 +15,7 @@ import java.util.Optional;
 
 public class SelfPlayRoom extends Thread {
     public static final Integer MAX_ROUND = 15;
-    private static final Logger LOGGER = LoggerFactory.getLogger(GamingProcess.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SelfPlayRoom.class);
     private final Player firstPlayer;
     private final Player secondPlayer;
     private Player currentPlayer;

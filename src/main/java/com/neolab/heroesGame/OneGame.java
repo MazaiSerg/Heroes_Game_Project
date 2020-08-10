@@ -61,7 +61,7 @@ public class OneGame {
         mapArmies.put(1, firstArmy.getCopy());
         final BattleArena arena = new BattleArena(mapArmies);
         final OneGame gamingProcess = new OneGame(arena);
-        System.out.println("Партия началась");
+        LOGGER.info("Партия началась");
         Optional<Player> whoIsWin;
         while (true) {
             //Определение победы
