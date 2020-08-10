@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.neolab.heroesGame.client.ai.version.mechanics.arena.SquareCoordinate.getSquareCoordinate;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Army {
 
@@ -87,12 +89,8 @@ public class Army {
         this.warlord = warlord;
     }
 
-    public void removeAvailableHeroById(final int heroId) {
-        availableHeroes.values().removeIf(value -> value.getUnitId() == heroId);
-    }
-
-    public void returnHeroToAvailable(SquareCoordinate activeHeroCoordinate) {
-        availableHeroes.put(activeHeroCoordinate, heroes.get(activeHeroCoordinate));
+    public void removeAvailableHero(final SquareCoordinate coordinate) {
+        availableHeroes.remove(coordinate);
     }
 
     private void improveAllies() {
@@ -159,8 +157,8 @@ public class Army {
             final Map<SquareCoordinate, Hero> heroes) {
 
         final Map<SquareCoordinate, Hero> clone = new HashMap<>();
-        availableHeroes.keySet().forEach((key) -> clone.put(SquareCoordinate.getSquareCoordinate(key),
-                heroes.get(SquareCoordinate.getSquareCoordinate(key))));
+        availableHeroes.keySet().forEach((key) -> clone.put(getSquareCoordinate(key),
+                heroes.get(getSquareCoordinate(key))));
         return clone;
     }
 
@@ -168,7 +166,7 @@ public class Army {
             com.neolab.heroesGame.heroes.Hero> heroes) {
 
         final Map<SquareCoordinate, Hero> clone = new HashMap<>();
-        heroes.keySet().forEach((key) -> clone.put(SquareCoordinate.getSquareCoordinate(key),
+        heroes.keySet().forEach((key) -> clone.put(getSquareCoordinate(key),
                 Hero.getCopyFromOriginalClasses(heroes.get(key))));
         return clone;
     }
@@ -211,7 +209,7 @@ public class Army {
         final StringBuilder stringBuilder = new StringBuilder();
         final Map<Integer, Optional<Hero>> heroes = new HashMap<>();
         for (int x = 0; x < 3; x++) {
-            heroes.put(x, getHero(SquareCoordinate.getSquareCoordinate(x, y)));
+            heroes.put(x, getHero(getSquareCoordinate(x, y)));
         }
         stringBuilder.append("|");
         for (int x = 0; x < 3; x++) {

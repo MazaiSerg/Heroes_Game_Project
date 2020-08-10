@@ -103,7 +103,7 @@ public class GameProcessor {
             }
             case HEAL -> activeHero.toAct(answer.getTargetUnitCoordinate(), board.getArmy(activePlayerId));
         }
-        removeUsedHero(activePlayerId, activeHero.getUnitId());
+        removeUsedHero(activePlayerId, answer.getActiveHeroCoordinate());
     }
 
     public List<Answer> getAllActionsForCurrentPlayer() {
@@ -130,8 +130,8 @@ public class GameProcessor {
         return GameEvent.NOTHING_HAPPEN;
     }
 
-    private void removeUsedHero(final int activePlayerId, final int heroId) {
-        board.removeUsedHeroesById(heroId, activePlayerId);
+    private void removeUsedHero(final int activePlayerId, final SquareCoordinate activeUnitCoordinate) {
+        board.removeUsedHeroesById(activeUnitCoordinate, activePlayerId);
     }
 
 }

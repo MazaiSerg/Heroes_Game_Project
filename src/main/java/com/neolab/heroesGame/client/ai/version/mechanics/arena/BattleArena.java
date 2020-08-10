@@ -1,8 +1,5 @@
 package com.neolab.heroesGame.client.ai.version.mechanics.arena;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Archer;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Healer;
@@ -19,8 +16,7 @@ import static com.neolab.heroesGame.enumerations.HeroActions.*;
 public class BattleArena {
     private final Map<Integer, Army> armies;
 
-    @JsonCreator
-    public BattleArena(@JsonProperty("armies") final Map<Integer, Army> armies) {
+    private BattleArena(final Map<Integer, Army> armies) {
         this.armies = armies;
     }
 
@@ -46,9 +42,10 @@ public class BattleArena {
         return !armies.get(id).getAvailableHeroes().isEmpty();
     }
 
-    public void removeUsedHeroesById(final int heroId, final int armyId) {
-        armies.get(armyId).removeAvailableHeroById(heroId);
+    public void removeUsedHeroesById(final SquareCoordinate activeUnitCoordinate, final int armyId) {
+        armies.get(armyId).removeAvailableHero(activeUnitCoordinate);
     }
+
     public void endRound() {
         armies.values().forEach(Army::roundIsOver);
     }
@@ -153,7 +150,6 @@ public class BattleArena {
         return stringBuilder.toString();
     }
 
-    @JsonIgnore
     public BattleArena getCopy() {
         final Map<Integer, Army> clone = new HashMap<>();
         armies.keySet().forEach(key -> clone.put(key, armies.get(key).getCopy()));

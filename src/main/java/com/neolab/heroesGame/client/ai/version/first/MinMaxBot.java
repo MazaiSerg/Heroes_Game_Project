@@ -78,25 +78,25 @@ public class MinMaxBot extends Player {
         tree.createAllChildren(processor.getAllActionsForCurrentPlayer());
         final BattleArena arena = processor.getBoard().getCopy();
         final int currentRound = processor.getRoundCounter();
-        int heuristicValuee = isItThisBot ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        int heuristicValue = isItThisBot ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 
         for (final ANode node : tree.getCurrentNode().getChildren()) {
-            final int nodeHeuristicValue = goDownToChild(processor, tree, heuristicValuee, node);
+            final int nodeHeuristicValue = goDownToChild(processor, tree, heuristicValue, node);
             //LOGGER.trace("вышли из узла {}, значение узла {}, текущее значение {}, ходит бот {}",
             //       ((NodeMinMax)node).getDepth(), nodeHeuristic, heuristicValuee, isItThisBot);
             if (isItThisBot ? prevHeuristicValue < nodeHeuristicValue : prevHeuristicValue > nodeHeuristicValue) {
                 tree.setHeuristic(nodeHeuristicValue);
                 return nodeHeuristicValue;
             }
-            if (isItThisBot ? nodeHeuristicValue > heuristicValuee : nodeHeuristicValue < heuristicValuee) {
-                heuristicValuee = nodeHeuristicValue;
+            if (isItThisBot ? nodeHeuristicValue > heuristicValue : nodeHeuristicValue < heuristicValue) {
+                heuristicValue = nodeHeuristicValue;
             }
             processor.setBoard(arena.getCopy());
             processor.setRoundCounter(currentRound);
         }
 
-        tree.setHeuristic(heuristicValuee);
-        return heuristicValuee;
+        tree.setHeuristic(heuristicValue);
+        return heuristicValue;
     }
 
     /**
