@@ -17,7 +17,7 @@ public class Footman extends Hero {
     static {
         try {
             prop = HeroConfigManager.getHeroConfig();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
         hpDefault = PropertyUtils.getIntegerFromProperty(prop, "hero.footman.hp");

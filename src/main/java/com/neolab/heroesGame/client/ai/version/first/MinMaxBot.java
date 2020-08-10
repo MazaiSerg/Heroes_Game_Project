@@ -148,7 +148,7 @@ public class MinMaxBot extends Player {
         return heuristic.get();
     }
 
-    private void countMaxDepthForFastWork(BattleArena arena) {
+    private void countMaxDepthForFastWork(final BattleArena arena) {
         /*
         final long maxCountNode = 200_000_000L;
         final int numbersHero = Math.max(arena.getArmy(getId()).getHeroes().size(),
@@ -173,7 +173,7 @@ public class MinMaxBot extends Player {
          */
         final int numbersHero = arena.getArmy(getId()).getHeroes().size() +
                 arena.getEnemyArmy(getId()).getHeroes().size();
-        int numbersAvailableHero = arena.getArmy(getId()).getAvailableHeroes().size() +
+        final int numbersAvailableHero = arena.getArmy(getId()).getAvailableHeroes().size() +
                 arena.getEnemyArmy(getId()).getAvailableHeroes().size();
         if (numbersAvailableHero >= 7 || (numbersHero >= 10 && numbersAvailableHero <= 2)) {
             maxDepthForFastWork = 4;

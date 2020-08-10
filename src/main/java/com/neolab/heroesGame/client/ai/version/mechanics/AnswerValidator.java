@@ -17,7 +17,7 @@ public class AnswerValidator {
     public static @NotNull Set<SquareCoordinate> getCorrectTargetForFootman(final @NotNull SquareCoordinate activeUnit,
                                                                             final @NotNull Army enemyArmy) {
         final Set<SquareCoordinate> validateTarget = new HashSet<>();
-        Set<SquareCoordinate> enemies = enemyArmy.getHeroes().keySet();
+        final Set<SquareCoordinate> enemies = enemyArmy.getHeroes().keySet();
         for (int y = 1; y >= 0; y--) {
             if (activeUnit.getX() == 1) {
                 validateTarget.addAll(getTargetForCentralUnit(enemies, y));

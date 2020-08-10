@@ -100,15 +100,15 @@ public abstract class Hero implements Cloneable {
 
     public void setDefence() {
         if (!defence) {
-            this.armor = this.armor + 0.5f;
-            this.defence = true;
+            armor = armor + 0.5f;
+            defence = true;
         }
     }
 
     public void cancelDefence() {
         if (defence) {
-            this.armor = this.armor - 0.5f;
-            this.defence = false;
+            armor = armor - 0.5f;
+            defence = false;
         }
     }
 
@@ -131,14 +131,14 @@ public abstract class Hero implements Cloneable {
     }
 
     public boolean isDead() {
-        return this.hp <= 0;
+        return hp <= 0;
     }
 
     protected int calculateDamage(final Hero targetAttack) {
-        return Math.round(this.damage * (1 - targetAttack.armor));
+        return Math.round(damage * (1 - targetAttack.armor));
     }
 
-    public static Hero getCopyFromOriginalClasses(com.neolab.heroesGame.heroes.Hero hero) {
+    public static Hero getCopyFromOriginalClasses(final com.neolab.heroesGame.heroes.Hero hero) {
         if (hero instanceof com.neolab.heroesGame.heroes.Archer) {
             return new Archer(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
                     hero.getDamage(), hero.getArmor(), hero.isDefence());

@@ -25,7 +25,7 @@ public class Army {
 
     public Army(final Map<SquareCoordinate, Hero> heroes) throws HeroExceptions {
         this.heroes = heroes;
-        this.warlord = findWarlord();
+        warlord = findWarlord();
         roundIsOver();
         improveAllies();
     }
@@ -68,7 +68,7 @@ public class Army {
     }
 
     public void roundIsOver() {
-        this.availableHeroes = new HashMap<>(heroes);
+        availableHeroes = new HashMap<>(heroes);
     }
 
     public void killHero(final SquareCoordinate coordinate) {
@@ -98,7 +98,7 @@ public class Army {
     }
 
     public IWarlord getWarlord() {
-        return this.warlord;
+        return warlord;
     }
 
     private void improve(final Hero hero) {
@@ -122,7 +122,7 @@ public class Army {
         hero.setDamage(hero.getDamageDefault());
     }
 
-    public static Army getCopyFromOriginalClasses(com.neolab.heroesGame.arena.Army army) {
+    public static Army getCopyFromOriginalClasses(final com.neolab.heroesGame.arena.Army army) {
         final com.neolab.heroesGame.heroes.Hero warlord = (com.neolab.heroesGame.heroes.Hero) army.getWarlord();
         final IWarlord cloneWarlord = (IWarlord) Hero.getCopyFromOriginalClasses(warlord);
         final Map<SquareCoordinate, Hero> heroes = getCloneMapFromOriginalClass(army.getHeroes());

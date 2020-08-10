@@ -8,7 +8,6 @@ import com.neolab.heroesGame.client.ai.version.mechanics.arena.Army;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.SquareCoordinate;
 
 import java.io.IOException;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -22,7 +21,7 @@ public class WarlordVampire extends Magician implements IWarlord {
     static {
         try {
             prop = HeroConfigManager.getHeroConfig();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
         hpDefault = PropertyUtils.getIntegerFromProperty(prop, "warlord.vampire.hp");
@@ -70,27 +69,13 @@ public class WarlordVampire extends Magician implements IWarlord {
 
     @Override
     public void toAct(final SquareCoordinate position, final Army army) {
-        final AtomicInteger heal = new AtomicInteger(this.getHp());
+        final AtomicInteger heal = new AtomicInteger(getHp());
         army.getHeroes().keySet().forEach(coordinate -> {
             final Hero h = army.getHero(coordinate).orElseThrow();
-            int damage = calculateDamage(h);
+            final int damage = calculateDamage(h);
             h.setHp(h.getHp() - damage);
             heal.addAndGet(damage);
         });
-        this.setHp(Math.min(heal.get(), this.getHpMax()));
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        final WarlordVampire that = (WarlordVampire) o;
-        return Float.compare(that.improveCoefficient, improveCoefficient) == 0;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), improveCoefficient);
+        setHp(Math.min(heal.get(), getHpMax()));
     }
 }

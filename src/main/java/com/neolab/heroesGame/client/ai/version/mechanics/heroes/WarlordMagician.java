@@ -6,7 +6,6 @@ import com.neolab.heroesGame.aditional.HeroConfigManager;
 import com.neolab.heroesGame.aditional.PropertyUtils;
 
 import java.io.IOException;
-import java.util.Objects;
 import java.util.Properties;
 
 public class WarlordMagician extends Magician implements IWarlord {
@@ -19,7 +18,7 @@ public class WarlordMagician extends Magician implements IWarlord {
     static {
         try {
             prop = HeroConfigManager.getHeroConfig();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
         hpDefault = PropertyUtils.getIntegerFromProperty(prop, "warlord.magician.hp");
@@ -63,19 +62,5 @@ public class WarlordMagician extends Magician implements IWarlord {
     @Override
     public int getDamageDefault() {
         return damageDefault;
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        final WarlordMagician that = (WarlordMagician) o;
-        return Float.compare(that.improveCoefficient, improveCoefficient) == 0;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), improveCoefficient);
     }
 }

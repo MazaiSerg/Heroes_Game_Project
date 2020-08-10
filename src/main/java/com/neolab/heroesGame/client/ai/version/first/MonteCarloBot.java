@@ -137,7 +137,7 @@ public class MonteCarloBot extends Player {
                                                       @NotNull final GameProcessor processor) {
         //final List<Double> actionPriority = new ArrayList<>();
         final double[] actionPriority = new double[actions.size()];
-        AtomicInteger counter = new AtomicInteger(0);
+        final AtomicInteger counter = new AtomicInteger(0);
         actions.forEach((action) -> actionPriority[counter.getAndAdd(1)] = (modificate(action, processor)));
         return actionPriority;
     }

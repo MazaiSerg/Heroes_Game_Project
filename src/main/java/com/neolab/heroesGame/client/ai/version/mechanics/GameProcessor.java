@@ -39,7 +39,7 @@ public class GameProcessor {
         return roundCounter;
     }
 
-    public void setRoundCounter(int roundCounter) {
+    public void setRoundCounter(final int roundCounter) {
         this.roundCounter = roundCounter;
     }
 
@@ -83,7 +83,7 @@ public class GameProcessor {
     /**
      * Применяем выбранное игроком действие
      */
-    private void toAct(Answer answer) throws HeroExceptions {
+    private void toAct(final Answer answer) throws HeroExceptions {
         final Hero activeHero = board.getArmy(activePlayerId).getHero(answer.getActiveHeroCoordinate())
                 .orElseThrow(() -> new HeroExceptions(HeroErrorCode.ERROR_ACTIVE_UNIT));
 

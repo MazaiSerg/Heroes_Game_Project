@@ -71,11 +71,11 @@ public class NodeMonteCarlo extends ANode {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
-        NodeMonteCarlo that = (NodeMonteCarlo) o;
+        final NodeMonteCarlo that = (NodeMonteCarlo) o;
         return winCounter == that.winCounter &&
                 simulationsCounter == that.simulationsCounter &&
                 tiesCounter == that.tiesCounter &&

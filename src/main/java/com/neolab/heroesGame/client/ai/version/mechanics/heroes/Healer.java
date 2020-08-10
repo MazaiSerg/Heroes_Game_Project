@@ -20,7 +20,7 @@ public class Healer extends Hero {
     static {
         try {
             prop = HeroConfigManager.getHeroConfig();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
         hpDefault = PropertyUtils.getIntegerFromProperty(prop, "hero.healer.hp");
@@ -45,7 +45,7 @@ public class Healer extends Hero {
     @Override
     public void toAct(final SquareCoordinate position, final Army army) throws HeroExceptions {
         final Hero targetHeal = army.getHero(position).orElseThrow(() -> new HeroExceptions(HeroErrorCode.ERROR_TARGET_HEAL));
-        final int healing = targetHeal.getHp() + this.getDamage();
+        final int healing = targetHeal.getHp() + getDamage();
         targetHeal.setHp(Math.min(healing, targetHeal.getHpMax()));
     }
 

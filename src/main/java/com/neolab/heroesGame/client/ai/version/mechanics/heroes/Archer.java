@@ -16,7 +16,7 @@ public class Archer extends Hero {
     static {
         try {
             prop = HeroConfigManager.getHeroConfig();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
         hpDefault = PropertyUtils.getIntegerFromProperty(prop, "hero.archer.hp");

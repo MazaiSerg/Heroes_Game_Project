@@ -6,7 +6,6 @@ import com.neolab.heroesGame.aditional.HeroConfigManager;
 import com.neolab.heroesGame.aditional.PropertyUtils;
 
 import java.io.IOException;
-import java.util.Objects;
 import java.util.Properties;
 
 public class WarlordFootman extends Footman implements IWarlord {
@@ -19,7 +18,7 @@ public class WarlordFootman extends Footman implements IWarlord {
     static {
         try {
             prop = HeroConfigManager.getHeroConfig();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
         hpDefault = PropertyUtils.getIntegerFromProperty(prop, "warlord.footman.hp");
@@ -65,17 +64,4 @@ public class WarlordFootman extends Footman implements IWarlord {
         return damageDefault;
     }
 
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        final WarlordFootman that = (WarlordFootman) o;
-        return Float.compare(that.improveCoefficient, improveCoefficient) == 0;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), improveCoefficient);
-    }
 }

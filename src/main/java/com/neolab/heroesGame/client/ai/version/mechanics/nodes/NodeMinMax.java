@@ -36,11 +36,11 @@ public class NodeMinMax extends ANode {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
-        NodeMinMax that = (NodeMinMax) o;
+        final NodeMinMax that = (NodeMinMax) o;
         return depth == that.depth &&
                 heuristicValue == that.heuristicValue;
     }
