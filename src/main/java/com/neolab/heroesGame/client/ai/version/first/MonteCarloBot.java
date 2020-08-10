@@ -2,7 +2,6 @@ package com.neolab.heroesGame.client.ai.version.first;
 
 import com.neolab.heroesGame.aditional.CommonFunction;
 import com.neolab.heroesGame.client.ai.Player;
-import com.neolab.heroesGame.client.ai.PlayerBot;
 import com.neolab.heroesGame.client.ai.version.mechanics.GameProcessor;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.Answer;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.BattleArena;
@@ -19,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Бот, принимающий решение на основе многочисленных симуляций, в который выбор действия был случайным неравновероятным
@@ -30,7 +30,7 @@ import java.util.Random;
  */
 public class MonteCarloBot extends Player {
     private static final String BOT_NAME = "Mazaev_v_1_2";
-    private static final Logger LOGGER = LoggerFactory.getLogger(PlayerBot.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MonteCarloBot.class);
     private static final int TIME_TO_THINK = 900;
     private final long SEED = 5916;
     private final Random RANDOM = new Random(SEED);
@@ -133,10 +133,12 @@ public class MonteCarloBot extends Player {
         };
     }
 
-    private @NotNull List<Double> calculateActionPriority(@NotNull final List<Answer> actions,
-                                                          @NotNull final GameProcessor processor) {
-        final List<Double> actionPriority = new ArrayList<>();
-        actions.forEach((action) -> actionPriority.add(modificate(action, processor)));
+    private @NotNull double[] calculateActionPriority(@NotNull final List<Answer> actions,
+                                                      @NotNull final GameProcessor processor) {
+        //final List<Double> actionPriority = new ArrayList<>();
+        final double[] actionPriority = new double[actions.size()];
+        AtomicInteger counter = new AtomicInteger(0);
+        actions.forEach((action) -> actionPriority[counter.getAndAdd(1)] = (modificate(action, processor)));
         return actionPriority;
     }
 
@@ -160,20 +162,20 @@ public class MonteCarloBot extends Player {
      * Если у юнита осталось мало хп, то полечить его важно
      * Если у юнита нормально хп, то не очень важно
      */
-    private Double calculateHeal(final Answer answer, final GameProcessor processor) {
+    private double calculateHeal(final Answer answer, final GameProcessor processor) {
         final Hero hero = processor.getActivePlayerArmy().getHero(answer.getActiveHeroCoordinate()).orElseThrow();
         final Hero target = processor.getActivePlayerArmy().getHero(answer.getTargetUnitCoordinate()).orElseThrow();
         if (target.getHp() < hero.getDamage()) {
-            return (double) (target.getHpMax() / target.getHp() * target.getDamage() * hero.getDamage());
+            return (target.getHpMax() * 1.0 / target.getHp() * target.getDamage() * hero.getDamage());
         }
-        return (double) Math.min(hero.getDamage(), target.getHpMax() - target.getHp());
+        return Math.min(hero.getDamage(), target.getHpMax() - target.getHp());
     }
 
     /**
      * определяем важность атаки по урону, который нанесем
      * Если юнит после атаки умрем - удваеваем важность атаки
      */
-    private Double calculateDamage(final Answer answer, final GameProcessor processor) {
+    private double calculateDamage(final Answer answer, final GameProcessor processor) {
         final Hero hero = processor.getActivePlayerArmy().getHero(answer.getActiveHeroCoordinate()).orElseThrow();
         if (hero instanceof Magician) {
             return (double) hero.getDamage() * processor.getWaitingPlayerArmy().getHeroes().size();
@@ -181,21 +183,21 @@ public class MonteCarloBot extends Player {
         if (hero.getDamage() > processor.getWaitingPlayerArmy().getHero(answer.getTargetUnitCoordinate()).orElseThrow().getHp()) {
             return hero.getDamage() * 2d;
         }
-        return (double) hero.getDamage();
+        return hero.getDamage();
     }
 
     /**
      * Выбираем случайное действие с учетом приоретета действий
      */
-    private int chooseAction(@NotNull final List<Double> actionPriority) {
-        final Double random = RANDOM.nextDouble() * actionPriority.get(actionPriority.size() - 1);
-        for (int i = 0; i < actionPriority.size(); i++) {
-            if (actionPriority.get(i) > random) {
+    private int chooseAction(@NotNull final double[] actionPriority) {
+        final double random = RANDOM.nextDouble() * actionPriority[actionPriority.length - 1];
+        for (int i = 0; i < actionPriority.length; i++) {
+            if (actionPriority[i] > random) {
                 return i;
             }
         }
         LOGGER.trace("WTF!!!");
-        for (final Double aDouble : actionPriority) {
+        for (final double aDouble : actionPriority) {
             LOGGER.trace("RANDOM: {}, Action: {}", random, aDouble);
         }
         return 0;

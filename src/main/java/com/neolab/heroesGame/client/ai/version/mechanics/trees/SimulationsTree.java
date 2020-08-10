@@ -14,7 +14,7 @@ public class SimulationsTree extends ATree {
         setCurrentNode(getRoot());
     }
 
-    public List<Double> getActionPriority() {
+    public double[] getActionPriority() {
         return Optional.ofNullable(((NodeMonteCarlo) getCurrentNode()).getActionPriorityForChoose()).orElseThrow();
     }
 
@@ -24,10 +24,10 @@ public class SimulationsTree extends ATree {
      * @return Answer для узла с наибольшим значением приоретета, даже если винрейт узла не максимальный
      */
     public Answer getBestAction() {
-        final List<Double> actionPriority = ((NodeMonteCarlo) getCurrentNode()).getActionPriority();
+        final double[] actionPriority = ((NodeMonteCarlo) getCurrentNode()).getActionPriority();
         int max = 0;
-        for (int i = 0; i < actionPriority.size(); i++) {
-            if (actionPriority.get(max) < actionPriority.get(i)) {
+        for (int i = 0; i < actionPriority.length; i++) {
+            if (actionPriority[max] < actionPriority[i]) {
                 max = i;
             }
         }
@@ -44,7 +44,7 @@ public class SimulationsTree extends ATree {
      * @param actions                 Список доступных действий в текущем узле
      * @param calculateActionPriority базовые приорететы для действий
      */
-    public void fieldNewNode(final List<Answer> actions, final List<Double> calculateActionPriority) {
+    public void fieldNewNode(final List<Answer> actions, final double[] calculateActionPriority) {
         actions.forEach(answer -> getCurrentNode().createChild(answer, getCurrentNode()));
         ((NodeMonteCarlo) getCurrentNode()).setActionPriority(calculateActionPriority);
     }

@@ -3,16 +3,14 @@ package com.neolab.heroesGame.client.ai.version.mechanics.nodes;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.Answer;
 import com.neolab.heroesGame.enumerations.GameEvent;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Objects;
 
 public class NodeMonteCarlo extends ANode {
     private int winCounter;
     private int simulationsCounter;
     private int tiesCounter;
-    private List<Double> basicActionPriority = Collections.emptyList();
+    private double[] basicActionPriority;
 
     public NodeMonteCarlo(final Answer prevAnswer, final ANode parent) {
         super(prevAnswer, parent);
@@ -21,7 +19,7 @@ public class NodeMonteCarlo extends ANode {
         tiesCounter = 0;
     }
 
-    public void setActionPriority(final List<Double> actionPriority) {
+    public void setActionPriority(final double[] actionPriority) {
         basicActionPriority = actionPriority;
     }
 
@@ -44,12 +42,10 @@ public class NodeMonteCarlo extends ANode {
     /**
      * @return Возвращает функцию распределения для доступных в этом узле действий: a[i] = a[i-1]
      */
-    public List<Double> getActionPriorityForChoose() {
-        final List<Double> actionPriority = getActionPriority();
-        double priority = 0d;
-        for (int i = 0; i < basicActionPriority.size(); i++) {
-            priority += actionPriority.get(i);
-            actionPriority.set(i, priority);
+    public double[] getActionPriorityForChoose() {
+        final double[] actionPriority = getActionPriority();
+        for (int i = 1; i < basicActionPriority.length; i++) {
+            actionPriority[i] += actionPriority[i - 1];
         }
         return actionPriority;
     }
@@ -61,11 +57,11 @@ public class NodeMonteCarlo extends ANode {
      *
      * @return возвращает распределение вероятностей для доступных действий
      */
-    public List<Double> getActionPriority() {
-        final List<Double> actionPriority = new ArrayList<>();
-        for (int i = 0; i < basicActionPriority.size(); i++) {
-            actionPriority.add(basicActionPriority.get(i) + basicActionPriority.get(i) / 100
-                    * ((NodeMonteCarlo) getChildren().get(i)).getScorePercent());
+    public double[] getActionPriority() {
+        final double[] actionPriority = new double[basicActionPriority.length];
+        for (int i = 0; i < basicActionPriority.length; i++) {
+            actionPriority[i] = basicActionPriority[i] + basicActionPriority[i] / 100
+                    * ((NodeMonteCarlo) getChildren().get(i)).getScorePercent();
         }
         return actionPriority;
     }
@@ -83,7 +79,7 @@ public class NodeMonteCarlo extends ANode {
         return winCounter == that.winCounter &&
                 simulationsCounter == that.simulationsCounter &&
                 tiesCounter == that.tiesCounter &&
-                Objects.equals(basicActionPriority, that.basicActionPriority);
+                Arrays.equals(basicActionPriority, that.basicActionPriority);
     }
 
     @Override
