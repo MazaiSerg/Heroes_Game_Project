@@ -50,6 +50,10 @@ public class BattleArena {
         armies.get(armyId).removeAvailableHeroById(heroId);
     }
 
+    public void returnHeroToAvailable(SquareCoordinate activeHeroCoordinate, final int armyId) {
+        armies.get(armyId).returnHeroToAvailable(activeHeroCoordinate);
+    }
+
     public void endRound() {
         armies.values().forEach(Army::roundIsOver);
     }
@@ -59,6 +63,10 @@ public class BattleArena {
                 .filter(id -> id != playerId).findFirst().orElseThrow();
 
         return armies.get(botArmyId);
+    }
+
+    public void setEnemyArmy(Army army, int waitingPlayerId) {
+        armies.put(waitingPlayerId, army);
     }
 
     public Integer getEnemyId(final Integer playerId) {

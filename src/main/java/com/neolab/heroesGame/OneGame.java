@@ -6,7 +6,7 @@ import com.neolab.heroesGame.arena.BattleArena;
 import com.neolab.heroesGame.arena.StringArmyFactory;
 import com.neolab.heroesGame.client.ai.Player;
 import com.neolab.heroesGame.client.ai.PlayerBot;
-import com.neolab.heroesGame.client.ai.version.first.MinMaxBot;
+import com.neolab.heroesGame.client.ai.version.first.MonteCarloBot;
 import com.neolab.heroesGame.errors.HeroExceptions;
 import com.neolab.heroesGame.server.answers.Answer;
 import com.neolab.heroesGame.server.answers.AnswerProcessor;
@@ -29,7 +29,7 @@ public class OneGame {
 
     public OneGame(final BattleArena arena) {
         currentPlayer = new PlayerBot(1);
-        waitingPlayer = new MinMaxBot(2);
+        waitingPlayer = new MonteCarloBot(2);
         battleArena = arena;
         answerProcessor = new AnswerProcessor(1, 2, battleArena);
         counter = 0;
@@ -54,38 +54,39 @@ public class OneGame {
     private static void matches() throws Exception {
         final List<String> armies = CommonFunction.getAllAvailableArmiesCode(6);
         final long startTime = System.currentTimeMillis();
-
-        final Army firstArmy = new StringArmyFactory(armies.get(RANDOM.nextInt(armies.size()))).create();
-        final Map<Integer, Army> mapArmies = new HashMap<>();
-        mapArmies.put(2, firstArmy);
-        mapArmies.put(1, firstArmy.getCopy());
-        final BattleArena arena = new BattleArena(mapArmies);
-        final OneGame gamingProcess = new OneGame(arena);
-        System.out.println("Партия началась");
-        Optional<Player> whoIsWin;
         while (true) {
-            //Определение победы
-            System.out.println(arena.toString());
-            whoIsWin = gamingProcess.someoneWhoWin();
-            if (whoIsWin.isPresent()) {
-                break;
-            }
-            //Начало нового раунда, прерывание игры из-за ничьей
-            if (!gamingProcess.battleArena.canSomeoneAct()) {
-                gamingProcess.counter++;
-                if (gamingProcess.counter > MAX_ROUND) {
+            final Army firstArmy = new StringArmyFactory(armies.get(RANDOM.nextInt(armies.size()))).create();
+            final Map<Integer, Army> mapArmies = new HashMap<>();
+            mapArmies.put(2, firstArmy);
+            mapArmies.put(1, firstArmy.getCopy());
+            final BattleArena arena = new BattleArena(mapArmies);
+            final OneGame gamingProcess = new OneGame(arena);
+            System.out.println("Партия началась");
+            Optional<Player> whoIsWin;
+            while (true) {
+                //Определение победы
+                System.out.println(arena.toString());
+                whoIsWin = gamingProcess.someoneWhoWin();
+                if (whoIsWin.isPresent()) {
                     break;
                 }
-                gamingProcess.battleArena.endRound();
+                //Начало нового раунда, прерывание игры из-за ничьей
+                if (!gamingProcess.battleArena.canSomeoneAct()) {
+                    gamingProcess.counter++;
+                    if (gamingProcess.counter > MAX_ROUND) {
+                        break;
+                    }
+                    gamingProcess.battleArena.endRound();
+                }
+                //Ход игрока
+                if (gamingProcess.checkCanMove(gamingProcess.currentPlayer.getId())) {
+                    gamingProcess.askPlayerProcess();
+                }
+                //смена активного игрока
+                gamingProcess.changeCurrentAndWaitingPlayers();
             }
-            //Ход игрока
-            if (gamingProcess.checkCanMove(gamingProcess.currentPlayer.getId())) {
-                gamingProcess.askPlayerProcess();
-            }
-            //смена активного игрока
-            gamingProcess.changeCurrentAndWaitingPlayers();
+            LOGGER.info("партия длилась: {}", System.currentTimeMillis() - startTime);
         }
-        LOGGER.info("партия длилась: {}", System.currentTimeMillis() - startTime);
     }
 
     private void askPlayerProcess() throws HeroExceptions, IOException {

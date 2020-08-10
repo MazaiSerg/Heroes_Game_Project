@@ -100,6 +100,10 @@ public class Army {
         availableHeroes.values().removeIf(value -> value.getUnitId() == heroId);
     }
 
+    public void returnHeroToAvailable(SquareCoordinate activeHeroCoordinate) {
+        availableHeroes.put(activeHeroCoordinate, heroes.get(activeHeroCoordinate));
+    }
+
     private void improveAllies() {
         heroes.values().forEach(this::improve);
     }

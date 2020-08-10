@@ -1,8 +1,8 @@
 package com.neolab.heroesGame.client.ai.version.mechanics.heroes;
 
 import com.fasterxml.jackson.annotation.*;
-import com.neolab.heroesGame.client.ai.version.mechanics.arena.Army;
 import com.neolab.heroesGame.arena.SquareCoordinate;
+import com.neolab.heroesGame.client.ai.version.mechanics.arena.Army;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.BattleArena;
 import com.neolab.heroesGame.enumerations.HeroErrorCode;
 import com.neolab.heroesGame.errors.HeroExceptions;
@@ -26,42 +26,23 @@ import java.util.Objects;
 public abstract class Hero implements Cloneable {
     private static final Logger LOGGER = LoggerFactory.getLogger(BattleArena.class);
     private final int unitId;
-    private final int hpDefault;
     private int hpMax;
     private int hp;
-    private final int damageDefault;
     private int damage;
     private float armor;
-    private final float armorDefault;
-    private boolean defence = false;
-    private static int nextId = 0;
-
-
-    public Hero(final int hp, final int damage, final float precision, final float armor) {
-        this.unitId = nextId++;
-        this.hpDefault = hp;
-        this.hpMax = hp;
-        this.hp = hp;
-        this.damage = damage;
-        this.damageDefault = damage;
-        this.armor = armor;
-        this.armorDefault = armor;
-    }
+    private boolean defence;
 
     @JsonCreator
-    protected Hero(@JsonProperty("unitId") final int unitId, @JsonProperty("hpDefault") final int hpDefault,
+    protected Hero(@JsonProperty("unitId") final int unitId,
                    @JsonProperty("hpMax") final int hpMax, @JsonProperty("hp") final int hp,
-                   @JsonProperty("damageDefault") final int damageDefault, @JsonProperty("damage") final int damage,
-                   @JsonProperty("armor") final float armor, @JsonProperty("armorDefault") final float armorDefault,
+                   @JsonProperty("damage") final int damage,
+                   @JsonProperty("armor") final float armor,
                    @JsonProperty("defence") final boolean defence) {
         this.unitId = unitId;
-        this.hpDefault = hpDefault;
         this.hpMax = hpMax;
         this.hp = hp;
-        this.damageDefault = damageDefault;
         this.damage = damage;
         this.armor = armor;
-        this.armorDefault = armorDefault;
         this.defence = defence;
     }
 
@@ -69,12 +50,10 @@ public abstract class Hero implements Cloneable {
         this.hpMax = hpMax;
     }
 
-    public int getDamageDefault() {
-        return damageDefault;
-    }
+    abstract public int getDamageDefault();
 
     public float getArmorDefault() {
-        return armorDefault;
+        return 0f;
     }
 
     public int getHp() {
@@ -101,9 +80,7 @@ public abstract class Hero implements Cloneable {
         this.hp = hp;
     }
 
-    public int getHpDefault() {
-        return hpDefault;
-    }
+    abstract public int getHpDefault();
 
     public int getHpMax() {
         return hpMax;
@@ -142,7 +119,6 @@ public abstract class Hero implements Cloneable {
      *
      * @param position позиция героя
      * @param army     армия противника
-     * @return возращается значение нанесенного урона и координата цели(ей)
      */
     public void toAct(final SquareCoordinate position,
                       final Army army) throws HeroExceptions {
@@ -163,45 +139,30 @@ public abstract class Hero implements Cloneable {
     }
 
     public static Hero getCopyFromOriginalClasses(com.neolab.heroesGame.heroes.Hero hero) {
-        switch (hero.getClassName()) {
-            case "Лучник":
-                return new Archer(hero.getUnitId(), hero.getHpDefault(), hero.getHpMax(), hero.getHp(),
-                        hero.getDamageDefault(), hero.getDamage(), hero.getArmor(), hero.getArmorDefault(),
-                        hero.isDefence());
-            case "Лекарь":
-                return new Healer(hero.getUnitId(), hero.getHpDefault(), hero.getHpMax(), hero.getHp(),
-                        hero.getDamageDefault(), hero.getDamage(), hero.getArmor(), hero.getArmorDefault(),
-                        hero.isDefence());
-
-            case "Мечник":
-                return new Footman(hero.getUnitId(), hero.getHpDefault(), hero.getHpMax(), hero.getHp(),
-                        hero.getDamageDefault(), hero.getDamage(), hero.getArmor(), hero.getArmorDefault(),
-                        hero.isDefence());
-
-            case "Маг":
-                return new Magician(hero.getUnitId(), hero.getHpDefault(), hero.getHpMax(), hero.getHp(),
-                        hero.getDamageDefault(), hero.getDamage(), hero.getArmor(), hero.getArmorDefault(),
-                        hero.isDefence());
-
-            case "Вампир":
-                com.neolab.heroesGame.heroes.IWarlord iWarlord = (com.neolab.heroesGame.heroes.IWarlord) hero;
-                return new WarlordVampire(hero.getUnitId(), hero.getHpDefault(), hero.getHpMax(), hero.getHp(),
-                        hero.getDamageDefault(), hero.getDamage(), hero.getArmor(), hero.getArmorDefault(),
-                        hero.isDefence(), iWarlord.getImproveCoefficient());
-
-            case "Генерал":
-                iWarlord = (com.neolab.heroesGame.heroes.IWarlord) hero;
-                return new WarlordFootman(hero.getUnitId(), hero.getHpDefault(), hero.getHpMax(), hero.getHp(),
-                        hero.getDamageDefault(), hero.getDamage(), hero.getArmor(), hero.getArmorDefault(),
-                        hero.isDefence(), iWarlord.getImproveCoefficient());
-
-            case "Архимаг":
-                iWarlord = (com.neolab.heroesGame.heroes.IWarlord) hero;
-                return new WarlordMagician(hero.getUnitId(), hero.getHpDefault(), hero.getHpMax(), hero.getHp(),
-                        hero.getDamageDefault(), hero.getDamage(), hero.getArmor(), hero.getArmorDefault(),
-                        hero.isDefence(), iWarlord.getImproveCoefficient());
-        }
-        return null;
+        return switch (hero.getClassName()) {
+            case "Лучник" -> new Archer(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
+                    hero.getDamage(), hero.getArmor(),
+                    hero.isDefence());
+            case "Лекарь" -> new Healer(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
+                    hero.getDamage(), hero.getArmor(),
+                    hero.isDefence());
+            case "Мечник" -> new Footman(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
+                    hero.getDamage(), hero.getArmor(),
+                    hero.isDefence());
+            case "Маг" -> new Magician(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
+                    hero.getDamage(), hero.getArmor(),
+                    hero.isDefence());
+            case "Вампир" -> new WarlordVampire(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
+                    hero.getDamage(), hero.getArmor(),
+                    hero.isDefence());
+            case "Генерал" -> new WarlordFootman(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
+                    hero.getDamage(), hero.getArmor(),
+                    hero.isDefence());
+            case "Архимаг" -> new WarlordMagician(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
+                    hero.getDamage(), hero.getArmor(),
+                    hero.isDefence());
+            default -> null;
+        };
     }
 
     @JsonIgnore
@@ -236,6 +197,7 @@ public abstract class Hero implements Cloneable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getUnitId(), getHpDefault(), getHpMax(), getHp(), getDamageDefault(), getDamage(), getArmor(), getArmorDefault(), isDefence());
+        return Objects.hash(getUnitId(), getHpDefault(), getHpMax(), getHp(), getDamageDefault(),
+                getDamage(), getArmor(), getArmorDefault(), isDefence());
     }
 }

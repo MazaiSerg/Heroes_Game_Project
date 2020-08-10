@@ -1,32 +1,36 @@
 package com.neolab.heroesGame.client.ai.version.mechanics;
 
+import com.neolab.heroesGame.arena.SquareCoordinate;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.Army;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.BattleArena;
-import com.neolab.heroesGame.arena.SquareCoordinate;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Archer;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Healer;
+import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Hero;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Magician;
 import com.neolab.heroesGame.enumerations.HeroActions;
 import com.neolab.heroesGame.enumerations.HeroErrorCode;
 import com.neolab.heroesGame.errors.HeroExceptions;
-import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Hero;
 import com.neolab.heroesGame.server.answers.Answer;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
 public class AnswerValidator {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AnswerValidator.class);
 
     public static boolean isAnswerValidate(final Answer answer, final BattleArena arena) throws HeroExceptions {
         final Army thisBotArmy = arena.getArmy(answer.getPlayerId());
         final Army enemyArmy = arena.getEnemyArmy(answer.getPlayerId());
-        final Optional<Hero> heroOptional = thisBotArmy.getHero(answer.getActiveHeroCoordinate());
-        final Hero hero;
-        if (heroOptional.isPresent()) {
-            hero = heroOptional.get();
-        } else throw new HeroExceptions(HeroErrorCode.ERROR_ACTIVE_UNIT);
+        final Hero hero = thisBotArmy.getHero(answer.getActiveHeroCoordinate())
+                .orElseThrow(() -> {
+                    LOGGER.error(arena.toString());
+                    LOGGER.error(answer.toString());
+                    return new HeroExceptions(HeroErrorCode.ERROR_ACTIVE_UNIT);
+                });
 
         if (isErrorActiveHero(hero, thisBotArmy)) {
             throw new HeroExceptions(HeroErrorCode.ERROR_ACTIVE_UNIT);

@@ -2,22 +2,36 @@ package com.neolab.heroesGame.client.ai.version.mechanics.heroes;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.neolab.heroesGame.client.ai.version.mechanics.arena.Army;
+import com.neolab.heroesGame.aditional.HeroConfigManager;
+import com.neolab.heroesGame.aditional.PropertyUtils;
 import com.neolab.heroesGame.arena.SquareCoordinate;
+import com.neolab.heroesGame.client.ai.version.mechanics.arena.Army;
+
+import java.io.IOException;
+import java.util.Properties;
 
 public class Magician extends Hero {
+    static private Properties prop = null;
+    static private final Integer hpDefault;
+    static private final Integer damageDefault;
 
-    public Magician(final int hp, final int damage, final float precision, final float armor) {
-        super(hp, damage, precision, armor);
+    static {
+        try {
+            prop = HeroConfigManager.getHeroConfig();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        hpDefault = PropertyUtils.getIntegerFromProperty(prop, "hero.magician.hp");
+        damageDefault = PropertyUtils.getIntegerFromProperty(prop, "hero.magician.damage");
     }
 
     @JsonCreator
-    protected Magician(@JsonProperty("unitId") final int unitId, @JsonProperty("hpDefault") final int hpDefault,
+    protected Magician(@JsonProperty("unitId") final int unitId,
                        @JsonProperty("hpMax") final int hpMax, @JsonProperty("hp") final int hp,
-                       @JsonProperty("damageDefault") final int damageDefault, @JsonProperty("damage") final int damage,
-                       @JsonProperty("armor") final float armor, @JsonProperty("armorDefault") final float armorDefault,
+                       @JsonProperty("damage") final int damage,
+                       @JsonProperty("armor") final float armor,
                        @JsonProperty("defence") final boolean defence) {
-        super(unitId, hpDefault, hpMax, hp, damageDefault, damage, armor, armorDefault, defence);
+        super(unitId, hpMax, hp, damage, armor, defence);
     }
 
     @Override
@@ -31,5 +45,15 @@ public class Magician extends Hero {
     @Override
     public String getClassName() {
         return "Маг";
+    }
+
+    @Override
+    public int getHpDefault() {
+        return hpDefault;
+    }
+
+    @Override
+    public int getDamageDefault() {
+        return damageDefault;
     }
 }
