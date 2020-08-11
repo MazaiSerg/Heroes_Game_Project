@@ -24,9 +24,9 @@ import static java.lang.Thread.sleep;
 
 public class SelfPlayServer {
     public static final Integer NUMBER_TRIES = 10;
-    public static final Integer DIFFERENT_ARMIES = 20;
+    public static final Integer DIFFERENT_ARMIES = 10;
     public static final Integer ARMY_SIZE = 6;
-    private static final long SEED = 87941;
+    private static final long SEED = 456123;
     private static final Random RANDOM = new Random(SEED);
     private static final AtomicInteger countGame = new AtomicInteger(0);
     private static final AtomicInteger countEndGame = new AtomicInteger(0);
@@ -43,8 +43,7 @@ public class SelfPlayServer {
     public static void main(final String[] args) throws Exception {
         final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(0, MAX_COUNT_GAME_ROOMS,
                 0L, TimeUnit.SECONDS, new SynchronousQueue<>());
-        final ThreadGroup threadGroup = new ThreadGroup("matching");
-        final BotType firstType = BotType.MIN_MAX;
+        final BotType firstType = BotType.MIN_MAX_WITHOUT_TREE;
         final BotType secondType = BotType.RANDOM;
         for (int j = 0; j < DIFFERENT_ARMIES; j++) {
             final BattleArena arena = CreateBattleArena();

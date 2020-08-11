@@ -23,6 +23,8 @@ public class SelfPlayRoom extends Thread {
     private final AnswerProcessor answerProcessor;
     private final BattleArena battleArena;
     private int counter;
+    private int timeForFirst = 0;
+    private int timeForSecond = 0;
 
     /**
      * @param arena        арена, в которой содержатся армии с правильным id
@@ -59,7 +61,13 @@ public class SelfPlayRoom extends Thread {
             }
             if (checkCanMove(currentPlayer.getId())) {
                 try {
+                    final long start = System.currentTimeMillis();
                     askPlayerProcess();
+                    if (currentPlayer == firstPlayer) {
+                        timeForFirst += System.currentTimeMillis() - start;
+                    } else {
+                        timeForSecond += System.currentTimeMillis() - start;
+                    }
                 } catch (final Exception e) {
                     throw new IllegalThreadStateException();
                 }
@@ -132,6 +140,9 @@ public class SelfPlayRoom extends Thread {
         try {
             StatisticWriter.writePlayerAnyStatistic(firstPlayer.getName(), secondPlayer.getName(), endMatch);
             LOGGER.info("{} vs {} = {}", firstPlayer.getName(), secondPlayer.getName(), endMatch.getDescription());
+            LOGGER.info("{} - {}ms; Игрок {} - {}ms",
+                    firstPlayer.getName(), timeForFirst,
+                    secondPlayer.getName(), timeForSecond);
         } catch (final Exception ex) {
             ex.printStackTrace();
         }

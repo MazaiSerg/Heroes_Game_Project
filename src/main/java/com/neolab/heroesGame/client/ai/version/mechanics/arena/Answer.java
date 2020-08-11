@@ -80,6 +80,10 @@ public class Answer {
         };
     }
 
+    public static Answer getDefaultAnswer() {
+        return defenses.get(getSquareCoordinate(0));
+    }
+
     public com.neolab.heroesGame.server.answers.Answer getCommonAnswer(final int playerId) {
         return new com.neolab.heroesGame.server.answers.Answer(activeHeroCoordinate.toCommonCoordinate(), action,
                 targetUnitCoordinate.toCommonCoordinate(), playerId);

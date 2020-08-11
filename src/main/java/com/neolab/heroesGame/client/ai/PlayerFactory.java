@@ -2,6 +2,7 @@ package com.neolab.heroesGame.client.ai;
 
 import com.neolab.heroesGame.client.ai.enums.BotType;
 import com.neolab.heroesGame.client.ai.version.first.MinMaxBot;
+import com.neolab.heroesGame.client.ai.version.first.MinMaxWithoutTree;
 import com.neolab.heroesGame.client.ai.version.first.MonteCarloBot;
 
 public final class PlayerFactory {
@@ -13,6 +14,7 @@ public final class PlayerFactory {
             case RANDOM -> new PlayerBot(id);
             case MIN_MAX -> new MinMaxBot(id);
             case MONTE_CARLO -> new MonteCarloBot(id);
+            case MIN_MAX_WITHOUT_TREE -> new MinMaxWithoutTree(id);
         };
     }
 }
