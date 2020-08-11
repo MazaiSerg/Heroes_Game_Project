@@ -1,6 +1,7 @@
 package com.neolab.heroesGame.client.ai.server;
 
 import com.neolab.heroesGame.aditional.CommonFunction;
+import com.neolab.heroesGame.aditional.StatisticWriter;
 import com.neolab.heroesGame.arena.Army;
 import com.neolab.heroesGame.arena.BattleArena;
 import com.neolab.heroesGame.arena.StringArmyFactory;
@@ -25,7 +26,7 @@ import static java.lang.Thread.sleep;
 public class SelfPlayServer {
     public static final Integer NUMBER_TRIES = 10;
     public static final Integer DIFFERENT_ARMIES = 10;
-    public static final Integer ARMY_SIZE = 6;
+    public static final Integer ARMY_SIZE = StatisticWriter.ARMY_SIZE;
     private static final long SEED = 456123;
     private static final Random RANDOM = new Random(SEED);
     private static final AtomicInteger countGame = new AtomicInteger(0);
@@ -44,7 +45,7 @@ public class SelfPlayServer {
         final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(0, MAX_COUNT_GAME_ROOMS,
                 0L, TimeUnit.SECONDS, new SynchronousQueue<>());
         final BotType firstType = BotType.MIN_MAX_WITHOUT_TREE;
-        final BotType secondType = BotType.RANDOM;
+        final BotType secondType = BotType.MONTE_CARLO;
         for (int j = 0; j < DIFFERENT_ARMIES; j++) {
             final BattleArena arena = CreateBattleArena();
             for (int i = 0; i < NUMBER_TRIES; i++) {
