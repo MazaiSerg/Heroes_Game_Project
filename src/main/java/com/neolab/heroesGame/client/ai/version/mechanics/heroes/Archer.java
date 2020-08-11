@@ -24,12 +24,11 @@ public class Archer extends Hero {
     }
 
     @JsonCreator
-    protected Archer(@JsonProperty("unitId") final int unitId,
-                     @JsonProperty("hpMax") final int hpMax, @JsonProperty("hp") final int hp,
+    protected Archer(@JsonProperty("hpMax") final int hpMax, @JsonProperty("hp") final int hp,
                      @JsonProperty("damage") final int damage,
                      @JsonProperty("armor") final float armor,
                      @JsonProperty("defence") final boolean defence) {
-        super(unitId, hpMax, hp, damage, armor, defence);
+        super(hpMax, hp, damage, armor, defence);
     }
 
     @Override

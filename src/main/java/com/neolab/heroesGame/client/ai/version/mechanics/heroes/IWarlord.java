@@ -13,6 +13,4 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 })
 public interface IWarlord {
     float getImproveCoefficient();
-
-    int getUnitId();
 }

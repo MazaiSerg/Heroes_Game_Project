@@ -25,7 +25,6 @@ import java.util.Objects;
 )
 public abstract class Hero implements Cloneable {
     private static final Logger LOGGER = LoggerFactory.getLogger(BattleArena.class);
-    private final int unitId;
     private int hpMax;
     private int hp;
     private int damage;
@@ -33,12 +32,10 @@ public abstract class Hero implements Cloneable {
     private boolean defence;
 
     @JsonCreator
-    protected Hero(@JsonProperty("unitId") final int unitId,
-                   @JsonProperty("hpMax") final int hpMax, @JsonProperty("hp") final int hp,
+    protected Hero(@JsonProperty("hpMax") final int hpMax, @JsonProperty("hp") final int hp,
                    @JsonProperty("damage") final int damage,
                    @JsonProperty("armor") final float armor,
                    @JsonProperty("defence") final boolean defence) {
-        this.unitId = unitId;
         this.hpMax = hpMax;
         this.hp = hp;
         this.damage = damage;
@@ -58,10 +55,6 @@ public abstract class Hero implements Cloneable {
 
     public int getHp() {
         return hp;
-    }
-
-    public int getUnitId() {
-        return unitId;
     }
 
     public int getDamage() {
@@ -140,31 +133,31 @@ public abstract class Hero implements Cloneable {
 
     public static Hero getCopyFromOriginalClasses(final com.neolab.heroesGame.heroes.Hero hero) {
         if (hero instanceof com.neolab.heroesGame.heroes.Archer) {
-            return new Archer(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
+            return new Archer(hero.getHpMax(), hero.getHp(),
                     hero.getDamage(), hero.getArmor(), hero.isDefence());
 
         } else if (hero instanceof com.neolab.heroesGame.heroes.Healer) {
-            return new Healer(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
+            return new Healer(hero.getHpMax(), hero.getHp(),
                     hero.getDamage(), hero.getArmor(), hero.isDefence());
 
         } else if (hero instanceof com.neolab.heroesGame.heroes.WarlordVampire) {
-            return new WarlordVampire(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
+            return new WarlordVampire(hero.getHpMax(), hero.getHp(),
                     hero.getDamage(), hero.getArmor(), hero.isDefence());
 
         } else if (hero instanceof com.neolab.heroesGame.heroes.WarlordFootman) {
-            return new WarlordFootman(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
+            return new WarlordFootman(hero.getHpMax(), hero.getHp(),
                     hero.getDamage(), hero.getArmor(), hero.isDefence());
 
         } else if (hero instanceof com.neolab.heroesGame.heroes.WarlordMagician) {
-            return new WarlordMagician(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
+            return new WarlordMagician(hero.getHpMax(), hero.getHp(),
                     hero.getDamage(), hero.getArmor(), hero.isDefence());
 
         } else if (hero instanceof com.neolab.heroesGame.heroes.Footman) {
-            return new Footman(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
+            return new Footman(hero.getHpMax(), hero.getHp(),
                     hero.getDamage(), hero.getArmor(), hero.isDefence());
 
         } else if (hero instanceof com.neolab.heroesGame.heroes.Magician) {
-            return new Magician(hero.getUnitId(), hero.getHpMax(), hero.getHp(),
+            return new Magician(hero.getHpMax(), hero.getHp(),
                     hero.getDamage(), hero.getArmor(), hero.isDefence());
         }
         //Никогда не должно возникать
@@ -190,8 +183,7 @@ public abstract class Hero implements Cloneable {
         if (this == o) return true;
         if (!(o instanceof Hero)) return false;
         final Hero hero = (Hero) o;
-        return getUnitId() == hero.getUnitId() &&
-                getHpDefault() == hero.getHpDefault() &&
+        return getHpDefault() == hero.getHpDefault() &&
                 getHpMax() == hero.getHpMax() &&
                 getHp() == hero.getHp() &&
                 getDamageDefault() == hero.getDamageDefault() &&
@@ -203,6 +195,6 @@ public abstract class Hero implements Cloneable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getUnitId(), getHpDefault(), getHpMax(), getHp(), getDamageDefault(), getDamage(), getArmor(), getArmorDefault(), isDefence());
+        return Objects.hash(getHpDefault(), getHpMax(), getHp(), getDamageDefault(), getDamage(), getArmor(), getArmorDefault(), isDefence());
     }
 }

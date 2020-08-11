@@ -94,7 +94,7 @@ public class Army {
     }
 
     private void improveAllies() {
-        heroes.values().forEach(this::improve);
+        heroes.forEach((key, value) -> improve(value));
     }
 
     public IWarlord getWarlord() {
