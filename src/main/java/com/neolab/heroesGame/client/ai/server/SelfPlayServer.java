@@ -14,6 +14,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.Thread.sleep;
@@ -38,24 +41,26 @@ public class SelfPlayServer {
      * Типы ботов задаются один раз до цикла
      */
     public static void main(final String[] args) throws Exception {
+        final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(0, MAX_COUNT_GAME_ROOMS,
+                0L, TimeUnit.SECONDS, new SynchronousQueue<>());
         final ThreadGroup threadGroup = new ThreadGroup("matching");
         final BotType firstType = BotType.MIN_MAX;
         final BotType secondType = BotType.RANDOM;
         for (int j = 0; j < DIFFERENT_ARMIES; j++) {
             final BattleArena arena = CreateBattleArena();
             for (int i = 0; i < NUMBER_TRIES; i++) {
-                waitQueue(threadGroup);
+                waitQueue(threadPoolExecutor);
                 final Player firstPlayer1 = PlayerFactory.createPlayerBot(firstType, 1);
                 final Player secondPlayer1 = PlayerFactory.createPlayerBot(secondType, 2);
-                new Thread(threadGroup, new SelfPlayRoom(arena.getCopy(), firstPlayer1, secondPlayer1)).start();
+                threadPoolExecutor.execute(new SelfPlayRoom(arena.getCopy(), firstPlayer1, secondPlayer1));
 
-                waitQueue(threadGroup);
+                waitQueue(threadPoolExecutor);
                 final Player firstPlayer2 = PlayerFactory.createPlayerBot(secondType, 2);
                 final Player secondPlayer2 = PlayerFactory.createPlayerBot(firstType, 1);
-                new Thread(threadGroup, new SelfPlayRoom(arena.getCopy(), firstPlayer2, secondPlayer2)).start();
+                threadPoolExecutor.execute(new SelfPlayRoom(arena.getCopy(), firstPlayer2, secondPlayer2));
             }
         }
-        waitEnd(threadGroup);
+        waitEnd(threadPoolExecutor);
     }
 
     /**
@@ -78,25 +83,25 @@ public class SelfPlayServer {
     /**
      * Ожидаем пока не освободится один из занятых потоков.
      *
-     * @param threadGroup группа, в которой создаются потоки
+     * @param threadPoolExecutor группа, в которой создаются потоки
      */
-    private static void waitQueue(final ThreadGroup threadGroup) throws Exception {
-        while (threadGroup.activeCount() >= MAX_COUNT_GAME_ROOMS) {
+    private static void waitQueue(final ThreadPoolExecutor threadPoolExecutor) throws Exception {
+        while (threadPoolExecutor.getActiveCount() >= MAX_COUNT_GAME_ROOMS) {
             sleep(2000);
         }
-        printTimeInformation(threadGroup.activeCount());
+        printTimeInformation(threadPoolExecutor.getActiveCount());
         countGame.incrementAndGet();
     }
 
     /**
      * Ожидаем пока не освободятся все потоки
      *
-     * @param threadGroup группа, в которой создаются потоки
+     * @param threadPoolExecutor группа, в которой создаются потоки
      */
-    private static void waitEnd(final ThreadGroup threadGroup) throws Exception {
-        while (threadGroup.activeCount() > 0) {
+    private static void waitEnd(final ThreadPoolExecutor threadPoolExecutor) throws Exception {
+        while (threadPoolExecutor.getActiveCount() > 0) {
             sleep(2000);
-            printTimeInformation(threadGroup.activeCount());
+            printTimeInformation(threadPoolExecutor.getActiveCount());
         }
     }
 

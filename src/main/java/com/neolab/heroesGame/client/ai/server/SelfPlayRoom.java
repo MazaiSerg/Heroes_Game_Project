@@ -61,7 +61,7 @@ public class SelfPlayRoom extends Thread {
                 try {
                     askPlayerProcess();
                 } catch (final Exception e) {
-                    e.printStackTrace();
+                    throw new IllegalThreadStateException();
                 }
             }
             changeCurrentAndWaitingPlayers();
