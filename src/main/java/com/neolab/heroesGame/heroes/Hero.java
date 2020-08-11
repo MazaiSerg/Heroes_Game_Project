@@ -124,6 +124,10 @@ public abstract class Hero implements Cloneable {
         this.armor = armor;
     }
 
+    public boolean isInjure() {
+        return hp < hpMax;
+    }
+
     public void setDefence() {
         if (!defence) {
             this.armor = this.armor + 0.5f;

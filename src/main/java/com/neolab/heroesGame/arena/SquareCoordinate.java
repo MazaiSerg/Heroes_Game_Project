@@ -9,6 +9,7 @@ public class SquareCoordinate {
 
     private final int x;
     private final int y;
+    public static final SquareCoordinate coordinateDoesntMatters = new SquareCoordinate(-1, -1);
 
     @JsonCreator
     public SquareCoordinate(@JsonProperty("x") final int x,

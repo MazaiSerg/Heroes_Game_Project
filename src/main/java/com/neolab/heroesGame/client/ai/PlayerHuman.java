@@ -5,6 +5,7 @@ import com.neolab.heroesGame.arena.Army;
 import com.neolab.heroesGame.arena.BattleArena;
 import com.neolab.heroesGame.arena.SquareCoordinate;
 import com.neolab.heroesGame.client.gui.IGraphics;
+import com.neolab.heroesGame.client.gui.console.AsciiGraphics;
 import com.neolab.heroesGame.enumerations.HeroActions;
 import com.neolab.heroesGame.heroes.*;
 import com.neolab.heroesGame.server.answers.Answer;
@@ -24,6 +25,10 @@ public class PlayerHuman extends Player {
     public PlayerHuman(final int id, final String name, final IGraphics gui) {
         super(id, name);
         this.gui = gui;
+    }
+
+    public PlayerHuman(final int id) throws IOException {
+        this(id, "Serg", new AsciiGraphics(id));
     }
 
     /**

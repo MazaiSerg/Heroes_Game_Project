@@ -73,14 +73,23 @@ public class BattleArena {
         return false;
     }
 
+    public Integer getEnemyId(final Integer playerId) {
+        return armies.keySet().stream().filter(id -> !id.equals(playerId)).findFirst().get();
+    }
+
     public void toLog() {
+        LOGGER.info(this.toString());
+    }
+
+    @Override
+    public String toString() {
         final StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("\n");
         for (final Integer key : armies.keySet()) {
             stringBuilder.append(String.format("Армия игрока <%d>: \n", key));
             stringBuilder.append(CommonFunction.printArmy(armies.get(key)));
         }
-        LOGGER.info(stringBuilder.toString());
+        return stringBuilder.toString();
     }
 
     @JsonIgnore

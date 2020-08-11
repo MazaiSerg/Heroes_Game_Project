@@ -1,6 +1,5 @@
 package com.neolab.heroesGame;
 
-import com.neolab.heroesGame.aditional.Analyzer;
 import com.neolab.heroesGame.aditional.CommonFunction;
 import com.neolab.heroesGame.aditional.StatisticWriter;
 import com.neolab.heroesGame.aditional.plotters.DynamicPlotter;
@@ -11,6 +10,7 @@ import com.neolab.heroesGame.arena.FactoryArmies;
 import com.neolab.heroesGame.arena.StringArmyFactory;
 import com.neolab.heroesGame.client.ai.Player;
 import com.neolab.heroesGame.client.ai.PlayerBot;
+import com.neolab.heroesGame.client.ai.version.first.MonteCarloBot;
 import com.neolab.heroesGame.enumerations.GameEvent;
 import com.neolab.heroesGame.errors.HeroExceptions;
 import com.neolab.heroesGame.server.answers.Answer;
@@ -19,15 +19,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class GamingProcess {
     public static final Integer MAX_ROUND = 15;
-    public static final Integer NUMBER_TRIES = 100;
+    public static final Integer NUMBER_TRIES = 5;
     private static final Logger LOGGER = LoggerFactory.getLogger(GamingProcess.class);
+    private static final long SEED = 876;
+    private static final Random RANDOM = new Random(SEED);
     private Player currentPlayer;
     private Player waitingPlayer;
     private final AnswerProcessor answerProcessor;
@@ -43,8 +42,8 @@ public class GamingProcess {
     }
 
     public GamingProcess(final BattleArena arena) {
-        currentPlayer = new PlayerBot(1, "Bot1");
-        waitingPlayer = new PlayerBot(2, "Bot2");
+        currentPlayer = new MonteCarloBot(1);
+        waitingPlayer = new PlayerBot(2);
         battleArena = arena;
         answerProcessor = new AnswerProcessor(1, 2, battleArena);
         counter = 0;
@@ -85,25 +84,28 @@ public class GamingProcess {
         int counter = 0;
         final int numbers = armies.size();
         final long startTime = System.currentTimeMillis();
-        for (String firstStringArmy : armies) {
-            final Army firstArmy = new StringArmyFactory(firstStringArmy).create();
-            for (String secondStringArmy : armies) {
-                final Army secondArmy = new StringArmyFactory(secondStringArmy).create();
-                final Map<Integer, Army> mapArmies = new HashMap<>();
-                mapArmies.put(1, firstArmy);
-                mapArmies.put(2, secondArmy);
-                final BattleArena arena = new BattleArena(mapArmies);
-                final GamingProcess process = new GamingProcess(arena);
 
-                for (int i = 0; i < NUMBER_TRIES; i++) {
-                    GameEvent endMatch = process.match();
-                    StatisticWriter.writeArmiesWinStatistic(firstStringArmy, secondStringArmy, endMatch);
-                    process.changeCurrentAndWaitingPlayers();
 
-                    endMatch = process.match();
-                    StatisticWriter.writeArmiesWinStatistic(secondStringArmy, firstStringArmy, endMatch);
-                    process.changeCurrentAndWaitingPlayers();
-                }
+        for (int j = 0; j < 5; j++) {
+            String army = armies.get(RANDOM.nextInt(armies.size()));
+            final Army firstArmy = new StringArmyFactory(army).create();
+            final Army secondArmy = new StringArmyFactory(army).create();
+            final Map<Integer, Army> mapArmies = new HashMap<>();
+            mapArmies.put(1, firstArmy);
+            mapArmies.put(2, secondArmy);
+            final BattleArena arena = new BattleArena(mapArmies);
+            final GamingProcess process = new GamingProcess(arena);
+            Player firstPlayer = process.currentPlayer;
+            Player secondPlayer = process.waitingPlayer;
+            for (int i = 0; i < NUMBER_TRIES; i++) {
+                process.setActiveAndWaitingPlayer(firstPlayer, secondPlayer);
+                GameEvent endMatch = process.match();
+                StatisticWriter.writePlayerAnyStatistic(firstPlayer.getName(), secondPlayer.getName(), endMatch);
+
+                process.setActiveAndWaitingPlayer(secondPlayer, firstPlayer);
+                endMatch = process.match();
+                StatisticWriter.writePlayerAnyStatistic(secondPlayer.getName(), firstPlayer.getName(), endMatch);
+                System.out.printf("Выполнено %3d испытаний из %3d.\n", i + 1, NUMBER_TRIES);
             }
 
             counter++;
@@ -111,10 +113,13 @@ public class GamingProcess {
             final long timeNeed = (((endTime - startTime) / counter) * (numbers - counter)) / 60000;
             final int timeFromStart = (int) ((endTime - startTime) / 60000);
             System.out.printf("Выполнено %3d испытаний из %3d. Прошло: %d минут. Примерно осталось : %d минут\n",
-                    counter, numbers, timeFromStart, timeNeed);
+                    counter, 5, timeFromStart, timeNeed);
         }
-        Analyzer analyzer = Analyzer.createAnalyserForArmies();
-        analyzer.showAnomalisticResults();
+    }
+
+    private void setActiveAndWaitingPlayer(Player secondPlayer, Player firstPlayer) {
+        this.currentPlayer = firstPlayer;
+        this.waitingPlayer = secondPlayer;
     }
 
     private static void plotter() {
@@ -162,8 +167,6 @@ public class GamingProcess {
             if (!gamingProcess.battleArena.canSomeoneAct()) {
                 gamingProcess.counter++;
                 if (gamingProcess.counter > MAX_ROUND) {
-                    StatisticWriter.writePlayerDrawStatistic(gamingProcess.currentPlayer.getName(),
-                            gamingProcess.waitingPlayer.getName());
                     break;
                 }
                 gamingProcess.battleArena.endRound();

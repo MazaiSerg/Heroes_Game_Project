@@ -1,5 +1,6 @@
 package com.neolab.heroesGame;
 
+import com.neolab.heroesGame.aditional.CommonFunction;
 import com.neolab.heroesGame.aditional.StatisticWriter;
 import com.neolab.heroesGame.arena.Army;
 import com.neolab.heroesGame.arena.BattleArena;
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -30,8 +32,8 @@ public class ServerImitation {
     private int counter;
 
     public ServerImitation() throws Exception {
-        currentPlayer = new ClientPlayerImitation(1, "Bot1");
-        waitingPlayer = ClientPlayerImitation.createHumanPlayerWithAsciiGraphics(2, "Bot2");
+        currentPlayer = ClientPlayerImitation.createSimpleBotWithoutRandom(1);
+        waitingPlayer = ClientPlayerImitation.createHumanPlayerWithAsciiGraphics(2, "Serg");
         battleArena = new BattleArena(FactoryArmies.generateArmies(1, 2));
         answerProcessor = new AnswerProcessor(1, 2, battleArena);
         counter = 0;
@@ -60,9 +62,12 @@ public class ServerImitation {
     public static void main(final String[] args) {
         try {
             final ServerImitation serverImitation = new ServerImitation();
-            Army botArmy = new StringArmyFactory(serverImitation.currentPlayer.getArmyFirst(6)).create();
-            Army playerArmy = new StringArmyFactory(serverImitation.waitingPlayer.getArmySecond(6, botArmy)).create();
-            Map<Integer, Army> armies = new HashMap<>();
+            final List<String> armiesCode = CommonFunction.getAllAvailableArmiesCode(6);
+
+            final Army firstArmy = new StringArmyFactory(armiesCode.get(15)).create();
+            final Army botArmy = firstArmy.getCopy();
+            final Army playerArmy = firstArmy.getCopy();
+            final Map<Integer, Army> armies = new HashMap<>();
             armies.put(1, botArmy);
             armies.put(2, playerArmy);
             serverImitation.battleArena = new BattleArena(armies);

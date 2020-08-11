@@ -24,6 +24,10 @@ public class PlayerBot extends Player {
         super(id, name);
     }
 
+    public PlayerBot(int i) {
+        super(i, "Random_Bot");
+    }
+
     /**
      * бот работает по следующим правилам:
      * 1. Действующий юнит выбирается случайно
