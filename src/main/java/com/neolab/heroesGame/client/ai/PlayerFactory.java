@@ -4,6 +4,7 @@ import com.neolab.heroesGame.client.ai.enums.BotType;
 import com.neolab.heroesGame.client.ai.version.first.MinMaxBot;
 import com.neolab.heroesGame.client.ai.version.first.MinMaxWithoutTree;
 import com.neolab.heroesGame.client.ai.version.first.MonteCarloBot;
+import com.neolab.heroesGame.client.ai.version.second.ManyArmedBandit;
 
 public final class PlayerFactory {
     private PlayerFactory() {
@@ -14,6 +15,7 @@ public final class PlayerFactory {
             case RANDOM -> new PlayerBot(id);
             case MIN_MAX -> new MinMaxBot(id);
             case MONTE_CARLO -> new MonteCarloBot(id);
+            case MANY_ARMED_BANDIT -> new ManyArmedBandit(id);
             case MIN_MAX_WITHOUT_TREE -> new MinMaxWithoutTree(id);
         };
     }

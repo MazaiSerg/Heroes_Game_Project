@@ -6,7 +6,7 @@ import com.neolab.heroesGame.arena.BattleArena;
 import com.neolab.heroesGame.arena.StringArmyFactory;
 import com.neolab.heroesGame.client.ai.Player;
 import com.neolab.heroesGame.client.ai.PlayerBot;
-import com.neolab.heroesGame.client.ai.version.first.MinMaxWithoutTree;
+import com.neolab.heroesGame.client.ai.version.second.ManyArmedBandit;
 import com.neolab.heroesGame.errors.HeroExceptions;
 import com.neolab.heroesGame.server.answers.Answer;
 import com.neolab.heroesGame.server.answers.AnswerProcessor;
@@ -29,7 +29,7 @@ public class OneGame {
 
     public OneGame(final BattleArena arena) {
         currentPlayer = new PlayerBot(1);
-        waitingPlayer = new MinMaxWithoutTree(2);
+        waitingPlayer = new ManyArmedBandit(2);
         battleArena = arena;
         answerProcessor = new AnswerProcessor(1, 2, battleArena);
         counter = 0;
@@ -54,7 +54,6 @@ public class OneGame {
     private static void matches() throws Exception {
         final List<String> armies = CommonFunction.getAllAvailableArmiesCode(6);
         final long startTime = System.currentTimeMillis();
-        while (true) {
             final Army firstArmy = new StringArmyFactory(armies.get(RANDOM.nextInt(armies.size()))).create();
             final Map<Integer, Army> mapArmies = new HashMap<>();
             mapArmies.put(2, firstArmy);
@@ -86,7 +85,6 @@ public class OneGame {
                 gamingProcess.changeCurrentAndWaitingPlayers();
             }
             LOGGER.info("партия длилась: {}", System.currentTimeMillis() - startTime);
-        }
     }
 
     private void askPlayerProcess() throws HeroExceptions, IOException {
