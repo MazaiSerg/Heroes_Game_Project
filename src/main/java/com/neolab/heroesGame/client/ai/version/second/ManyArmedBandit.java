@@ -101,7 +101,7 @@ public class ManyArmedBandit extends Player {
      * меняем результат с победы на поражение, чтобы разные игроки имели разные значения в узлах
      */
     private double countScore(final ManyArmedBanditTree tree) {
-        double score = 5d / (((tree.getMaxDepth() - tree.getCurrentDepth()) / 2) + 1);
+        final double score = 5d / (((tree.getMaxDepth() - tree.getCurrentDepth()) / 2) + 1);
         return switch (tree.getResultForBot()) {
             case YOU_WIN_GAME -> 10 + score;
             case YOU_LOSE_GAME -> 5 - score;

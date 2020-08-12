@@ -70,9 +70,15 @@ public class BattleArena {
         return true;
     }
 
+    /**
+     * Сперва добавляем все действия изменяющие хп, затем добавляем действия защиты
+     */
     public List<Answer> getAllActionForPlayer(final int playerId) {
         final List<Answer> actions = new ArrayList<>();
-        getArmy(playerId).getAvailableHeroes().forEach((key, hero) -> actions.addAll(getHeroAction(key, hero, playerId)));
+        getArmy(playerId).getAvailableHeroes().forEach((key, hero)
+                -> actions.addAll(getHeroAction(key, hero, playerId)));
+        getArmy(playerId).getAvailableHeroes().forEach((key, hero)
+                -> actions.add(getAnswer(key, DEFENCE, coordinateDoesntMatters)));
         return actions;
     }
 
@@ -87,8 +93,6 @@ public class BattleArena {
     private List<Answer> getHeroAction(final SquareCoordinate activeHeroCoordinate,
                                        final Hero activeHero, final int activePlayerId) {
         final List<Answer> answers = new ArrayList<>();
-        answers.add(getAnswer(activeHeroCoordinate, DEFENCE, coordinateDoesntMatters));
-
         if (activeHero instanceof Magician) {
             answers.add(getAnswer(activeHeroCoordinate, ATTACK, coordinateDoesntMatters));
 
@@ -150,10 +154,10 @@ public class BattleArena {
         return stringBuilder.toString();
     }
 
-    public BattleArena getLightCopy(Answer answer, int playerId) {
+    public BattleArena getLightCopy(final Answer answer, final int playerId) {
         final Map<Integer, Army> clone = new HashMap<>();
-        int enemyId = getEnemyId(playerId);
-        clone.put(playerId, this.armies.get(playerId).getLightCopy());
+        final int enemyId = getEnemyId(playerId);
+        clone.put(playerId, armies.get(playerId).getLightCopy());
         makeHeroCopy(answer.getActiveHeroCoordinate(), clone.get(playerId));
         if (answer.getAction() == ATTACK) {
             if (answer.getTargetUnitCoordinate().equals(coordinateDoesntMatters)) {
@@ -172,8 +176,8 @@ public class BattleArena {
         return new BattleArena(clone);
     }
 
-    private void makeHeroCopy(SquareCoordinate coordinateUnit, Army army) {
-        Hero copy = army.getHeroes().get(coordinateUnit).getCopy();
+    private void makeHeroCopy(final SquareCoordinate coordinateUnit, final Army army) {
+        final Hero copy = army.getHeroes().get(coordinateUnit).getCopy();
         army.getHeroes().put(coordinateUnit, copy);
         if (army.getAvailableHeroes().containsKey(coordinateUnit)) {
             army.getAvailableHeroes().put(coordinateUnit, copy);

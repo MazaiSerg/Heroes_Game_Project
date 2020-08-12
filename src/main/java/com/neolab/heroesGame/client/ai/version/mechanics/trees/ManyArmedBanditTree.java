@@ -49,7 +49,7 @@ public class ManyArmedBanditTree extends ATree {
         return resultForBot;
     }
 
-    public void setResultForBot(GameEvent resultForBot) {
+    public void setResultForBot(final GameEvent resultForBot) {
         this.resultForBot = resultForBot;
     }
 
@@ -57,7 +57,7 @@ public class ManyArmedBanditTree extends ATree {
         return maxDepth;
     }
 
-    public void setMaxDepth(int maxDepth) {
+    public void setMaxDepth(final int maxDepth) {
         this.maxDepth = maxDepth;
     }
 

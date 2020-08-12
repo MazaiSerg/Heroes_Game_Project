@@ -69,14 +69,12 @@ public class MinMaxBot extends Player {
     private int recursiveSimulation(final GameProcessor processor, final MinMaxTree tree,
                                     final int prevHeuristicValue) throws HeroExceptions {
         if (tree.isMaxDepth(MAX_DEPTH) || processor.matchOver() != GameEvent.NOTHING_HAPPEN) {
-            final int heuristicValue = calculateHeuristic(processor.getBoard(), prevHeuristicValue);
+            final int heuristicValue = calculateHeuristic(processor.getBoard(), tree.getCurrentDepth());
             tree.setHeuristic(heuristicValue);
             return heuristicValue;
         }
         final boolean isItThisBot = processor.getActivePlayerId() == getId();
         tree.createAllChildren(processor.getAllActionsForCurrentPlayer());
-        final BattleArena arena = processor.getBoard().getCopy();
-        final int currentRound = processor.getRoundCounter();
         int heuristicValue = isItThisBot ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 
         for (final ANode node : tree.getCurrentNode().getChildren()) {
@@ -88,8 +86,6 @@ public class MinMaxBot extends Player {
             if (isItThisBot ? nodeHeuristicValue > heuristicValue : nodeHeuristicValue < heuristicValue) {
                 heuristicValue = nodeHeuristicValue;
             }
-            processor.setBoard(arena.getCopy());
-            processor.setRoundCounter(currentRound);
         }
 
         tree.setHeuristic(heuristicValue);
@@ -103,6 +99,9 @@ public class MinMaxBot extends Player {
     private int goDownToChild(final GameProcessor processor, final MinMaxTree tree,
                               final int prevHeuristicValue, final ANode child) throws HeroExceptions {
         final int currentPlayerId = processor.getActivePlayerId();
+        final BattleArena arena = processor.getBoard();
+        final int currentRound = processor.getRoundCounter();
+        processor.setBoard(arena.getLightCopy(child.getPrevAnswer(), currentPlayerId));
         processor.handleAnswer(child.getPrevAnswer());
         tree.downToChild(child);
         final int nodeHeuristicValue = recursiveSimulation(processor, tree, prevHeuristicValue);
@@ -110,6 +109,8 @@ public class MinMaxBot extends Player {
         if (currentPlayerId != processor.getActivePlayerId()) {
             processor.swapActivePlayer();
         }
+        processor.setBoard(arena);
+        processor.setRoundCounter(currentRound);
         return nodeHeuristicValue;
     }
 
@@ -123,10 +124,10 @@ public class MinMaxBot extends Player {
         final Army botArmy = arena.getArmy(getId());
         final Army enemyArmy = arena.getEnemyArmy(getId());
         if (botArmy.getHeroes().isEmpty()) {
-            return Integer.MIN_VALUE / depth;
+            return Integer.MIN_VALUE / (depth + 1);
         }
         if (enemyArmy.getHeroes().isEmpty()) {
-            return Integer.MAX_VALUE / depth;
+            return Integer.MAX_VALUE / (depth + 1);
         }
 
         final AtomicInteger heuristic = new AtomicInteger(0);

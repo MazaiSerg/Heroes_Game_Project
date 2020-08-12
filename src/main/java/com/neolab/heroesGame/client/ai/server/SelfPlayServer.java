@@ -45,7 +45,7 @@ public class SelfPlayServer {
         final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(0, MAX_COUNT_GAME_ROOMS,
                 0L, TimeUnit.SECONDS, new SynchronousQueue<>());
         final BotType firstType = BotType.RANDOM;
-        final BotType secondType = BotType.MANY_ARMED_BANDIT;
+        final BotType secondType = BotType.MIN_MAX_WITHOUT_TREE;
         for (int j = 0; j < DIFFERENT_ARMIES; j++) {
             final BattleArena arena = CreateBattleArena();
             for (int i = 0; i < NUMBER_TRIES; i++) {

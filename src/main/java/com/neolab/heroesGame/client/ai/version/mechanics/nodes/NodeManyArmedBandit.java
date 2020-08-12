@@ -46,7 +46,7 @@ public class NodeManyArmedBandit extends ANode {
     public double[] getActionPriority() {
         final double[] actionPriority = new double[getChildren().size()];
         for (int i = 0; i < actionPriority.length; i++) {
-            NodeManyArmedBandit child = (NodeManyArmedBandit) getChild(i);
+            final NodeManyArmedBandit child = (NodeManyArmedBandit) getChild(i);
             actionPriority[i] = child.simulationsCounter == 0
                     ? 5
                     : child.score + Math.sqrt(2 * Math.log(simulationsCounter) / child.simulationsCounter / Math.log(2d));

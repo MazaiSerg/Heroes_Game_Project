@@ -134,13 +134,13 @@ public class Army {
     public Army getCopy() {
         final Map<SquareCoordinate, Hero> heroes = getCloneMap(getHeroes());
         final Map<SquareCoordinate, Hero> availableHeroes = getCloneAvailableMap(getAvailableHeroes(), heroes);
-        return new Army(heroes, this.warlord, availableHeroes);
+        return new Army(heroes, warlord, availableHeroes);
     }
 
     public Army getLightCopy() {
         final Map<SquareCoordinate, Hero> heroes = new HashMap<>(this.heroes);
         final Map<SquareCoordinate, Hero> availableHeroes = new HashMap<>(this.availableHeroes);
-        return new Army(heroes, this.warlord, availableHeroes);
+        return new Army(heroes, warlord, availableHeroes);
     }
 
     private static Map<SquareCoordinate, Hero> getCloneAvailableMap(final Map<SquareCoordinate, Hero> availableHeroes,
