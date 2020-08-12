@@ -14,6 +14,7 @@ public class Magician extends Hero {
     static private Properties prop = null;
     static private final Integer hpDefault;
     static private final Integer damageDefault;
+    static private final int precision;
 
     static {
         try {
@@ -23,6 +24,7 @@ public class Magician extends Hero {
         }
         hpDefault = PropertyUtils.getIntegerFromProperty(prop, "hero.magician.hp");
         damageDefault = PropertyUtils.getIntegerFromProperty(prop, "hero.magician.damage");
+        precision = (int) (100 * PropertyUtils.getFloatFromProperty(prop, "hero.magician.precision"));
     }
 
     @JsonCreator
@@ -42,6 +44,14 @@ public class Magician extends Hero {
     }
 
     @Override
+    public void toActWithPrecision(final SquareCoordinate position, final Army army) {
+        army.getHeroes().keySet().forEach(coordinate -> {
+            final Hero h = army.getHero(coordinate).orElseThrow();
+            h.setHp(h.getHp() - calculateDamageWithPrecision(h));
+        });
+    }
+
+    @Override
     public String getClassName() {
         return "Маг";
     }
@@ -54,5 +64,10 @@ public class Magician extends Hero {
     @Override
     public int getDamageDefault() {
         return damageDefault;
+    }
+
+    @Override
+    public int getPrecision() {
+        return precision;
     }
 }

@@ -21,18 +21,31 @@ public class GameProcessor {
     private int waitingPlayerId;
     private int activePlayerId;
     private BattleArena board;
+    private final boolean useRandom;
 
     public GameProcessor(final int activePlayerId, final BattleArena board) {
         waitingPlayerId = board.getEnemyId(activePlayerId);
         this.activePlayerId = activePlayerId;
         this.board = board;
+        useRandom = false;
     }
 
-    public GameProcessor(final int activePlayerId, final BattleArena board, final int roundCounter) {
+    public GameProcessor(final int activePlayerId, final BattleArena board,
+                         final int roundCounter) {
         waitingPlayerId = board.getEnemyId(activePlayerId);
         this.activePlayerId = activePlayerId;
         this.board = board;
         this.roundCounter = roundCounter;
+        useRandom = false;
+    }
+
+    public GameProcessor(final int activePlayerId, final BattleArena board,
+                         final int roundCounter, final boolean useRandom) {
+        waitingPlayerId = board.getEnemyId(activePlayerId);
+        this.activePlayerId = activePlayerId;
+        this.board = board;
+        this.roundCounter = roundCounter;
+        this.useRandom = useRandom;
     }
 
     public int getRoundCounter() {
@@ -94,7 +107,11 @@ public class GameProcessor {
         switch (answer.getAction()) {
             case DEFENCE -> activeHero.setDefence();
             case ATTACK -> {
-                activeHero.toAct(answer.getTargetUnitCoordinate(), board.getArmy(waitingPlayerId));
+                if (useRandom) {
+                    activeHero.toActWithPrecision(answer.getTargetUnitCoordinate(), board.getArmy(waitingPlayerId));
+                } else {
+                    activeHero.toAct(answer.getTargetUnitCoordinate(), board.getArmy(waitingPlayerId));
+                }
                 if (answer.getTargetUnitCoordinate().equals(coordinateDoesntMatters)) {
                     tryToKillAll(board.getArmy(waitingPlayerId));
                 } else {

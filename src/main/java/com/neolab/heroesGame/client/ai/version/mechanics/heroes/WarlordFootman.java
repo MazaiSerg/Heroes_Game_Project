@@ -14,6 +14,7 @@ public class WarlordFootman extends Footman implements IWarlord {
     static private final Integer damageDefault;
     static private final Float armorDefault;
     private static final Float improveCoefficient = 0.1f;
+    static private final int precision;
 
     static {
         try {
@@ -24,6 +25,7 @@ public class WarlordFootman extends Footman implements IWarlord {
         hpDefault = PropertyUtils.getIntegerFromProperty(prop, "warlord.footman.hp");
         damageDefault = PropertyUtils.getIntegerFromProperty(prop, "warlord.footman.damage");
         armorDefault = PropertyUtils.getFloatFromProperty(prop, "warlord.footman.armor");
+        precision = (int) (100 * PropertyUtils.getFloatFromProperty(prop, "warlord.footman.precision"));
     }
 
     @JsonCreator
@@ -56,6 +58,11 @@ public class WarlordFootman extends Footman implements IWarlord {
     @Override
     public int getDamageDefault() {
         return damageDefault;
+    }
+
+    @Override
+    public int getPrecision() {
+        return precision;
     }
 
 }

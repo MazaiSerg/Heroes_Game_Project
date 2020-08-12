@@ -62,4 +62,9 @@ public class Healer extends Hero {
     public int getDamageDefault() {
         return damageDefault;
     }
+
+    @Override
+    public int getPrecision() {
+        return 100;
+    }
 }

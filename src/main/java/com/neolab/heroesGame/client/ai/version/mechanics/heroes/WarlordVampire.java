@@ -17,6 +17,7 @@ public class WarlordVampire extends Magician implements IWarlord {
     static private final Integer damageDefault;
     static private final Float armorDefault;
     private static final Float improveCoefficient = 0.05f;
+    static private final int precision;
 
     static {
         try {
@@ -27,6 +28,7 @@ public class WarlordVampire extends Magician implements IWarlord {
         hpDefault = PropertyUtils.getIntegerFromProperty(prop, "warlord.vampire.hp");
         damageDefault = PropertyUtils.getIntegerFromProperty(prop, "warlord.vampire.damage");
         armorDefault = PropertyUtils.getFloatFromProperty(prop, "warlord.vampire.armor");
+        precision = (int) (100 * PropertyUtils.getFloatFromProperty(prop, "warlord.vampire.precision"));
     }
 
     @JsonCreator
@@ -71,5 +73,22 @@ public class WarlordVampire extends Magician implements IWarlord {
             heal.addAndGet(damage);
         });
         setHp(Math.min(heal.get(), getHpMax()));
+    }
+
+    @Override
+    public void toActWithPrecision(final SquareCoordinate position, final Army army) {
+        final AtomicInteger heal = new AtomicInteger(getHp());
+        army.getHeroes().keySet().forEach(coordinate -> {
+            final Hero h = army.getHero(coordinate).orElseThrow();
+            final int damage = calculateDamageWithPrecision(h);
+            h.setHp(h.getHp() - damage);
+            heal.addAndGet(damage);
+        });
+        setHp(Math.min(heal.get(), getHpMax()));
+    }
+
+    @Override
+    public int getPrecision() {
+        return precision;
     }
 }

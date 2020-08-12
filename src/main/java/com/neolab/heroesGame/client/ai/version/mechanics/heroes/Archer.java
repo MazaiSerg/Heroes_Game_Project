@@ -10,8 +10,9 @@ import java.util.Properties;
 
 public class Archer extends Hero {
     static private Properties prop = null;
-    static private final Integer hpDefault;
-    static private final Integer damageDefault;
+    static private final int hpDefault;
+    static private final int damageDefault;
+    static private final int precision;
 
     static {
         try {
@@ -21,6 +22,7 @@ public class Archer extends Hero {
         }
         hpDefault = PropertyUtils.getIntegerFromProperty(prop, "hero.archer.hp");
         damageDefault = PropertyUtils.getIntegerFromProperty(prop, "hero.archer.damage");
+        precision = (int) (100 * PropertyUtils.getFloatFromProperty(prop, "hero.archer.precision"));
     }
 
     @JsonCreator
@@ -44,5 +46,10 @@ public class Archer extends Hero {
     @Override
     public int getDamageDefault() {
         return damageDefault;
+    }
+
+    @Override
+    public int getPrecision() {
+        return precision;
     }
 }

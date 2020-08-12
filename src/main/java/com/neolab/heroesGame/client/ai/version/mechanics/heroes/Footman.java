@@ -13,6 +13,7 @@ public class Footman extends Hero {
     static private final Integer hpDefault;
     static private final Integer damageDefault;
     static private final Float armorDefault;
+    static private final int precision;
 
     static {
         try {
@@ -23,6 +24,7 @@ public class Footman extends Hero {
         hpDefault = PropertyUtils.getIntegerFromProperty(prop, "hero.footman.hp");
         damageDefault = PropertyUtils.getIntegerFromProperty(prop, "hero.footman.damage");
         armorDefault = PropertyUtils.getFloatFromProperty(prop, "hero.footman.armor");
+        precision = (int) (100 * PropertyUtils.getFloatFromProperty(prop, "hero.footman.precision"));
     }
 
     @JsonCreator
@@ -51,5 +53,10 @@ public class Footman extends Hero {
     @Override
     public int getDamageDefault() {
         return damageDefault;
+    }
+
+    @Override
+    public int getPrecision() {
+        return precision;
     }
 }

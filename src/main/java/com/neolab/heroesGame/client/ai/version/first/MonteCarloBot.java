@@ -29,14 +29,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Максимальное время должно быть немного ниже реально доступного времени, чтобы гарантированно укладываться
  */
 public class MonteCarloBot extends Player {
-    private static final String BOT_NAME = "Mazaev_v_1_2";
+    private static final String BOT_NAME = "Monte_Carlo";
     private static final Logger LOGGER = LoggerFactory.getLogger(MonteCarloBot.class);
     private static final int TIME_TO_THINK = 900;
     private final long SEED = 5916;
     private final Random RANDOM = new Random(SEED);
     private int currentRound = -1;
     private final List<Double> geneticCoefficients;
-
 
     public MonteCarloBot(final int id) {
         super(id, BOT_NAME);

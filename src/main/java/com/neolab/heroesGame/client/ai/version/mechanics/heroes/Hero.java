@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
+import java.util.Random;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
@@ -24,6 +25,7 @@ import java.util.Objects;
 }
 )
 public abstract class Hero implements Cloneable {
+    private final Random RANDOM = new Random();
     private static final Logger LOGGER = LoggerFactory.getLogger(BattleArena.class);
     private int hpMax;
     private int hp;
@@ -87,6 +89,8 @@ public abstract class Hero implements Cloneable {
         this.armor = armor;
     }
 
+    abstract public int getPrecision();
+
     public boolean isInjure() {
         return hp < hpMax;
     }
@@ -107,12 +111,6 @@ public abstract class Hero implements Cloneable {
 
     public abstract String getClassName();
 
-    /**
-     * Если герой погибает удаляем его из обеих коллекций
-     *
-     * @param position позиция героя
-     * @param army     армия противника
-     */
     public void toAct(final SquareCoordinate position,
                       final Army army) throws HeroExceptions {
         final Hero targetAttack = army.getHero(position).orElseThrow(() -> {
@@ -121,6 +119,31 @@ public abstract class Hero implements Cloneable {
             return new HeroExceptions(HeroErrorCode.ERROR_TARGET_ATTACK);
         });
         targetAttack.setHp(targetAttack.hp - calculateDamage(targetAttack));
+    }
+
+    public void toActWithPrecision(final SquareCoordinate position,
+                                   final Army army) throws HeroExceptions {
+        final Hero targetAttack = army.getHero(position).orElseThrow(() -> {
+            LOGGER.error("position: ({}, {})", position.getX(), position.getY());
+            LOGGER.error(army.toString());
+            return new HeroExceptions(HeroErrorCode.ERROR_TARGET_ATTACK);
+        });
+        targetAttack.setHp(targetAttack.hp - calculateDamageWithPrecision(targetAttack));
+    }
+
+    public int calculateDamageWithPrecision(final Hero targetAttack) {
+        if (RANDOM.nextInt(100) >= getPrecision()) {
+            return 0;
+        }
+        int additionalDamage = 0;
+        int random = RANDOM.nextInt(100);
+        if (random < 15) {
+            additionalDamage = -5;
+        }
+        if (random >= 85) {
+            additionalDamage = 5;
+        }
+        return Math.round((damage + additionalDamage) * (1 - targetAttack.armor));
     }
 
     public boolean isDead() {

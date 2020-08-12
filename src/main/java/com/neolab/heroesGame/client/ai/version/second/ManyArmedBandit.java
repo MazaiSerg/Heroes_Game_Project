@@ -24,7 +24,6 @@ public class ManyArmedBandit extends Player {
     private final Random RANDOM = new Random(SEED);
     private int currentRound = -1;
 
-
     public ManyArmedBandit(final int id) {
         super(id, BOT_NAME);
     }
@@ -39,7 +38,7 @@ public class ManyArmedBandit extends Player {
         }
         final BattleArena arena = BattleArena.getCopyFromOriginalClass(board);
         final ManyArmedBanditTree tree = new ManyArmedBanditTree();
-        for (int i = 0; ; i++) {
+        for (int i = 0; ; ) {
             if (System.currentTimeMillis() - startTime > TIME_TO_THINK) {
                 LOGGER.info("Количество симуляций за {}мс: {}", System.currentTimeMillis() - startTime, i);
                 break;
@@ -47,6 +46,7 @@ public class ManyArmedBandit extends Player {
             final GameProcessor processor = new GameProcessor(getId(), arena.getCopy(), currentRound);
             recursiveSimulation(processor, tree);
             tree.toRoot();
+            i++;
             if (tree.isWinnable()) {
                 LOGGER.info("Количество симуляций за {}мс: {}", System.currentTimeMillis() - startTime, i);
                 return tree.getWinnableMove().getCommonAnswer(getId());
@@ -94,7 +94,7 @@ public class ManyArmedBandit extends Player {
 
         //tree.increase(((processor.getActivePlayerId() == getId()) ? countScore(tree) : 15 - 1 * countScore(tree)));
         tree.increase(((processor.getActivePlayerId() == getId()) ? 1 : -1)
-                * calculateHeuristic(processor.getBoard()));
+                * calculateHeuristic(processor.getBoard()) + 18);
     }
 
     /**
