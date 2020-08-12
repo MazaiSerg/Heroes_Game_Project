@@ -73,8 +73,6 @@ public class MinMaxWithoutTree extends Player {
         }
         final boolean isItThisBot = processor.getActivePlayerId() == getId();
         final List<Answer> actions = processor.getAllActionsForCurrentPlayer();
-        final BattleArena arena = processor.getBoard().getCopy();
-        final int currentRound = processor.getRoundCounter();
         final PairAnswerHeuristic currentBest = new PairAnswerHeuristic(actions.get(0),
                 isItThisBot ? Integer.MIN_VALUE : Integer.MAX_VALUE);
 
@@ -89,8 +87,6 @@ public class MinMaxWithoutTree extends Player {
             } else {
                 currentBest.setWorst(currentPair);
             }
-            processor.setBoard(arena.getCopy());
-            processor.setRoundCounter(currentRound);
         }
         return currentBest;
     }
@@ -101,7 +97,10 @@ public class MinMaxWithoutTree extends Player {
      */
     private PairAnswerHeuristic goDownToChild(final GameProcessor processor,
                                               final PairAnswerHeuristic prevBest) throws HeroExceptions {
+        final BattleArena arena = processor.getBoard();
+        final int currentRound = processor.getRoundCounter();
         final int currentPlayerId = processor.getActivePlayerId();
+        processor.setBoard(arena.getLightCopy(prevBest.getAnswer(), currentPlayerId));
         processor.handleAnswer(prevBest.getAnswer());
         currentDepth++;
         final PairAnswerHeuristic childPair = recursiveSimulation(processor, prevBest);
@@ -109,6 +108,8 @@ public class MinMaxWithoutTree extends Player {
         if (currentPlayerId != processor.getActivePlayerId()) {
             processor.swapActivePlayer();
         }
+        processor.setBoard(arena);
+        processor.setRoundCounter(currentRound);
         return childPair;
     }
 

@@ -150,6 +150,36 @@ public class BattleArena {
         return stringBuilder.toString();
     }
 
+    public BattleArena getLightCopy(Answer answer, int playerId) {
+        final Map<Integer, Army> clone = new HashMap<>();
+        int enemyId = getEnemyId(playerId);
+        clone.put(playerId, this.armies.get(playerId).getLightCopy());
+        makeHeroCopy(answer.getActiveHeroCoordinate(), clone.get(playerId));
+        if (answer.getAction() == ATTACK) {
+            if (answer.getTargetUnitCoordinate().equals(coordinateDoesntMatters)) {
+                clone.put(enemyId, getEnemyArmy(playerId).getCopy());
+            } else {
+                clone.put(enemyId, getEnemyArmy(playerId).getLightCopy());
+                makeHeroCopy(answer.getTargetUnitCoordinate(), clone.get(enemyId));
+            }
+        } else {
+            clone.put(enemyId, getEnemyArmy(playerId).getLightCopy());
+            if (!(answer.getTargetUnitCoordinate().equals(coordinateDoesntMatters)
+                    || answer.getTargetUnitCoordinate().equals(answer.getActiveHeroCoordinate()))) {
+                makeHeroCopy(answer.getTargetUnitCoordinate(), clone.get(playerId));
+            }
+        }
+        return new BattleArena(clone);
+    }
+
+    private void makeHeroCopy(SquareCoordinate coordinateUnit, Army army) {
+        Hero copy = army.getHeroes().get(coordinateUnit).getCopy();
+        army.getHeroes().put(coordinateUnit, copy);
+        if (army.getAvailableHeroes().containsKey(coordinateUnit)) {
+            army.getAvailableHeroes().put(coordinateUnit, copy);
+        }
+    }
+
     public BattleArena getCopy() {
         final Map<Integer, Army> clone = new HashMap<>();
         armies.keySet().forEach(key -> clone.put(key, armies.get(key).getCopy()));

@@ -132,11 +132,15 @@ public class Army {
 
     @JsonIgnore
     public Army getCopy() {
-        final Hero warlord = (Hero) this.warlord;
-        final IWarlord cloneWarlord = (IWarlord) warlord.getCopy();
         final Map<SquareCoordinate, Hero> heroes = getCloneMap(getHeroes());
         final Map<SquareCoordinate, Hero> availableHeroes = getCloneAvailableMap(getAvailableHeroes(), heroes);
-        return new Army(heroes, cloneWarlord, availableHeroes);
+        return new Army(heroes, this.warlord, availableHeroes);
+    }
+
+    public Army getLightCopy() {
+        final Map<SquareCoordinate, Hero> heroes = new HashMap<>(this.heroes);
+        final Map<SquareCoordinate, Hero> availableHeroes = new HashMap<>(this.availableHeroes);
+        return new Army(heroes, this.warlord, availableHeroes);
     }
 
     private static Map<SquareCoordinate, Hero> getCloneAvailableMap(final Map<SquareCoordinate, Hero> availableHeroes,
