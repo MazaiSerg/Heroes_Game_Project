@@ -2,6 +2,7 @@ package com.neolab.heroesGame.client.ai.version.second;
 
 import com.neolab.heroesGame.aditional.CommonFunction;
 import com.neolab.heroesGame.client.ai.Player;
+import com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator;
 import com.neolab.heroesGame.client.ai.version.mechanics.GameProcessor;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.Answer;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.Army;
@@ -26,6 +27,7 @@ public class ManyArmedBandit extends Player {
 
     public ManyArmedBandit(final int id) {
         super(id, BOT_NAME);
+        AnswerValidator.initializeHashMap();
     }
 
     @Override

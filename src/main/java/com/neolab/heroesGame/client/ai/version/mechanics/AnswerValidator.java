@@ -19,6 +19,9 @@ public class AnswerValidator {
     }
 
     public static void initializeHashMap() {
+        if (isInitialize) {
+            return;
+        }
         isInitialize = true;
         final List<Set<SquareCoordinate>> allAliveUnitVariations = new ArrayList<>();
         final boolean[] counter = new boolean[6];

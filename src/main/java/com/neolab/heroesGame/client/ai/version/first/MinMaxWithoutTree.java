@@ -2,6 +2,7 @@ package com.neolab.heroesGame.client.ai.version.first;
 
 import com.neolab.heroesGame.aditional.CommonFunction;
 import com.neolab.heroesGame.client.ai.Player;
+import com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator;
 import com.neolab.heroesGame.client.ai.version.mechanics.GameProcessor;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.Answer;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.Army;
@@ -30,6 +31,7 @@ public class MinMaxWithoutTree extends Player {
 
     public MinMaxWithoutTree(final int id) {
         super(id, BOT_NAME);
+        AnswerValidator.initializeHashMap();
     }
 
     @Override
@@ -178,10 +180,10 @@ public class MinMaxWithoutTree extends Player {
         }
 
         if (numbersHero >= 9) {
-            maxDepthForFastWork = 4;
+            maxDepthForFastWork = 6;
             return;
         }
 
-        maxDepthForFastWork = 4;
+        maxDepthForFastWork = 8;
     }
 }

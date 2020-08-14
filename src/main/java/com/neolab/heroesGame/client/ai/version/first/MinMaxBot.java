@@ -2,6 +2,7 @@ package com.neolab.heroesGame.client.ai.version.first;
 
 import com.neolab.heroesGame.aditional.CommonFunction;
 import com.neolab.heroesGame.client.ai.Player;
+import com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator;
 import com.neolab.heroesGame.client.ai.version.mechanics.GameProcessor;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.Army;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.BattleArena;
@@ -29,6 +30,7 @@ public class MinMaxBot extends Player {
 
     public MinMaxBot(final int id) {
         super(id, BOT_NAME);
+        AnswerValidator.initializeHashMap();
     }
 
     @Override
@@ -101,7 +103,7 @@ public class MinMaxBot extends Player {
         final int currentPlayerId = processor.getActivePlayerId();
         final BattleArena arena = processor.getBoard();
         final int currentRound = processor.getRoundCounter();
-        processor.setBoard(arena.getLightCopy(child.getPrevAnswer(), currentPlayerId));
+        processor.setBoard(arena.getCopy());
         processor.handleAnswer(child.getPrevAnswer());
         tree.downToChild(child);
         final int nodeHeuristicValue = recursiveSimulation(processor, tree, prevHeuristicValue);
