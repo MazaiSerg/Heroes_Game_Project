@@ -6,8 +6,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Hero;
 import com.neolab.heroesGame.client.ai.version.mechanics.heroes.IWarlord;
-import com.neolab.heroesGame.enumerations.HeroErrorCode;
-import com.neolab.heroesGame.errors.HeroExceptions;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,13 +20,7 @@ public class Army {
     private final Map<SquareCoordinate, Hero> heroes;
     private IWarlord warlord;
     private Map<SquareCoordinate, Hero> availableHeroes;
-
-    public Army(final Map<SquareCoordinate, Hero> heroes) throws HeroExceptions {
-        this.heroes = heroes;
-        warlord = findWarlord();
-        roundIsOver();
-        improveAllies();
-    }
+    private final boolean[] aliveHero = new boolean[6];
 
     @JsonCreator
     public Army(@JsonProperty("heroes") final Map<SquareCoordinate, Hero> heroes,
@@ -37,22 +29,9 @@ public class Army {
         this.heroes = heroes;
         this.warlord = warlord;
         this.availableHeroes = availableHeroes;
-    }
-
-    private IWarlord findWarlord() throws HeroExceptions {
-        IWarlord iWarlord = null;
-        for (final Hero hero : heroes.values()) {
-            if (hero instanceof IWarlord) {
-                if (iWarlord != null) {
-                    throw new HeroExceptions(HeroErrorCode.ERROR_SECOND_WARLORD_ON_ARMY);
-                }
-                iWarlord = (IWarlord) hero;
-            }
+        for (int i = 0; i < 6; i++) {
+            aliveHero[i] = heroes.containsKey(getSquareCoordinate(i));
         }
-        if (iWarlord == null) {
-            throw new HeroExceptions(HeroErrorCode.ERROR_EMPTY_WARLORD);
-        }
-        return iWarlord;
     }
 
     public Map<SquareCoordinate, Hero> getHeroes() {
@@ -61,6 +40,10 @@ public class Army {
 
     public Map<SquareCoordinate, Hero> getAvailableHeroes() {
         return availableHeroes;
+    }
+
+    public boolean[] getAliveHero() {
+        return aliveHero;
     }
 
     public Optional<Hero> getHero(final SquareCoordinate coordinate) {
@@ -77,6 +60,7 @@ public class Army {
         }
         availableHeroes.remove(coordinate);
         heroes.remove(coordinate);
+        aliveHero[coordinate.getIndex()] = false;
     }
 
     public void tryToKill(final SquareCoordinate coordinate) {
@@ -93,22 +77,8 @@ public class Army {
         availableHeroes.remove(coordinate);
     }
 
-    private void improveAllies() {
-        heroes.forEach((key, value) -> improve(value));
-    }
-
     public IWarlord getWarlord() {
         return warlord;
-    }
-
-    private void improve(final Hero hero) {
-        int value = hero.getHpMax() + Math.round((float) hero.getHpMax() * warlord.getImproveCoefficient());
-        hero.setHpMax(value);
-        hero.setHp(value);
-        value = hero.getDamageDefault() + Math.round((float) hero.getDamageDefault() * warlord.getImproveCoefficient());
-        hero.setDamage(value);
-        final float armor = hero.getArmorDefault() + warlord.getImproveCoefficient();
-        hero.setArmor(armor);
     }
 
     protected void cancelImprove() {

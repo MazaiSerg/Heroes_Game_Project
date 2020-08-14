@@ -6,7 +6,7 @@ import com.neolab.heroesGame.arena.BattleArena;
 import com.neolab.heroesGame.arena.StringArmyFactory;
 import com.neolab.heroesGame.client.ai.Player;
 import com.neolab.heroesGame.client.ai.PlayerBot;
-import com.neolab.heroesGame.client.ai.version.first.MonteCarloBot;
+import com.neolab.heroesGame.client.ai.version.second.ManyArmedWithoutTree;
 import com.neolab.heroesGame.errors.HeroExceptions;
 import com.neolab.heroesGame.server.answers.Answer;
 import com.neolab.heroesGame.server.answers.AnswerProcessor;
@@ -29,7 +29,7 @@ public class OneGame {
 
     public OneGame(final BattleArena arena) {
         currentPlayer = new PlayerBot(1);
-        waitingPlayer = new MonteCarloBot(2);
+        waitingPlayer = new ManyArmedWithoutTree(2);
         battleArena = arena;
         answerProcessor = new AnswerProcessor(1, 2, battleArena);
         counter = 0;

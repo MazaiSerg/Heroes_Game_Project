@@ -5,7 +5,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.neolab.heroesGame.enumerations.HeroActions;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.neolab.heroesGame.client.ai.version.mechanics.arena.SquareCoordinate.coordinateDoesntMatters;
@@ -17,6 +19,10 @@ public class Answer {
     static final private Map<SquareCoordinate, Answer> defenses;
     static final private Map<SquareCoordinate, Map<SquareCoordinate, Answer>> attack;
     static final private Map<SquareCoordinate, Map<SquareCoordinate, Answer>> heals;
+
+    static final private List<Answer> listDefenses;
+    static final private List<List<Answer>> listAttack;
+    static final private List<List<Answer>> listHeals;
 
     static {
         defenses = new HashMap<>();
@@ -41,6 +47,32 @@ public class Answer {
                     allHealsForActiveUnit.put(getSquareCoordinate(j), new Answer(activeUnit, HEAL, getSquareCoordinate(j)));
                 }
                 heals.put(activeUnit, allHealsForActiveUnit);
+            }
+        }
+
+
+        listDefenses = new ArrayList<>();
+        listAttack = new ArrayList<>();
+        listHeals = new ArrayList<>();
+        for (int i = 0; i < 6; i++) {
+            final SquareCoordinate activeUnit = getSquareCoordinate(i);
+            listDefenses.add(new Answer(activeUnit, DEFENCE, coordinateDoesntMatters));
+
+            final List<Answer> allAttacksForActiveUnit = new ArrayList<>();
+            for (int j = 0; j < 6; j++) {
+                allAttacksForActiveUnit.add(new Answer(activeUnit, ATTACK, getSquareCoordinate(j)));
+            }
+            if (i < 3) {
+                allAttacksForActiveUnit.add(new Answer(activeUnit, ATTACK, coordinateDoesntMatters));
+            }
+            listAttack.add(allAttacksForActiveUnit);
+
+            if (i < 3) {
+                final List<Answer> allHealsForActiveUnit = new ArrayList<>();
+                for (int j = 0; j < 6; j++) {
+                    allHealsForActiveUnit.add(new Answer(activeUnit, HEAL, getSquareCoordinate(j)));
+                }
+                listHeals.add(allHealsForActiveUnit);
             }
         }
     }
@@ -77,6 +109,15 @@ public class Answer {
             case DEFENCE -> defenses.get(activeHeroCoordinate);
             case HEAL -> heals.get(activeHeroCoordinate).get(target);
             case ATTACK -> attack.get(activeHeroCoordinate).get(target);
+        };
+    }
+
+    public static @NotNull Answer getAnswerFromList(final SquareCoordinate activeHeroCoordinate, final HeroActions action,
+                                                    final SquareCoordinate target) {
+        return switch (action) {
+            case DEFENCE -> listDefenses.get(activeHeroCoordinate.getIndex());
+            case HEAL -> listHeals.get(activeHeroCoordinate.getIndex()).get(target.getIndex());
+            case ATTACK -> listAttack.get(activeHeroCoordinate.getIndex()).get(target.getIndex());
         };
     }
 

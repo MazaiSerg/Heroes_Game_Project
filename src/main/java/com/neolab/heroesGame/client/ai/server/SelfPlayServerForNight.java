@@ -23,14 +23,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.lang.Thread.sleep;
 
 public class SelfPlayServerForNight {
-    public static final Integer NUMBER_TRIES = 10;
-    public static final Integer DIFFERENT_ARMIES = 20;
+    public static final Integer NUMBER_TRIES = 5;
+    public static final Integer DIFFERENT_ARMIES = 5;
     public static final Integer ARMY_SIZE = StatisticWriter.ARMY_SIZE;
     private static final long SEED = 456123;
     private static final Random RANDOM = new Random(SEED);
     private static final AtomicInteger countGame = new AtomicInteger(0);
     private static final AtomicInteger countEndGame = new AtomicInteger(0);
-    private static final Integer MAX_COUNT_GAME_ROOMS = 5;
+    private static final Integer MAX_COUNT_GAME_ROOMS = 4;
     final static long startTime = System.currentTimeMillis();
 
     /**
@@ -43,8 +43,8 @@ public class SelfPlayServerForNight {
     public static void main(final String[] args) throws Exception {
         final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(0, MAX_COUNT_GAME_ROOMS,
                 0L, TimeUnit.SECONDS, new SynchronousQueue<>());
-        for (BotType firstType : BotType.values()) {
-            for (BotType secondType : BotType.values()) {
+        for (final BotType firstType : BotType.values()) {
+            for (final BotType secondType : BotType.values()) {
                 if (firstType.equals(secondType)) {
                     continue;
                 }
@@ -120,10 +120,10 @@ public class SelfPlayServerForNight {
             countGame.decrementAndGet();
             final long endTime = System.currentTimeMillis();
             final long timeNeed = (((endTime - startTime) / countEndGame.get())
-                    * (2 * DIFFERENT_ARMIES * NUMBER_TRIES - countEndGame.get())) / 1000;
+                    * (40 * DIFFERENT_ARMIES * NUMBER_TRIES - countEndGame.get())) / 1000;
             final int timeFromStart = (int) ((endTime - startTime) / 1000);
             System.out.printf("Прошло %d испытаний из %d. Прошло: %d секунд. Примерно осталось : %d секунд\n",
-                    countEndGame.get(), 2 * DIFFERENT_ARMIES * NUMBER_TRIES, timeFromStart, timeNeed);
+                    countEndGame.get(), 40 * DIFFERENT_ARMIES * NUMBER_TRIES, timeFromStart, timeNeed);
         }
     }
 }

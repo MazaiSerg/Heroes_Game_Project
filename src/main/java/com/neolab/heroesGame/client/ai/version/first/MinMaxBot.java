@@ -179,10 +179,10 @@ public class MinMaxBot extends Player {
         }
 
         if (numbersHero >= 9) {
-            maxDepthForFastWork = 6;
+            maxDepthForFastWork = 4;
             return;
         }
 
-        maxDepthForFastWork = 8;
+        maxDepthForFastWork = 4;
     }
 }

@@ -16,6 +16,7 @@ public class SquareCoordinate {
         for (int i = 0; i < 6; i++) {
             allCoordinates.add(new SquareCoordinate(i % 3, i / 3));
         }
+        allCoordinates.add(coordinateDoesntMatters);
     }
 
     private SquareCoordinate(final int x,
@@ -38,6 +39,13 @@ public class SquareCoordinate {
 
     public static SquareCoordinate getSquareCoordinate(final int x, final int y) {
         return allCoordinates.get(x + y * 3);
+    }
+
+    public int getIndex() {
+        if (x == -1) {
+            return 6;
+        }
+        return x + y * 3;
     }
 
     public static SquareCoordinate getSquareCoordinate(final com.neolab.heroesGame.arena.SquareCoordinate coordinate) {
