@@ -20,7 +20,7 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MinMaxBot extends Player {
-    private static final String BOT_NAME = "Mazaev_v_MinMax";
+    private static final String BOT_NAME = "Min Max";
     private static final Logger LOGGER = LoggerFactory.getLogger(MinMaxBot.class);
     private final long SEED = 5916;
     private static final int MAX_DEPTH = 6;

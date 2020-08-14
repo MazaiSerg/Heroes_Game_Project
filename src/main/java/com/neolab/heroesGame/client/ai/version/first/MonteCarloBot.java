@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Максимальное время должно быть немного ниже реально доступного времени, чтобы гарантированно укладываться
  */
 public class MonteCarloBot extends Player {
-    private static final String BOT_NAME = "Monte_Carlo";
+    private static final String BOT_NAME = "Monte Carlo";
     private static final Logger LOGGER = LoggerFactory.getLogger(MonteCarloBot.class);
     private static final int TIME_TO_THINK = 900;
     private final long SEED = 5916;

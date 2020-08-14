@@ -20,7 +20,7 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MinMaxWithoutTree extends Player {
-    private static final String BOT_NAME = "Mazaev_v_MinMaxWithoutTree";
+    private static final String BOT_NAME = "Min Max Without Tree";
     private static final Logger LOGGER = LoggerFactory.getLogger(MinMaxWithoutTree.class);
     private final long SEED = 5916;
     private static final int MAX_DEPTH = 6;

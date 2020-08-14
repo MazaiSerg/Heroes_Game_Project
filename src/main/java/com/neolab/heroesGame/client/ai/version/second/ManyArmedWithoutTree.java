@@ -18,7 +18,7 @@ import java.util.Random;
 import static com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator.initializeHashMap;
 
 public class ManyArmedWithoutTree extends Player {
-    private static final String BOT_NAME = "ManyArmedBanditBot";
+    private static final String BOT_NAME = "Many Armed With Random";
     private static final Logger LOGGER = LoggerFactory.getLogger(ManyArmedBandit.class);
     private static final int TIME_TO_THINK = 900;
     private static final double LN_2D = Math.log(2d);

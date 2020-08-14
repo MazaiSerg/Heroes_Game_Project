@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Random;
 
 public class ManyArmedBandit extends Player {
-    private static final String BOT_NAME = "ManyArmedBanditBot";
+    private static final String BOT_NAME = "Many Armed Bandit";
     private static final Logger LOGGER = LoggerFactory.getLogger(ManyArmedBandit.class);
     private static final int TIME_TO_THINK = 900;
     private final long SEED = 5916;
