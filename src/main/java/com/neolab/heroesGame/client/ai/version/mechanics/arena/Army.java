@@ -20,7 +20,6 @@ public class Army {
     private final Map<SquareCoordinate, Hero> heroes;
     private IWarlord warlord;
     private Map<SquareCoordinate, Hero> availableHeroes;
-    private final boolean[] aliveHero = new boolean[6];
 
     @JsonCreator
     public Army(@JsonProperty("heroes") final Map<SquareCoordinate, Hero> heroes,
@@ -29,9 +28,6 @@ public class Army {
         this.heroes = heroes;
         this.warlord = warlord;
         this.availableHeroes = availableHeroes;
-        for (int i = 0; i < 6; i++) {
-            aliveHero[i] = heroes.containsKey(getSquareCoordinate(i));
-        }
     }
 
     public Map<SquareCoordinate, Hero> getHeroes() {
@@ -40,10 +36,6 @@ public class Army {
 
     public Map<SquareCoordinate, Hero> getAvailableHeroes() {
         return availableHeroes;
-    }
-
-    public boolean[] getAliveHero() {
-        return aliveHero;
     }
 
     public Optional<Hero> getHero(final SquareCoordinate coordinate) {
@@ -60,7 +52,6 @@ public class Army {
         }
         availableHeroes.remove(coordinate);
         heroes.remove(coordinate);
-        aliveHero[coordinate.getIndex()] = false;
     }
 
     public void tryToKill(final SquareCoordinate coordinate) {

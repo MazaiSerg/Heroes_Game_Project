@@ -11,11 +11,11 @@ import static com.neolab.heroesGame.client.ai.version.mechanics.arena.SquareCoor
 
 public class AnswerValidator {
     private static final Logger LOGGER = LoggerFactory.getLogger(AnswerValidator.class);
-    private static final Map<SquareCoordinate, Map<Set<SquareCoordinate>, Set<SquareCoordinate>>> actionForFootman;
+    private static final List<List<Set<SquareCoordinate>>> actionForFootman;
     private static boolean isInitialize = false;
 
     static {
-        actionForFootman = new HashMap<>();
+        actionForFootman = new ArrayList<>();
     }
 
     public static void initializeHashMap() {
@@ -24,11 +24,11 @@ public class AnswerValidator {
         final boolean[] counter = new boolean[6];
         Arrays.fill(counter, Boolean.FALSE);
         do {
-            int index = 6;
+            int index = -1;
             do {
-                index--;
+                index++;
                 counter[index] = !counter[index];
-            } while (!counter[index] && index != 0);
+            } while (!counter[index] && index != 5);
             final Set<SquareCoordinate> variation = new HashSet<>();
             for (int i = 0; i < 6; i++) {
                 if (counter[i]) {
@@ -39,18 +39,30 @@ public class AnswerValidator {
         } while (!(counter[0] && counter[1] && counter[2] && counter[3] && counter[4] && counter[5]));
         for (int i = 0; i < 3; i++) {
             final SquareCoordinate currentPosition = getSquareCoordinate(i, 1);
-            final Map<Set<SquareCoordinate>, Set<SquareCoordinate>> targetVariations = new HashMap<>();
-            for (final Set<SquareCoordinate> variation : allAliveUnitVariations) {
-                targetVariations.put(variation, getCorrectTargetForFootman(currentPosition, variation));
+            final List<Set<SquareCoordinate>> targetVariations = new ArrayList<>();
+            for (final Set<SquareCoordinate> allAliveUnitVariation : allAliveUnitVariations) {
+                targetVariations.add(getCorrectTargetForFootman(currentPosition, allAliveUnitVariation));
             }
-            actionForFootman.put(currentPosition, targetVariations);
+            actionForFootman.add(targetVariations);
         }
     }
 
     public static @NotNull Set<SquareCoordinate> getCorrectTargetForFootmanFromHashMap(
             final @NotNull SquareCoordinate activeUnit,
             final @NotNull Set<SquareCoordinate> enemies) {
-        return actionForFootman.get(activeUnit).get(enemies);
+        return actionForFootman.get(activeUnit.getX()).get(getIndexOfVariations(enemies));
+    }
+
+    private static int getIndexOfVariations(final Set<SquareCoordinate> enemies) {
+        int multiplier = 1;
+        int index = -1;
+        for (int i = 0; i < 6; i++) {
+            if (enemies.contains(getSquareCoordinate(i))) {
+                index += multiplier;
+            }
+            multiplier *= 2;
+        }
+        return index;
     }
 
     public static @NotNull Set<SquareCoordinate> getCorrectTargetForFootman(
@@ -104,53 +116,4 @@ public class AnswerValidator {
         }
         return validateTarget;
     }
-
-    public static @NotNull Set<SquareCoordinate> getCorrectTargetForFootman(
-            final @NotNull SquareCoordinate activeUnit,
-            final @NotNull boolean[] enemy) {
-        final Set<SquareCoordinate> validateTarget = new HashSet<>();
-        for (int y = 1; y >= 0; y--) {
-            if (activeUnit.getX() == 1) {
-                validateTarget.addAll(getTargetForCentralUnit(enemy, y));
-            } else {
-                validateTarget.addAll(getTargetForFlankUnit(activeUnit.getX(), enemy, y));
-            }
-            if (!validateTarget.isEmpty()) {
-                break;
-            }
-        }
-        return validateTarget;
-    }
-
-    private static Set<SquareCoordinate> getTargetForFlankUnit(final int activeUnitX, final boolean[] enemies,
-                                                               final int y) {
-        final Set<SquareCoordinate> validateTarget = new HashSet<>();
-        if (enemies[1 + 3 * y]) {
-            validateTarget.add(getSquareCoordinate(1, y));
-        }
-        if (enemies[activeUnitX + 3 * y]) {
-            validateTarget.add(getSquareCoordinate(activeUnitX, y));
-        }
-        if (validateTarget.isEmpty()) {
-            final int x = activeUnitX == 2 ? 0 : 2;
-            if (enemies[x + 3 * y]) {
-                validateTarget.add(getSquareCoordinate(x, y));
-            }
-        }
-        return validateTarget;
-    }
-
-    /**
-     * Проверяем всю линию на наличие юнитов в армии противника
-     */
-    private static Set<SquareCoordinate> getTargetForCentralUnit(final boolean[] enemies, final int line) {
-        final Set<SquareCoordinate> validateTarget = new HashSet<>();
-        for (int x = 0; x < 3; x++) {
-            if (enemies[x + 3 * line]) {
-                validateTarget.add(getSquareCoordinate(x, line));
-            }
-        }
-        return validateTarget;
-    }
-
 }
