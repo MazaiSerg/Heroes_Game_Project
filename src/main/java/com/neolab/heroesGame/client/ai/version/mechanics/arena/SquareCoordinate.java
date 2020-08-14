@@ -2,7 +2,6 @@ package com.neolab.heroesGame.client.ai.version.mechanics.arena;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class SquareCoordinate {
 
@@ -67,6 +66,6 @@ public class SquareCoordinate {
 
     @Override
     public int hashCode() {
-        return Objects.hash(x, y);
+        return 1 + x + 10 * (y + 1);
     }
 }
