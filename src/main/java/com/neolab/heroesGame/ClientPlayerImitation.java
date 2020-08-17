@@ -3,8 +3,9 @@ package com.neolab.heroesGame;
 import com.neolab.heroesGame.arena.Army;
 import com.neolab.heroesGame.client.ai.Player;
 import com.neolab.heroesGame.client.ai.PlayerBot;
+import com.neolab.heroesGame.client.ai.PlayerFactory;
 import com.neolab.heroesGame.client.ai.PlayerHuman;
-import com.neolab.heroesGame.client.ai.version.first.MonteCarloBot;
+import com.neolab.heroesGame.client.ai.enums.BotType;
 import com.neolab.heroesGame.client.dto.ClientRequest;
 import com.neolab.heroesGame.client.dto.ExtendedServerResponse;
 import com.neolab.heroesGame.client.gui.IGraphics;
@@ -49,8 +50,8 @@ public class ClientPlayerImitation {
         return new ClientPlayerImitation(human, graphics);
     }
 
-    public static ClientPlayerImitation createSimpleBotWithoutRandom(final int playerId) {
-        final Player simpleBot = new MonteCarloBot(playerId);
+    public static ClientPlayerImitation createBot(final int playerId, final BotType type) {
+        final Player simpleBot = PlayerFactory.createPlayerBot(type, playerId);
         return new ClientPlayerImitation(simpleBot, new NullGraphics());
     }
 

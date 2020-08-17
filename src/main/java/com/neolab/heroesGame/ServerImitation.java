@@ -7,6 +7,7 @@ import com.neolab.heroesGame.arena.BattleArena;
 import com.neolab.heroesGame.arena.FactoryArmies;
 import com.neolab.heroesGame.arena.StringArmyFactory;
 import com.neolab.heroesGame.client.ai.Player;
+import com.neolab.heroesGame.client.ai.enums.BotType;
 import com.neolab.heroesGame.client.dto.ExtendedServerResponse;
 import com.neolab.heroesGame.enumerations.GameEvent;
 import com.neolab.heroesGame.server.answers.Answer;
@@ -32,7 +33,7 @@ public class ServerImitation {
     private int counter;
 
     public ServerImitation() throws Exception {
-        currentPlayer = ClientPlayerImitation.createSimpleBotWithoutRandom(1);
+        currentPlayer = ClientPlayerImitation.createBot(1, BotType.RANDOM);
         waitingPlayer = ClientPlayerImitation.createHumanPlayerWithAsciiGraphics(2, "Serg");
         battleArena = new BattleArena(FactoryArmies.generateArmies(1, 2));
         answerProcessor = new AnswerProcessor(1, 2, battleArena);

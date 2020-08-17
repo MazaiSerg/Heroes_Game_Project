@@ -2,6 +2,7 @@ package com.neolab.heroesGame.samplesSockets;
 
 import com.neolab.heroesGame.ClientPlayerImitation;
 import com.neolab.heroesGame.arena.StringArmyFactory;
+import com.neolab.heroesGame.client.ai.enums.BotType;
 import com.neolab.heroesGame.client.dto.ExtendedServerResponse;
 import com.neolab.heroesGame.enumerations.GameEvent;
 import com.neolab.heroesGame.enumerations.HeroErrorCode;
@@ -10,7 +11,6 @@ import com.neolab.heroesGame.errors.HeroExceptions;
 import java.io.*;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
-import java.util.Scanner;
 
 /**
  * Консольный многопользовательский чат.
@@ -167,10 +167,10 @@ public class Client {
 
     public static void main(final String[] args) throws IOException {
         final Client client = new Client(IP, PORT);
-        System.out.println("Введите ваше имя");
-        Scanner in = new Scanner(System.in);
-        String name =  in.nextLine();
-        client.player = ClientPlayerImitation.createCustomPlayer(0, name);
+        if (args.length == 0) {
+            throw new AssertionError();
+        }
+        client.player = ClientPlayerImitation.createBot(0, BotType.valueOf(args[0]));
         client.startClient();
     }
 }
