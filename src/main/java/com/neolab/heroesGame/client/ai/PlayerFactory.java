@@ -6,6 +6,7 @@ import com.neolab.heroesGame.client.ai.version.first.MinMaxWithoutTree;
 import com.neolab.heroesGame.client.ai.version.first.MonteCarloBot;
 import com.neolab.heroesGame.client.ai.version.second.ManyArmedBandit;
 import com.neolab.heroesGame.client.ai.version.second.ManyArmedWithoutTree;
+import com.neolab.heroesGame.client.ai.version.second.SuperDuperManyArmed;
 
 public final class PlayerFactory {
     private PlayerFactory() {
@@ -18,6 +19,7 @@ public final class PlayerFactory {
             case MONTE_CARLO -> new MonteCarloBot(id);
             case MANY_ARMED_BANDIT -> new ManyArmedBandit(id);
             case MANY_ARMED_BANDIT_WITH_RANDOM -> new ManyArmedWithoutTree(id);
+            case SUPER_DUPER_MANY_ARMED -> new SuperDuperManyArmed(id);
             case MIN_MAX_WITHOUT_TREE -> new MinMaxWithoutTree(id);
         };
     }

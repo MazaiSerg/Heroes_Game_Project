@@ -69,7 +69,8 @@ public class SelfPlayRoom extends Thread {
                         timeForSecond += System.currentTimeMillis() - start;
                     }
                 } catch (final Exception e) {
-                    throw new IllegalThreadStateException();
+                    LOGGER.error(e.toString());
+                    //throw new IllegalThreadStateException();
                 }
             }
             changeCurrentAndWaitingPlayers();

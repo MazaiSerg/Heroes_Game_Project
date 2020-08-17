@@ -92,10 +92,11 @@ public class AnalyzerTUI {
 
         final Map<String, List<Double>> info = analyzer.getAnalyzedInfoAboutPairPlayers(first, second);
         for (final String name : info.keySet()) {
-            System.out.printf("%-16s%10s%10s%10s\n", name, "win", "draw", "lose");
+            final String anotherName = name.equals(first) ? second : first;
+            System.out.printf("%-30s vs%10s%10s%10s\n", name, "win", "draw", "lose");
             final List<Double> winRate = info.get(name);
             if (!winRate.isEmpty()) {
-                System.out.printf("%16s%9.0f%%%9.0f%%%9.0f%% %10d матчей\n", "", winRate.get(0),
+                System.out.printf("%33s%9.0f%%%9.0f%%%9.0f%% %10d матчей\n\n", anotherName, winRate.get(0),
                         winRate.get(1), winRate.get(2), winRate.get(3).longValue());
             }
         }

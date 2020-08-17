@@ -11,15 +11,13 @@ import com.neolab.heroesGame.client.ai.enums.BotType;
 import com.neolab.heroesGame.errors.HeroExceptions;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.SynchronousQueue;
+import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.neolab.heroesGame.client.ai.enums.BotType.*;
 import static java.lang.Thread.sleep;
 
 public class SelfPlayServerForNight {
@@ -30,7 +28,10 @@ public class SelfPlayServerForNight {
     private static final Random RANDOM = new Random(SEED);
     private static final AtomicInteger countGame = new AtomicInteger(0);
     private static final AtomicInteger countEndGame = new AtomicInteger(0);
-    private static final Integer MAX_COUNT_GAME_ROOMS = 4;
+    private static final Integer MAX_COUNT_GAME_ROOMS = 3;
+    private static final Integer QUEUE_SIZE = 3;
+    private static final Integer MATCH_NUMBERS = 2 * NUMBER_TRIES * DIFFERENT_ARMIES
+            * BotType.values().length * (BotType.values().length - 1);
     final static long startTime = System.currentTimeMillis();
 
     /**
@@ -42,9 +43,14 @@ public class SelfPlayServerForNight {
      */
     public static void main(final String[] args) throws Exception {
         final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(0, MAX_COUNT_GAME_ROOMS,
-                0L, TimeUnit.SECONDS, new SynchronousQueue<>());
-        for (final BotType firstType : BotType.values()) {
-            for (final BotType secondType : BotType.values()) {
+                0L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(QUEUE_SIZE));
+        List<BotType> botTypeForTest = Arrays.asList(
+                MANY_ARMED_BANDIT_WITH_RANDOM,
+                SUPER_DUPER_MANY_ARMED,
+                MIN_MAX_WITHOUT_TREE,
+                MIN_MAX);
+        for (final BotType firstType : botTypeForTest) {
+            for (final BotType secondType : botTypeForTest) {
                 if (firstType.equals(secondType)) {
                     continue;
                 }
@@ -96,7 +102,7 @@ public class SelfPlayServerForNight {
      */
     private static void waitQueue(final ThreadPoolExecutor threadPoolExecutor) throws Exception {
         while (threadPoolExecutor.getActiveCount() >= MAX_COUNT_GAME_ROOMS) {
-            sleep(500);
+            sleep(100);
         }
         printTimeInformation(threadPoolExecutor.getActiveCount());
         countGame.incrementAndGet();
@@ -109,7 +115,7 @@ public class SelfPlayServerForNight {
      */
     private static void waitEnd(final ThreadPoolExecutor threadPoolExecutor) throws Exception {
         while (threadPoolExecutor.getActiveCount() > 0) {
-            sleep(500);
+            sleep(100);
             printTimeInformation(threadPoolExecutor.getActiveCount());
         }
     }
@@ -120,10 +126,10 @@ public class SelfPlayServerForNight {
             countGame.decrementAndGet();
             final long endTime = System.currentTimeMillis();
             final long timeNeed = (((endTime - startTime) / countEndGame.get())
-                    * (40 * DIFFERENT_ARMIES * NUMBER_TRIES - countEndGame.get())) / 1000;
+                    * (MATCH_NUMBERS - countEndGame.get())) / 1000;
             final int timeFromStart = (int) ((endTime - startTime) / 1000);
             System.out.printf("Прошло %d испытаний из %d. Прошло: %d секунд. Примерно осталось : %d секунд\n",
-                    countEndGame.get(), 40 * DIFFERENT_ARMIES * NUMBER_TRIES, timeFromStart, timeNeed);
+                    countEndGame.get(), MATCH_NUMBERS, timeFromStart, timeNeed);
         }
     }
 }
