@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
+import static com.neolab.heroesGame.client.ai.enums.BotType.RANDOM;
+
 public class PlayerHuman extends Player {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlayerHuman.class);
     private final IGraphics gui;
@@ -123,6 +125,12 @@ public class PlayerHuman extends Player {
             }
         }
         return makeStringArmiesFromMap(army);
+    }
+
+
+    @Override
+    public String getType() {
+        return RANDOM.toString();
     }
 
     private String makeStringArmiesFromMap(final Map<Integer, Hero> army) {

@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.neolab.heroesGame.client.ai.enums.BotType.MONTE_CARLO;
+
 /**
  * Бот, принимающий решение на основе многочисленных симуляций, в который выбор действия был случайным неравновероятным
  * На вероятность выбора действия влияет текущий винрейт, множитель действия и его эффективность.
@@ -93,6 +95,11 @@ public class MonteCarloBot extends Player {
     @Override
     public String getStringArmySecond(final int armySize, final com.neolab.heroesGame.arena.Army army) {
         return getStringArmyFirst(armySize);
+    }
+
+    @Override
+    public String getType() {
+        return MONTE_CARLO.toString();
     }
 
     /**

@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Random;
 
+import static com.neolab.heroesGame.client.ai.enums.BotType.MANY_ARMED_BANDIT;
+
 public class ManyArmedBandit extends Player {
     private static final String BOT_NAME = "Many Armed Bandit";
     private static final Logger LOGGER = LoggerFactory.getLogger(ManyArmedBandit.class);
@@ -66,6 +68,11 @@ public class ManyArmedBandit extends Player {
     @Override
     public String getStringArmySecond(final int armySize, final com.neolab.heroesGame.arena.Army army) {
         return getStringArmyFirst(armySize);
+    }
+
+    @Override
+    public String getType() {
+        return MANY_ARMED_BANDIT.toString();
     }
 
     /**

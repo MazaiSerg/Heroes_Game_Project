@@ -84,6 +84,11 @@ public class PlayerBot extends Player {
         return getStringArmyFirst(armySize);
     }
 
+    @Override
+    public String getType() {
+        return RANDOM.toString();
+    }
+
     protected SquareCoordinate chooseUnit(final Army army) {
         final Set<SquareCoordinate> availableHeroes = army.getAvailableHeroes().keySet();
         return availableHeroes.iterator().next();

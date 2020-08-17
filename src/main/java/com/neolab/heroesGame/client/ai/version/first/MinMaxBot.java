@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.neolab.heroesGame.client.ai.enums.BotType.MIN_MAX;
+
 public class MinMaxBot extends Player {
     private static final String BOT_NAME = "Min Max";
     private static final Logger LOGGER = LoggerFactory.getLogger(MinMaxBot.class);
@@ -59,6 +61,11 @@ public class MinMaxBot extends Player {
     @Override
     public String getStringArmySecond(final int armySize, final com.neolab.heroesGame.arena.Army army) {
         return getStringArmyFirst(armySize);
+    }
+
+    @Override
+    public String getType() {
+        return MIN_MAX.toString();
     }
 
     /**

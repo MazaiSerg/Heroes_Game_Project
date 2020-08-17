@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Random;
 
+import static com.neolab.heroesGame.client.ai.enums.BotType.SUPER_DUPER_MANY_ARMED;
 import static com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator.initializeHashMap;
 
 public class SuperDuperManyArmed extends Player {
@@ -92,6 +93,11 @@ public class SuperDuperManyArmed extends Player {
     @Override
     public String getStringArmySecond(final int armySize, final com.neolab.heroesGame.arena.Army army) {
         return getStringArmyFirst(armySize);
+    }
+
+    @Override
+    public String getType() {
+        return SUPER_DUPER_MANY_ARMED.toString();
     }
 
     /**
