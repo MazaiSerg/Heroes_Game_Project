@@ -18,6 +18,13 @@ import java.util.Random;
 import static com.neolab.heroesGame.client.ai.enums.BotType.SUPER_DUPER_MANY_ARMED;
 import static com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator.initializeHashTable;
 
+/**
+ * Бот на верхнем уровне выбирает действие с наивысшим преоритетом
+ * Преоритеты действий на верхнем уровне меняются в зависимости от результата и количества симуляция
+ * На последующих уровнях бот выбирает случайное равновероятное действие
+ * В качестве ответа бот отправляет действие с наивысшим преоритетом
+ * Во время симулация бот (!)учитывает возможность промахнуться и колебания урона
+ */
 public class SuperDuperManyArmed extends Player {
     private static final String BOT_NAME = "Super Duper Many Armed";
     private static final Logger LOGGER = LoggerFactory.getLogger(SuperDuperManyArmed.class);
@@ -75,6 +82,9 @@ public class SuperDuperManyArmed extends Player {
         return max;
     }
 
+    /**
+     * Используется на верхнем уровне
+     */
     private double[] countPriorityFunction(final double[] scores, final int[] simulationsCounter, final int counter) {
         final double[] priorityFunction = new double[scores.length];
         for (int i = 0; i < scores.length; i++) {
@@ -112,25 +122,23 @@ public class SuperDuperManyArmed extends Player {
 
         if (event == GameEvent.NOTHING_HAPPEN) {
             final List<Answer> actions = processor.getAllActionsForCurrentPlayer();
-            final int index = chooseAction(createActionsPriority(actions, processor));
+            final int index = chooseAction(createActionsPriority(actions));
             return recursiveSimulation(processor, actions.get(index), depth + 1);
         } else {
             return calculateHeuristic(processor.getBoard());
         }
     }
 
-    private double[] createActionsPriority(@NotNull final List<Answer> actions,
-                                           @NotNull final GameProcessor processor) {
+    /**
+     * Используется во всех уровнях кроме верхнего
+     */
+    private double[] createActionsPriority(@NotNull final List<Answer> actions) {
         final double[] actionPriority = new double[actions.size()];
-        actionPriority[0] = modify(actions.get(0), processor);
+        actionPriority[0] = 5;
         for (int i = 1; i < actionPriority.length; i++) {
-            actionPriority[i] = actionPriority[i - 1] + modify(actions.get(i), processor);
+            actionPriority[i] = actionPriority[i - 1] + 5;
         }
         return actionPriority;
-    }
-
-    private double modify(final Answer answer, final GameProcessor processor) {
-        return 5;
     }
 
     private int calculateHeuristic(final BattleArena arena) {

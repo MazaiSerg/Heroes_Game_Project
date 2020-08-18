@@ -19,6 +19,12 @@ import java.util.Random;
 
 import static com.neolab.heroesGame.client.ai.enums.BotType.MANY_ARMED_BANDIT;
 
+/**
+ * Бот на верхнем уровне выбирает случайное действие с постепенно меняющимися преоритетами
+ * На последующих уровнях бот выбирает случайное действие с постепенно меняющимися преоритетами
+ * В качестве ответа бот отправляет действие с наивысшим преоритетом
+ * Во время симулация бот не учитывает возможность промахнуться и колебания урона
+ */
 public class ManyArmedBandit extends Player {
     private static final String BOT_NAME = "Many Armed Bandit";
     private static final Logger LOGGER = LoggerFactory.getLogger(ManyArmedBandit.class);
@@ -104,18 +110,6 @@ public class ManyArmedBandit extends Player {
         //tree.increase(((processor.getActivePlayerId() == getId()) ? countScore(tree) : 15 - 1 * countScore(tree)));
         tree.increase(((processor.getActivePlayerId() == getId()) ? 1 : -1)
                 * calculateHeuristic(processor.getBoard()) + 18);
-    }
-
-    /**
-     * меняем результат с победы на поражение, чтобы разные игроки имели разные значения в узлах
-     */
-    private double countScore(final ManyArmedBanditTree tree) {
-        final double score = 5d / (((tree.getMaxDepth() - tree.getCurrentDepth()) / 2) + 1);
-        return switch (tree.getResultForBot()) {
-            case YOU_WIN_GAME -> 10 + score;
-            case YOU_LOSE_GAME -> 5 - score;
-            default -> 5;
-        };
     }
 
     private int calculateHeuristic(final BattleArena arena) {

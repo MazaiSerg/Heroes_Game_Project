@@ -18,6 +18,12 @@ import java.util.Random;
 import static com.neolab.heroesGame.client.ai.enums.BotType.MANY_ARMED_BANDIT_WITH_RANDOM;
 import static com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator.initializeHashTable;
 
+/**
+ * Бот на верхнем уровне выбирает случайное действие с постепенно меняющимися преоритетами
+ * На последующих уровнях бот выбирает случайное равновероятное действие
+ * В качестве ответа бот отправляет действие с наивысшим преоритетом
+ * Во время симулация бот (!)учитывает возможность промахнуться и колебания урона
+ */
 public class ManyArmedWithoutTree extends Player {
     private static final String BOT_NAME = "Many Armed With Random";
     private static final Logger LOGGER = LoggerFactory.getLogger(ManyArmedWithoutTree.class);
@@ -75,6 +81,17 @@ public class ManyArmedWithoutTree extends Player {
         return max;
     }
 
+    /**
+     * Формируем функцию распределения вероятностей выбора действия.
+     * Если симуляций еще не было, то функция плотности вероятностей равномерная. Приоретет каждого действия равен базовым очкам
+     * Если симуляции были, то функция плотностей зависит от количества испытаний, где использовалось выбранное
+     * действие, от общего количества испытаний и от среднего количества очков, которые приносит выбранное действие
+     *
+     * @param scores             среднее количество очков для i-го действия
+     * @param simulationsCounter количество симуляций для i-го действия
+     * @param counter            общее количество симуляций
+     * @return ненормированная функция распределения вероятностей
+     */
     private double[] countPriorityFunction(final double[] scores, final int[] simulationsCounter, final int counter) {
         final double[] priorityFunction = new double[scores.length];
         if (counter == 0) {
@@ -115,32 +132,31 @@ public class ManyArmedWithoutTree extends Player {
      *
      * @param processor процессор, который моделирует поведение игрового движка
      */
-    private int recursiveSimulation(final GameProcessor processor, final Answer action, final int depth) throws HeroExceptions {
+    private int recursiveSimulation(final GameProcessor processor, final Answer action,
+                                    final int depth) throws HeroExceptions {
 
         processor.handleAnswer(action);
         final GameEvent event = processor.matchOver();
 
         if (event == GameEvent.NOTHING_HAPPEN) {
             final List<Answer> actions = processor.getAllActionsForCurrentPlayer();
-            final int index = chooseAction(createActionsPriority(actions, processor));
+            final int index = chooseAction(createActionsPriority(actions));
             return recursiveSimulation(processor, actions.get(index), depth + 1);
         } else {
             return calculateHeuristic(processor.getBoard());
         }
     }
 
-    private double[] createActionsPriority(@NotNull final List<Answer> actions,
-                                           @NotNull final GameProcessor processor) {
+    /**
+     * Формируем ненормированную равновероятную функцию распределения вероятностей
+     */
+    private double[] createActionsPriority(@NotNull final List<Answer> actions) {
         final double[] actionPriority = new double[actions.size()];
-        actionPriority[0] = modify(actions.get(0), processor);
+        actionPriority[0] = 5d;
         for (int i = 1; i < actionPriority.length; i++) {
-            actionPriority[i] = actionPriority[i - 1] + modify(actions.get(i), processor);
+            actionPriority[i] = actionPriority[i - 1] + 5d;
         }
         return actionPriority;
-    }
-
-    private double modify(final Answer answer, final GameProcessor processor) {
-        return 5;
     }
 
     private int calculateHeuristic(final BattleArena arena) {
