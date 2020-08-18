@@ -6,7 +6,10 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.neolab.heroesGame.enumerations.GameEvent.YOU_LOSE_GAME;
 import static com.neolab.heroesGame.enumerations.GameEvent.YOU_WIN_GAME;
@@ -20,6 +23,12 @@ public class RatingElo {
         this.ratingMap = ratingMap;
     }
 
+    /**
+     * Создает карту рейтинга ботов, читая старые значения из файла для сохранения
+     * Если среди BotType появился новый тип, то добавляет его с рейтингом START_RATING
+     *
+     * @return объект класса
+     */
     static public RatingElo createRatingEloForBot() {
         final Map<String, Integer> ratingMap = readFromFile();
         for (final BotType type : BotType.values()) {
@@ -30,6 +39,12 @@ public class RatingElo {
         return new RatingElo(ratingMap);
     }
 
+    /**
+     * Создает карту рейтинга по списку имен. Всем присваивается START_RATING
+     *
+     * @param names список имен, которые будут бороться друг с другом
+     * @return объект класса
+     */
     static public RatingElo createRatingElo(final List<String> names) {
         final Map<String, Integer> ratingMap = new HashMap<>();
         for (final String name : names) {
@@ -49,7 +64,7 @@ public class RatingElo {
             result = reader.readAll();
         } catch (final Exception e) {
             e.printStackTrace();
-            return Collections.emptyMap();
+            return ratingMap;
         }
         for (final String[] pair : result) {
             ratingMap.put(pair[0], Integer.parseInt(pair[1]));
@@ -57,6 +72,16 @@ public class RatingElo {
         return ratingMap;
     }
 
+    /**
+     * Подбирает соперников для выбранного игрока. В соперники пойдут игроки:
+     * с таким же рейтингом,
+     * игрок, стоящий на 1 позицию ниже,
+     * игрок, стоящий на 1 позицию выше
+     * Для самого слабого и самого сильного игроков подбирается только 1 соперник с отличным рейтингом
+     *
+     * @param name имя игрока, которому ищем оппонентов
+     * @return список имен игроков, коотрые подошли под условие отбора
+     */
     public List<String> getOpponents(final String name) {
         if (!ratingMap.containsKey(name)) {
             ratingMap.put(name, START_RATING);
@@ -106,6 +131,20 @@ public class RatingElo {
         }
     }
 
+    /**
+     * Обновляем рейтинг по правилам, близким к Эло:
+     * ожидаем результат рассчитываем как Эло
+     * коэффициент берем по следующим правилам:
+     * рейтинг > 2400 - 20
+     * рейтинг (1500, 2400] - 30
+     * рейтинг [600, 1500] - 40
+     * рейтинг < 600 - 50
+     * Очередность игроков не влияет на подсчет очков (пока не влияет!!)
+     *
+     * @param firstOne  один из игроков
+     * @param secondOne второй из игроков
+     * @param event     результат для первого(!) игрока
+     */
     public synchronized void refreshRating(final String firstOne, final String secondOne, final GameEvent event) {
         if (!ratingMap.containsKey(firstOne)) {
             ratingMap.put(firstOne, START_RATING);

@@ -31,8 +31,10 @@ public class SelfPlayRoomFroCorrectingElo extends Thread {
      * @param arena        арена, в которой содержатся армии с правильным id
      * @param firstPlayer  игрок, который походит первым в этот матче
      * @param secondPlayer походит вторым
+     * @param ratingElo    текущий рейтинг Эло
      */
-    public SelfPlayRoomFroCorrectingElo(final BattleArena arena, final Player firstPlayer, final Player secondPlayer, final RatingElo ratingElo) {
+    public SelfPlayRoomFroCorrectingElo(final BattleArena arena, final Player firstPlayer,
+                                        final Player secondPlayer, final RatingElo ratingElo) {
         this.firstPlayer = firstPlayer;
         this.secondPlayer = secondPlayer;
         currentPlayer = firstPlayer;
@@ -129,6 +131,7 @@ public class SelfPlayRoomFroCorrectingElo extends Thread {
 
     /**
      * записываем результаты действия в лог и файл для сбора статистики
+     * обновляем рейтинг игроков
      */
     private void endMatchActivity() {
         final Optional<Player> whoIsWin = someoneWhoWin();

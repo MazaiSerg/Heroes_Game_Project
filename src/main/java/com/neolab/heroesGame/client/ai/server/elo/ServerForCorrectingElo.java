@@ -30,7 +30,20 @@ public class ServerForCorrectingElo {
     private static final Integer MAX_COUNT_GAME_ROOMS = 3;
     private static final Integer STEP_NUMBERS = 5;
     private static long startTime;
+    private static final List<String> armies = CommonFunction.getAllAvailableArmiesCode(ARMY_SIZE);
 
+    /**
+     * 1. Загружаем рейтинг Эло
+     * 2. Формируем список ботов, для которых будут подбираться пары (в качестве пары может быть выбран и бот вне списка)
+     * пары могут повторяться, если игроки стоят рядом по рейтингу Эло и оба присутствуют в списке ботов, для которых
+     * подбираются соперники
+     * 3. Проводим STEP_NUMBERS итераций корректировки рейтинга
+     * 3.1. подбираем оппонентов для всех ботов из списка (пункт 2)
+     * 3.2. Формируем очередь задач с помощью функции getQueue()
+     * 3.3. проводим все матчи из очереди
+     *
+     * @param args не использует входные параметры
+     */
     public static void main(final String[] args) throws Exception {
         final RatingElo ratingElo = RatingElo.createRatingEloForBot();
         final BotType[] bots = {MONTE_CARLO,
@@ -47,16 +60,25 @@ public class ServerForCorrectingElo {
                 matching.put(type, ratingElo.getOpponents(type.toString()));
             }
             startTime = System.currentTimeMillis();
-            final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(MAX_COUNT_GAME_ROOMS, MAX_COUNT_GAME_ROOMS,
-                    0L, TimeUnit.SECONDS, getQueue(matching, ratingElo));
+            final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(MAX_COUNT_GAME_ROOMS,
+                    MAX_COUNT_GAME_ROOMS, 0L, TimeUnit.SECONDS, getQueue(matching, ratingElo));
             threadPoolExecutor.prestartAllCoreThreads();
             waitEnd(threadPoolExecutor);
             ratingElo.saveRating();
             System.out.printf("На %d потрачено %dс\n", stepCounter + 1, (System.currentTimeMillis() - startTime) / 1000);
+            threadPoolExecutor.shutdown();
         }
-        return;
     }
 
+    /**
+     * Формируем очередь задач. Для каждой пары создаем две комнаты с одинаковыми стартовыми услвиями. В разной комнате
+     * разный игрок ходит первым
+     *
+     * @param matching  набор соперников для каждого бота
+     * @param ratingElo текущийй рейтинг Эло
+     * @return ArrayBlockingQueue с комнатами для всех матчей
+     * @throws Exception может появиться при создании армий
+     */
     private static BlockingQueue<Runnable> getQueue(final Map<BotType, List<String>> matching,
                                                     final RatingElo ratingElo) throws Exception {
         final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(2100);
@@ -78,13 +100,11 @@ public class ServerForCorrectingElo {
 
     /**
      * создаем арену со случайными армиями, для этого:
-     * формируем все возможные армии заданного размера
-     * выбираем одну из них случайным образом
+     * выбираем одну из армий случайным образом из всех доступных
      *
-     * @return созданная арена со случайными армиями
+     * @return созданная арена со случайными одинаковыми армиями
      */
     private static BattleArena CreateBattleArena() throws IOException, HeroExceptions {
-        final List<String> armies = CommonFunction.getAllAvailableArmiesCode(ARMY_SIZE);
         final String stringArmy = armies.get(RANDOM.nextInt(armies.size()));
         final Army army = new StringArmyFactory(stringArmy).create();
         final Map<Integer, Army> mapArmies = new HashMap<>();
@@ -105,6 +125,9 @@ public class ServerForCorrectingElo {
         }
     }
 
+    /**
+     * раз в некоторое время маякуем в консоль, что все работает. Показываем информацию сколько сделано, сколько осталось
+     */
     private static void printTimeInformation(final ThreadPoolExecutor threadPoolExecutor) {
         final long endTime = System.currentTimeMillis();
         final long completed = threadPoolExecutor.getCompletedTaskCount();
