@@ -2,6 +2,7 @@ package com.neolab.heroesGame.client.ai.version.third;
 
 import com.neolab.heroesGame.aditional.CommonFunction;
 import com.neolab.heroesGame.client.ai.Player;
+import com.neolab.heroesGame.client.ai.enums.BotType;
 import com.neolab.heroesGame.client.ai.version.mechanics.GameProcessor;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.Answer;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.Army;
@@ -29,6 +30,7 @@ public class MultiArmedWIthCoefficient extends Player {
     private final Random RANDOM = new Random(SEED);
     private int currentRound = -1;
     private List<Double> geneticCoefficients;
+    private static boolean isEvolve = false;
     private String genotype = "ADMH";
 
     public MultiArmedWIthCoefficient(final int id) {
@@ -58,6 +60,10 @@ public class MultiArmedWIthCoefficient extends Player {
             }
         }
         return coefficients;
+    }
+
+    static public void startEvolve() {
+        isEvolve = true;
     }
 
     public String getGenotype() {
@@ -143,7 +149,10 @@ public class MultiArmedWIthCoefficient extends Player {
 
     @Override
     public String getType() {
-        return getGenotype();
+        if (isEvolve) {
+            return getGenotype();
+        }
+        return BotType.MULTI_ARMED_WITH_COEFFICIENTS.toString();
     }
 
     /**

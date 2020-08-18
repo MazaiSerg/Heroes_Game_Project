@@ -40,6 +40,7 @@ public class Evolver {
         genomes.add(mutate(START_GENOME));
         genomes.add(mutate(START_GENOME));
         genomes.add(mutate(START_GENOME));
+        MultiArmedWIthCoefficient.startEvolve();
         for (int i = 0; i < 2; i++) {
             final RatingElo ratingElo = RatingElo.createRatingElo(genomes);
             for (int stepCounter = 0; stepCounter < STEP_NUMBERS; stepCounter++) {
@@ -53,6 +54,7 @@ public class Evolver {
                 threadPoolExecutor.prestartAllCoreThreads();
                 waitEnd(threadPoolExecutor);
                 System.out.printf("На %d потрачено %dс\n", stepCounter + 1, (System.currentTimeMillis() - startTime) / 1000);
+                threadPoolExecutor.shutdown();
             }
             ratingElo.printRating();
             genomes = evolveGenomes(ratingElo.getTwoBest());
