@@ -29,7 +29,7 @@ public class ManyArmedBandit extends Player {
 
     public ManyArmedBandit(final int id) {
         super(id, BOT_NAME);
-        AnswerValidator.initializeHashMap();
+        AnswerValidator.initializeHashTable();
     }
 
     @Override

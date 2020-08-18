@@ -33,7 +33,7 @@ public class MinMaxWithoutTree extends Player {
 
     public MinMaxWithoutTree(final int id) {
         super(id, BOT_NAME);
-        AnswerValidator.initializeHashMap();
+        AnswerValidator.initializeHashTable();
     }
 
     @Override

@@ -18,7 +18,10 @@ public class AnswerValidator {
         actionForFootman = new ArrayList<>();
     }
 
-    public static void initializeHashMap() {
+    /**
+     * Формируем хэш-таблицу для доступных целей мечников
+     */
+    public static void initializeHashTable() {
         if (isInitialize) {
             return;
         }

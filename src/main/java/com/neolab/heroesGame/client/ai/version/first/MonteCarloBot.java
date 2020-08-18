@@ -43,7 +43,7 @@ public class MonteCarloBot extends Player {
     public MonteCarloBot(final int id) {
         super(id, BOT_NAME);
         geneticCoefficients = createCoefficient();
-        AnswerValidator.initializeHashMap();
+        AnswerValidator.initializeHashTable();
     }
 
     /**

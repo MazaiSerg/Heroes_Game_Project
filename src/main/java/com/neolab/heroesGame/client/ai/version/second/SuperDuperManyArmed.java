@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Random;
 
 import static com.neolab.heroesGame.client.ai.enums.BotType.SUPER_DUPER_MANY_ARMED;
-import static com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator.initializeHashMap;
+import static com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator.initializeHashTable;
 
 public class SuperDuperManyArmed extends Player {
     private static final String BOT_NAME = "Super Duper Many Armed";
@@ -30,7 +30,7 @@ public class SuperDuperManyArmed extends Player {
 
     public SuperDuperManyArmed(final int id) {
         super(id, BOT_NAME);
-        initializeHashMap();
+        initializeHashTable();
     }
 
     @Override

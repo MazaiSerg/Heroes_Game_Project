@@ -32,7 +32,7 @@ public class MinMaxBot extends Player {
 
     public MinMaxBot(final int id) {
         super(id, BOT_NAME);
-        AnswerValidator.initializeHashMap();
+        AnswerValidator.initializeHashTable();
     }
 
     @Override

@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Random;
 
 import static com.neolab.heroesGame.client.ai.enums.BotType.MANY_ARMED_BANDIT_WITH_RANDOM;
-import static com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator.initializeHashMap;
+import static com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator.initializeHashTable;
 
 public class ManyArmedWithoutTree extends Player {
     private static final String BOT_NAME = "Many Armed With Random";
@@ -30,7 +30,7 @@ public class ManyArmedWithoutTree extends Player {
 
     public ManyArmedWithoutTree(final int id) {
         super(id, BOT_NAME);
-        initializeHashMap();
+        initializeHashTable();
     }
 
     @Override

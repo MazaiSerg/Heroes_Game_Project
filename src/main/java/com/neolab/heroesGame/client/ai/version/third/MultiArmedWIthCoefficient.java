@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator.initializeHashMap;
+import static com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator.initializeHashTable;
 
 public class MultiArmedWIthCoefficient extends Player {
     private static final String BOT_NAME = "Many Armed With Coefficients";
@@ -36,7 +36,7 @@ public class MultiArmedWIthCoefficient extends Player {
     public MultiArmedWIthCoefficient(final int id) {
         super(id, BOT_NAME);
         geneticCoefficients = updateCoefficient();
-        initializeHashMap();
+        initializeHashTable();
     }
 
     /**
