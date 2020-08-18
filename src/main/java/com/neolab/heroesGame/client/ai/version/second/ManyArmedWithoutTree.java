@@ -20,7 +20,7 @@ import static com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator.
 
 public class ManyArmedWithoutTree extends Player {
     private static final String BOT_NAME = "Many Armed With Random";
-    private static final Logger LOGGER = LoggerFactory.getLogger(ManyArmedBandit.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManyArmedWithoutTree.class);
     private static final int TIME_TO_THINK = 900;
     private static final double LN_2D = Math.log(2d);
     private static final boolean USE_RANDOM = true;

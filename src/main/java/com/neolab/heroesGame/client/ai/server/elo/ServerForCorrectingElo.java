@@ -20,36 +20,41 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import static com.neolab.heroesGame.client.ai.enums.BotType.*;
 import static java.lang.Thread.sleep;
 
-public class SelfPlayServer {
+public class ServerForCorrectingElo {
     public static final Integer ARMY_SIZE = StatisticWriter.ARMY_SIZE;
-    private static final long SEED = 456123;
+    private static final long SEED = 156517;
     private static final Random RANDOM = new Random(SEED);
     private static final Integer MAX_COUNT_GAME_ROOMS = 3;
-    private static final Integer STEP_NUMBERS = 100;
-    final static long startTime = System.currentTimeMillis();
+    private static final Integer STEP_NUMBERS = 5;
+    private static long startTime;
 
-    /**
-     * Стравливаем двух ботов по NUMBER_TRIES каждой из DIFFERENT_ARMIES различных армий
-     * Боты сражаются одинаковыми армиями
-     * Право первого хода постоянно передается друг другу
-     * Всего боты сыграют 2 * NUMBER_TRIES * DIFFERENT_ARMIES партий, каждый будет ходить первым ровно в половине случаев
-     * Типы ботов задаются один раз до цикла
-     */
     public static void main(final String[] args) throws Exception {
         RatingElo ratingElo = RatingElo.createRatingEloForBot();
+        BotType[] bots = {MONTE_CARLO,
+                MANY_ARMED_BANDIT,
+                MANY_ARMED_BANDIT_WITH_RANDOM,
+                SUPER_DUPER_MANY_ARMED,
+                MULTI_ARMED_WITH_COEFFICIENTS,
+                MIN_MAX,
+                MIN_MAX_WITHOUT_TREE,
+                BotType.RANDOM};
         for (int stepCounter = 0; stepCounter < STEP_NUMBERS; stepCounter++) {
             Map<BotType, List<String>> matching = new HashMap<>();
-            for (BotType type : BotType.values()) {
+            for (BotType type : bots) {
                 matching.put(type, ratingElo.getOpponents(type.toString()));
             }
+            startTime = System.currentTimeMillis();
             final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(MAX_COUNT_GAME_ROOMS, MAX_COUNT_GAME_ROOMS,
                     0L, TimeUnit.SECONDS, getQueue(matching, ratingElo));
             threadPoolExecutor.prestartAllCoreThreads();
             waitEnd(threadPoolExecutor);
             ratingElo.saveRating();
+            System.out.printf("На %d потрачено %dс\n", stepCounter + 1, (System.currentTimeMillis() - startTime) / 1000);
         }
+        return;
     }
 
     private static BlockingQueue<Runnable> getQueue(final Map<BotType, List<String>> matching,
@@ -61,11 +66,11 @@ public class SelfPlayServer {
 
                 final Player firstPlayer1 = PlayerFactory.createPlayerBot(type, 1);
                 final Player secondPlayer1 = PlayerFactory.createPlayerBot(BotType.valueOf(name), 2);
-                queue.add(new SelfPlayRoom(arena.getCopy(), firstPlayer1, secondPlayer1, ratingElo));
+                queue.add(new SelfPlayRoomFroCorrectingElo(arena.getCopy(), firstPlayer1, secondPlayer1, ratingElo));
 
                 final Player firstPlayer2 = PlayerFactory.createPlayerBot(BotType.valueOf(name), 2);
                 final Player secondPlayer2 = PlayerFactory.createPlayerBot(type, 1);
-                queue.add(new SelfPlayRoom(arena.getCopy(), firstPlayer2, secondPlayer2, ratingElo));
+                queue.add(new SelfPlayRoomFroCorrectingElo(arena.getCopy(), firstPlayer2, secondPlayer2, ratingElo));
             }
         }
         return queue;
@@ -102,10 +107,14 @@ public class SelfPlayServer {
 
     private static void printTimeInformation(final ThreadPoolExecutor threadPoolExecutor) {
         final long endTime = System.currentTimeMillis();
-        final long timeNeed = (((endTime - startTime) / threadPoolExecutor.getCompletedTaskCount())
-                * (threadPoolExecutor.getTaskCount() - threadPoolExecutor.getCompletedTaskCount())) / 1000;
+        long completed = threadPoolExecutor.getCompletedTaskCount();
+        if (completed == 0) {
+            return;
+        }
+        final long timeNeed = (((endTime - startTime) / completed)
+                * (threadPoolExecutor.getTaskCount() - completed)) / 1000;
         final int timeFromStart = (int) ((endTime - startTime) / 1000);
         System.out.printf("Прошло %d испытаний из %d. Прошло: %d секунд. Примерно осталось : %d секунд\n",
-                threadPoolExecutor.getCompletedTaskCount(), threadPoolExecutor.getTaskCount(), timeFromStart, timeNeed);
+                completed, threadPoolExecutor.getTaskCount(), timeFromStart, timeNeed);
     }
 }

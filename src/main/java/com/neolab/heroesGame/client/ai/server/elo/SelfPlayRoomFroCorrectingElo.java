@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Optional;
 
-public class SelfPlayRoom extends Thread {
+public class SelfPlayRoomFroCorrectingElo extends Thread {
     public static final Integer MAX_ROUND = 15;
     private static final Logger LOGGER = LoggerFactory.getLogger(com.neolab.heroesGame.client.ai.server.SelfPlayRoom.class);
     private final Player firstPlayer;
@@ -32,7 +32,7 @@ public class SelfPlayRoom extends Thread {
      * @param firstPlayer  игрок, который походит первым в этот матче
      * @param secondPlayer походит вторым
      */
-    public SelfPlayRoom(final BattleArena arena, final Player firstPlayer, final Player secondPlayer, final RatingElo ratingElo) {
+    public SelfPlayRoomFroCorrectingElo(final BattleArena arena, final Player firstPlayer, final Player secondPlayer, final RatingElo ratingElo) {
         this.firstPlayer = firstPlayer;
         this.secondPlayer = secondPlayer;
         currentPlayer = firstPlayer;

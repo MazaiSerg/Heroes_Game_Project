@@ -30,6 +30,14 @@ public class RatingElo {
         return new RatingElo(ratingMap);
     }
 
+    static public RatingElo createRatingElo(List<String> names) {
+        final Map<String, Integer> ratingMap = new HashMap<>();
+        for (String name : names) {
+            ratingMap.put(name, START_RATING);
+        }
+        return new RatingElo(ratingMap);
+    }
+
     private static Map<String, Integer> readFromFile() {
         final File csvInputFile = new File(FILE_TO_SAVE);
         final Map<String, Integer> ratingMap = new HashMap<>();
@@ -67,7 +75,7 @@ public class RatingElo {
             } else if ((rating > ratingMap.get(opponent))
                     && (bottom == null || ratingMap.get(bottom) < ratingMap.get(opponent))) {
                 bottom = opponent;
-            } else {
+            } else if (rating == ratingMap.get(opponent)) {
                 result.add(opponent);
             }
         }
@@ -92,6 +100,12 @@ public class RatingElo {
         }
     }
 
+    public void printRating() {
+        for (String name : ratingMap.keySet()) {
+            System.out.printf("%s - %d\n", name, ratingMap.get(name));
+        }
+    }
+
     public synchronized void refreshRating(final String firstOne, final String secondOne, final GameEvent event) {
         if (!ratingMap.containsKey(firstOne)) {
             ratingMap.put(firstOne, START_RATING);
@@ -103,7 +117,7 @@ public class RatingElo {
                 * ((event == YOU_LOSE_GAME ? 0 : event == YOU_WIN_GAME ? 1 : 0.5)
                 - getExpectedPoints(firstOne, secondOne)));
         final int secondRating = ratingMap.get(secondOne) + (int) (getCoefficient(secondOne)
-                * ((event == YOU_LOSE_GAME ? 0 : event == YOU_WIN_GAME ? 1 : 0.5)
+                * ((event == YOU_LOSE_GAME ? 1 : event == YOU_WIN_GAME ? 0 : 0.5)
                 - getExpectedPoints(secondOne, firstOne)));
         ratingMap.put(firstOne, firstRating);
         ratingMap.put(secondOne, secondRating);
@@ -123,5 +137,18 @@ public class RatingElo {
             return 50;
         }
         return 40;
+    }
+
+    public String[] getTwoBest() {
+        String[] twoBest = new String[2];
+        for (String name : ratingMap.keySet()) {
+            if (twoBest[1] == null || ratingMap.get(name) < ratingMap.get(twoBest[1])) {
+                twoBest[0] = twoBest[1];
+                twoBest[1] = name;
+            } else if (twoBest[0] == null || ratingMap.get(twoBest[0]) < ratingMap.get(name)) {
+                twoBest[0] = name;
+            }
+        }
+        return twoBest;
     }
 }

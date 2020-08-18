@@ -4,6 +4,7 @@ import com.neolab.heroesGame.aditional.CommonFunction;
 import com.neolab.heroesGame.arena.Army;
 import com.neolab.heroesGame.arena.BattleArena;
 import com.neolab.heroesGame.arena.SquareCoordinate;
+import com.neolab.heroesGame.client.ai.enums.BotType;
 import com.neolab.heroesGame.enumerations.HeroActions;
 import com.neolab.heroesGame.enumerations.HeroErrorCode;
 import com.neolab.heroesGame.errors.HeroExceptions;
@@ -86,7 +87,7 @@ public class PlayerBot extends Player {
 
     @Override
     public String getType() {
-        return RANDOM.toString();
+        return BotType.RANDOM.toString();
     }
 
     protected SquareCoordinate chooseUnit(final Army army) {
