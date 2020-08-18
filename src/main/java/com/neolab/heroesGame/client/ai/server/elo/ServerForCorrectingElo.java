@@ -32,8 +32,8 @@ public class ServerForCorrectingElo {
     private static long startTime;
 
     public static void main(final String[] args) throws Exception {
-        RatingElo ratingElo = RatingElo.createRatingEloForBot();
-        BotType[] bots = {MONTE_CARLO,
+        final RatingElo ratingElo = RatingElo.createRatingEloForBot();
+        final BotType[] bots = {MONTE_CARLO,
                 MANY_ARMED_BANDIT,
                 MANY_ARMED_BANDIT_WITH_RANDOM,
                 SUPER_DUPER_MANY_ARMED,
@@ -42,8 +42,8 @@ public class ServerForCorrectingElo {
                 MIN_MAX_WITHOUT_TREE,
                 BotType.RANDOM};
         for (int stepCounter = 0; stepCounter < STEP_NUMBERS; stepCounter++) {
-            Map<BotType, List<String>> matching = new HashMap<>();
-            for (BotType type : bots) {
+            final Map<BotType, List<String>> matching = new HashMap<>();
+            for (final BotType type : bots) {
                 matching.put(type, ratingElo.getOpponents(type.toString()));
             }
             startTime = System.currentTimeMillis();
@@ -58,10 +58,10 @@ public class ServerForCorrectingElo {
     }
 
     private static BlockingQueue<Runnable> getQueue(final Map<BotType, List<String>> matching,
-                                                    RatingElo ratingElo) throws Exception {
-        BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(2100);
-        for (BotType type : matching.keySet()) {
-            for (String name : matching.get(type)) {
+                                                    final RatingElo ratingElo) throws Exception {
+        final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(2100);
+        for (final BotType type : matching.keySet()) {
+            for (final String name : matching.get(type)) {
                 final BattleArena arena = CreateBattleArena();
 
                 final Player firstPlayer1 = PlayerFactory.createPlayerBot(type, 1);
@@ -107,7 +107,7 @@ public class ServerForCorrectingElo {
 
     private static void printTimeInformation(final ThreadPoolExecutor threadPoolExecutor) {
         final long endTime = System.currentTimeMillis();
-        long completed = threadPoolExecutor.getCompletedTaskCount();
+        final long completed = threadPoolExecutor.getCompletedTaskCount();
         if (completed == 0) {
             return;
         }

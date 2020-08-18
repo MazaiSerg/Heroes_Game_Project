@@ -30,9 +30,9 @@ public class RatingElo {
         return new RatingElo(ratingMap);
     }
 
-    static public RatingElo createRatingElo(List<String> names) {
+    static public RatingElo createRatingElo(final List<String> names) {
         final Map<String, Integer> ratingMap = new HashMap<>();
-        for (String name : names) {
+        for (final String name : names) {
             ratingMap.put(name, START_RATING);
         }
         return new RatingElo(ratingMap);
@@ -57,15 +57,15 @@ public class RatingElo {
         return ratingMap;
     }
 
-    public List<String> getOpponents(String name) {
+    public List<String> getOpponents(final String name) {
         if (!ratingMap.containsKey(name)) {
             ratingMap.put(name, START_RATING);
         }
-        int rating = ratingMap.get(name);
+        final int rating = ratingMap.get(name);
         String bottom = null;
         String upper = null;
-        List<String> result = new ArrayList<>();
-        for (String opponent : ratingMap.keySet()) {
+        final List<String> result = new ArrayList<>();
+        for (final String opponent : ratingMap.keySet()) {
             if (opponent.equals(name)) {
                 continue;
             }
@@ -90,18 +90,18 @@ public class RatingElo {
 
     public void saveRating() {
         try (final CSVWriter writer = new CSVWriter(new PrintWriter(new FileWriter(FILE_TO_SAVE, true)))) {
-            for (String name : ratingMap.keySet()) {
+            for (final String name : ratingMap.keySet()) {
                 final String[] data = {name, String.valueOf(ratingMap.get(name))};
                 writer.writeNext(data);
             }
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             ex.printStackTrace();
             throw new AssertionError();
         }
     }
 
     public void printRating() {
-        for (String name : ratingMap.keySet()) {
+        for (final String name : ratingMap.keySet()) {
             System.out.printf("%s - %d\n", name, ratingMap.get(name));
         }
     }
@@ -140,8 +140,8 @@ public class RatingElo {
     }
 
     public String[] getTwoBest() {
-        String[] twoBest = new String[2];
-        for (String name : ratingMap.keySet()) {
+        final String[] twoBest = new String[2];
+        for (final String name : ratingMap.keySet()) {
             if (twoBest[1] == null || ratingMap.get(name) < ratingMap.get(twoBest[1])) {
                 twoBest[0] = twoBest[1];
                 twoBest[1] = name;

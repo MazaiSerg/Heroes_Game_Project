@@ -41,10 +41,10 @@ public class Evolver {
         genomes.add(mutate(START_GENOME));
         genomes.add(mutate(START_GENOME));
         for (int i = 0; i < 2; i++) {
-            RatingElo ratingElo = RatingElo.createRatingElo(genomes);
+            final RatingElo ratingElo = RatingElo.createRatingElo(genomes);
             for (int stepCounter = 0; stepCounter < STEP_NUMBERS; stepCounter++) {
-                Map<String, List<String>> matching = new HashMap<>();
-                for (String genome : genomes) {
+                final Map<String, List<String>> matching = new HashMap<>();
+                for (final String genome : genomes) {
                     matching.put(genome, ratingElo.getOpponents(genome));
                 }
                 startTime = System.currentTimeMillis();
@@ -60,8 +60,8 @@ public class Evolver {
         return;
     }
 
-    private static List<String> evolveGenomes(String[] twoBest) {
-        List<String> genomes = new ArrayList<>(6);
+    private static List<String> evolveGenomes(final String[] twoBest) {
+        final List<String> genomes = new ArrayList<>(6);
         genomes.add(twoBest[1]);
         genomes.add(twoBest[0]);
         genomes.add(mutate(twoBest[1]));
@@ -71,8 +71,8 @@ public class Evolver {
         return genomes;
     }
 
-    private static String makeHybrid(String firstOne, String SecondOne) {
-        char[] newOne = new char[4];
+    private static String makeHybrid(final String firstOne, final String SecondOne) {
+        final char[] newOne = new char[4];
         for (int i = 0; i < 2; i++) {
             newOne[i] = firstOne.charAt(i);
             newOne[2 + i] = SecondOne.charAt(2 + i);
@@ -80,20 +80,20 @@ public class Evolver {
         return mutate(String.valueOf(newOne));
     }
 
-    private static String mutate(String original) {
-        char[] newOne = new char[4];
+    private static String mutate(final String original) {
+        final char[] newOne = new char[4];
         for (int i = 0; i < 4; i++) {
-            char temp = (char) (original.charAt(i) + (RANDOM.nextInt(MUTATE_STRENGTH * 2 + 1) - MUTATE_STRENGTH));
+            final char temp = (char) (original.charAt(i) + (RANDOM.nextInt(MUTATE_STRENGTH * 2 + 1) - MUTATE_STRENGTH));
             newOne[i] = (temp < 'A' || temp > 'Z') ? (temp < 'A' ? 'A' : 'Z') : temp;
         }
         return String.valueOf(newOne);
     }
 
     private static BlockingQueue<Runnable> getQueue(final Map<String, List<String>> matching,
-                                                    RatingElo ratingElo) throws Exception {
-        BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(2100);
-        for (String firstGenome : matching.keySet()) {
-            for (String secondGenome : matching.get(firstGenome)) {
+                                                    final RatingElo ratingElo) throws Exception {
+        final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(2100);
+        for (final String firstGenome : matching.keySet()) {
+            for (final String secondGenome : matching.get(firstGenome)) {
                 final BattleArena arena = CreateBattleArena();
 
                 final Player firstPlayer1 = PlayerFactory.createPlayerBot(BOT_TYPE, 1);
@@ -143,7 +143,7 @@ public class Evolver {
 
     private static void printTimeInformation(final ThreadPoolExecutor threadPoolExecutor) {
         final long endTime = System.currentTimeMillis();
-        long completed = threadPoolExecutor.getCompletedTaskCount();
+        final long completed = threadPoolExecutor.getCompletedTaskCount();
         if (completed == 0) {
             return;
         }

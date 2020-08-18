@@ -49,7 +49,7 @@ public class MultiArmedWIthCoefficient extends Player {
     private List<Double> updateCoefficient() {
         final List<Double> coefficients = new ArrayList<>(4);
         for (int i = 0; i < 4; i++) {
-            int value = genotype.charAt(i) - 'A';
+            final int value = genotype.charAt(i) - 'A';
             switch (value) {
                 case 0 -> coefficients.add(0.1);
                 case 1 -> coefficients.add(0.2);
@@ -64,7 +64,7 @@ public class MultiArmedWIthCoefficient extends Player {
         return genotype;
     }
 
-    public void setGenotype(String genotype) {
+    public void setGenotype(final String genotype) {
         this.genotype = genotype;
         geneticCoefficients = updateCoefficient();
     }

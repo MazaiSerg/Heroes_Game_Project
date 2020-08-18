@@ -25,7 +25,7 @@ public class SelfPlayRoomFroCorrectingElo extends Thread {
     private int counter;
     private int timeForFirst = 0;
     private int timeForSecond = 0;
-    private RatingElo ratingElo;
+    private final RatingElo ratingElo;
 
     /**
      * @param arena        арена, в которой содержатся армии с правильным id
