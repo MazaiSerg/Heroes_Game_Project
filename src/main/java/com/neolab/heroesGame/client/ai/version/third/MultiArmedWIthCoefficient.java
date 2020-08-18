@@ -20,6 +20,13 @@ import java.util.Random;
 
 import static com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator.initializeHashTable;
 
+/**
+ * Бот на верхнем уровне выбирает случайное действие с постепенно меняющимися преоритетами
+ * В самом начале приоретет зависит от коэффициентов для действий, которые определяются геномом
+ * На последующих уровнях бот выбирает случайное действие. Приорететы действий зависят от генома
+ * В качестве ответа бот отправляет действие с наивысшим преоритетом
+ * Во время симулация бот учитывает возможность промахнуться и колебания урона
+ */
 public class MultiArmedWIthCoefficient extends Player {
     private static final String BOT_NAME = "Many Armed With Coefficients";
     private static final Logger LOGGER = LoggerFactory.getLogger(MultiArmedWIthCoefficient.class);
@@ -45,6 +52,7 @@ public class MultiArmedWIthCoefficient extends Player {
      * 1 - защита юнитов первой линии
      * 2 - модификатор атаки от урона
      * 3 - модификатор хила
+     * Коэффициент выбирается по строке следующим образом: A - 0.1, B - 0.2, C - 0.5, D - 1, E - 2, F - 3 etc
      *
      * @return Массив коэффициентов приорететов действий юнитов
      */
@@ -62,6 +70,11 @@ public class MultiArmedWIthCoefficient extends Player {
         return coefficients;
     }
 
+    /**
+     * меняет возвращаемое значение функции getType()
+     * до вызова этой функции getType() возвращает строковое представление BotType
+     * после вызова - возвращает геном
+     */
     static public void startEvolve() {
         isEvolve = true;
     }
@@ -157,10 +170,9 @@ public class MultiArmedWIthCoefficient extends Player {
 
     /**
      * Рекурсивная функция для построение симуляционного дерева
-     *
-     * @param processor процессор, который моделирует поведение игрового движка
      */
-    private int recursiveSimulation(final GameProcessor processor, final Answer action, final int depth) throws HeroExceptions {
+    private int recursiveSimulation(final GameProcessor processor, final Answer action,
+                                    final int depth) throws HeroExceptions {
 
         processor.handleAnswer(action);
         final GameEvent event = processor.matchOver();

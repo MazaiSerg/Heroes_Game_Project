@@ -31,7 +31,17 @@ public class Evolver {
     private static long startTime;
     private static final String START_GENOME = "ADMH";
     private static final BotType BOT_TYPE = BotType.MULTI_ARMED_WITH_COEFFICIENTS;
+    private static final List<String> armies = CommonFunction.getAllAvailableArmiesCode(ARMY_SIZE);
 
+    /**
+     * 1. Формируем стартовый генофонд
+     * 2. Определяем рейтинг Эло для этого генофонда
+     * 3. Формируем новый генофонд
+     * 3.1. Оставляем двух сильнейших
+     * 3.2. Добавляем двух мутировавших сильнейших
+     * 3.3. Объединяем гены сильнейших по правилу 2 первых гена одного + 2 последних гена второго
+     * 3.4. Добавляем мутированных скрещенных
+     */
     public static void main(final String[] args) throws Exception {
         List<String> genomes = new ArrayList<>(6);
         genomes.add(START_GENOME);
@@ -59,9 +69,17 @@ public class Evolver {
             ratingElo.printRating();
             genomes = evolveGenomes(ratingElo.getTwoBest());
         }
-        return;
     }
 
+    /**
+     * Оставляем двух сильнейших
+     * Добавляем двух мутировавших сильнейших
+     * Объединяем гены сильнейших по правилу 2 первых гена одного + 2 последних гена второго
+     * Добавляем мутированных скрещенных
+     *
+     * @param twoBest гены двух сильнейших ботов
+     * @return ArrayList с новым генофондом
+     */
     private static List<String> evolveGenomes(final String[] twoBest) {
         final List<String> genomes = new ArrayList<>(6);
         genomes.add(twoBest[1]);
@@ -73,6 +91,13 @@ public class Evolver {
         return genomes;
     }
 
+    /**
+     * берем два первых гена первого и два последних гена второго
+     * Перед возвратом отправляем получившийся геном на мутацию
+     *
+     * @param firstOne  геном первого бота
+     * @param SecondOne геном второго бота
+     */
     private static String makeHybrid(final String firstOne, final String SecondOne) {
         final char[] newOne = new char[4];
         for (int i = 0; i < 2; i++) {
@@ -82,15 +107,27 @@ public class Evolver {
         return mutate(String.valueOf(newOne));
     }
 
+    /**
+     * К коду каждого гена прибавляем случайное число в диапазоне [-MUTATE_STRENGTH; MUTATE_STRENGTH]
+     * Значение гена должно быть в диапазоне ['A'; 'Z']
+     *
+     * @param original стартовый геном
+     * @return мутировавший геном
+     */
     private static String mutate(final String original) {
         final char[] newOne = new char[4];
         for (int i = 0; i < 4; i++) {
-            final char temp = (char) (original.charAt(i) + (RANDOM.nextInt(MUTATE_STRENGTH * 2 + 1) - MUTATE_STRENGTH));
+            final char temp = (char) (original.charAt(i)
+                    + (RANDOM.nextInt(MUTATE_STRENGTH * 2 + 1) - MUTATE_STRENGTH));
             newOne[i] = (temp < 'A' || temp > 'Z') ? (temp < 'A' ? 'A' : 'Z') : temp;
         }
         return String.valueOf(newOne);
     }
 
+    /**
+     * Формируем очередь матчей
+     * Для ботов в том числе задается их геном
+     */
     private static BlockingQueue<Runnable> getQueue(final Map<String, List<String>> matching,
                                                     final RatingElo ratingElo) throws Exception {
         final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(2100);
@@ -115,14 +152,11 @@ public class Evolver {
     }
 
     /**
-     * создаем арену со случайными армиями, для этого:
-     * формируем все возможные армии заданного размера
-     * выбираем одну из них случайным образом
+     * выбираем одну из случайных армий
      *
      * @return созданная арена со случайными армиями
      */
     private static BattleArena CreateBattleArena() throws IOException, HeroExceptions {
-        final List<String> armies = CommonFunction.getAllAvailableArmiesCode(ARMY_SIZE);
         final String stringArmy = armies.get(RANDOM.nextInt(armies.size()));
         final Army army = new StringArmyFactory(stringArmy).create();
         final Map<Integer, Army> mapArmies = new HashMap<>();
