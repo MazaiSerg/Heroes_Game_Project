@@ -32,6 +32,7 @@ public class SelfPlayServerForNight {
     private static final Integer QUEUE_SIZE = 3;
     private static final Integer MATCH_NUMBERS = 2 * NUMBER_TRIES * DIFFERENT_ARMIES
             * BotType.values().length * (BotType.values().length - 1);
+    private static final List<String> armies = CommonFunction.getAllAvailableArmiesCode(ARMY_SIZE);
     final static long startTime = System.currentTimeMillis();
 
     /**
@@ -44,7 +45,7 @@ public class SelfPlayServerForNight {
     public static void main(final String[] args) throws Exception {
         final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(0, MAX_COUNT_GAME_ROOMS,
                 0L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(QUEUE_SIZE));
-        List<BotType> botTypeForTest = Arrays.asList(
+        final List<BotType> botTypeForTest = Arrays.asList(
                 MANY_ARMED_BANDIT_WITH_RANDOM,
                 SUPER_DUPER_MANY_ARMED,
                 MIN_MAX_WITHOUT_TREE,
@@ -79,14 +80,11 @@ public class SelfPlayServerForNight {
     }
 
     /**
-     * создаем арену со случайными армиями, для этого:
-     * формируем все возможные армии заданного размера
-     * выбираем одну из них случайным образом
+     * выбираем одну из всех возможных армий одну случайным образом
      *
      * @return созданная арена со случайными армиями
      */
     private static BattleArena CreateBattleArena() throws IOException, HeroExceptions {
-        final List<String> armies = CommonFunction.getAllAvailableArmiesCode(ARMY_SIZE);
         final String stringArmy = armies.get(RANDOM.nextInt(armies.size()));
         final Army army = new StringArmyFactory(stringArmy).create();
         final Map<Integer, Army> mapArmies = new HashMap<>();

@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -32,7 +32,9 @@ public class SelfPlayServer {
     private static final AtomicInteger countGame = new AtomicInteger(0);
     private static final AtomicInteger countEndGame = new AtomicInteger(0);
     private static final Integer MAX_COUNT_GAME_ROOMS = 5;
+    private static final Integer QUEUE_SIZE = 3;
     final static long startTime = System.currentTimeMillis();
+    private static final List<String> armies = CommonFunction.getAllAvailableArmiesCode(ARMY_SIZE);
 
     /**
      * Стравливаем двух ботов по NUMBER_TRIES каждой из DIFFERENT_ARMIES различных армий
@@ -43,7 +45,7 @@ public class SelfPlayServer {
      */
     public static void main(final String[] args) throws Exception {
         final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(0, MAX_COUNT_GAME_ROOMS,
-                0L, TimeUnit.SECONDS, new SynchronousQueue<>());
+                0L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(QUEUE_SIZE));
         final BotType firstType = BotType.MULTI_ARMED_WITH_COEFFICIENTS;
         final BotType secondType = BotType.SUPER_DUPER_MANY_ARMED;
         for (int j = 0; j < DIFFERENT_ARMIES; j++) {
@@ -64,14 +66,11 @@ public class SelfPlayServer {
     }
 
     /**
-     * создаем арену со случайными армиями, для этого:
-     * формируем все возможные армии заданного размера
-     * выбираем одну из них случайным образом
+     * выбираем одну из всех возможных армий одну случайным образом
      *
      * @return созданная арена со случайными армиями
      */
     private static BattleArena CreateBattleArena() throws IOException, HeroExceptions {
-        final List<String> armies = CommonFunction.getAllAvailableArmiesCode(ARMY_SIZE);
         final String stringArmy = armies.get(RANDOM.nextInt(armies.size()));
         final Army army = new StringArmyFactory(stringArmy).create();
         final Map<Integer, Army> mapArmies = new HashMap<>();
