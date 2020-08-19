@@ -181,7 +181,7 @@ public class RatingElo {
     public String[] getTwoBest() {
         final String[] twoBest = new String[2];
         for (final String name : ratingMap.keySet()) {
-            if (twoBest[1] == null || ratingMap.get(name) < ratingMap.get(twoBest[1])) {
+            if (twoBest[1] == null || ratingMap.get(twoBest[1]) < ratingMap.get(name)) {
                 twoBest[0] = twoBest[1];
                 twoBest[1] = name;
             } else if (twoBest[0] == null || ratingMap.get(twoBest[0]) < ratingMap.get(name)) {

@@ -51,7 +51,9 @@ public class Evolver {
         genomes.add(mutate(START_GENOME));
         genomes.add(mutate(START_GENOME));
         MultiArmedWIthCoefficient.startEvolve();
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 20; i++) {
+            System.out.print(new Date(System.currentTimeMillis()) + " Genomes: ");
+            System.out.println(String.join(" ", genomes));
             final RatingElo ratingElo = RatingElo.createRatingElo(genomes);
             for (int stepCounter = 0; stepCounter < STEP_NUMBERS; stepCounter++) {
                 final Map<String, List<String>> matching = new HashMap<>();
@@ -173,7 +175,7 @@ public class Evolver {
     private static void waitEnd(final ThreadPoolExecutor threadPoolExecutor) throws Exception {
         while (threadPoolExecutor.getActiveCount() > 0) {
             sleep(5000);
-            printTimeInformation(threadPoolExecutor);
+            //printTimeInformation(threadPoolExecutor);
         }
     }
 

@@ -38,7 +38,7 @@ public class MultiArmedWIthCoefficient extends Player {
     private int currentRound = -1;
     private List<Double> geneticCoefficients;
     private static boolean isEvolve = false;
-    private String genotype = "ADMH";
+    private String genotype = "BIQK";
 
     public MultiArmedWIthCoefficient(final int id) {
         super(id, BOT_NAME);
