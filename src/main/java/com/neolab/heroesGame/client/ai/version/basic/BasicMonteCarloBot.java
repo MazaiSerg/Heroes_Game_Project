@@ -15,34 +15,28 @@ import java.util.Random;
 public class BasicMonteCarloBot extends Player {
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicMonteCarloBot.class);
     private final Random RANDOM = new Random();
-    private final String basicName;
     private final int timeToThink;
     private int currentRound = -1;
 
     protected BasicMonteCarloBot(final String basicName, final int timeToThink, final int id) {
         super(id, String.format("%s_%d", basicName, timeToThink));
-        this.basicName = basicName;
         this.timeToThink = timeToThink;
         AnswerValidator.initializeHashTable();
     }
 
     @Override
-    public Answer getAnswer(BattleArena board) throws HeroExceptions {
+    public Answer getAnswer(final BattleArena board) throws HeroExceptions {
         return null;
     }
 
     @Override
-    public String getStringArmyFirst(int armySize) {
+    public String getStringArmyFirst(final int armySize) {
         return null;
     }
 
     @Override
-    public String getStringArmySecond(int armySize, Army army) {
+    public String getStringArmySecond(final int armySize, final Army army) {
         return null;
-    }
-
-    public String getBasicName() {
-        return basicName;
     }
 
     public final int getTimeToThink() {
@@ -53,12 +47,8 @@ public class BasicMonteCarloBot extends Player {
         return currentRound;
     }
 
-    public int restartCurrentRound() {
-        return currentRound = -1;
-    }
-
     public void increaseCurrentRound() {
-        this.currentRound++;
+        currentRound++;
     }
 
     /**
