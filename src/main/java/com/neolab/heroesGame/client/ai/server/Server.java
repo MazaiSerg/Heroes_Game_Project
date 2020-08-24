@@ -13,7 +13,7 @@ public class Server {
     public static void main(final String[] args) throws Exception {
         AbstractServer server;
         if (args.length == 0) {
-            server = createServer(ServerType.ONE_MATCH_UP_TESTS);
+            server = createServer(ServerType.ARMIES_STATISTICS_COLLECTOR);
         } else {
             server = createServer(ServerType.valueOf(args[0]));
         }

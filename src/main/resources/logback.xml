@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <logger name="org.apache.ibatis" level="INFO"/>
-
     <appender name="SIFT" class="ch.qos.logback.classic.sift.SiftingAppender">
         <discriminator class="com.neolab.heroesGame.aditional.ThreadNameBasedDiscriminator"/>
         <sift>
@@ -15,8 +13,16 @@
         </sift>
     </appender>
 
-    <root level="TRACE">
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <Pattern>%c %d{HH:mm:ss.SSS} %-5p [%t] %c{1}: %m%n
+            </Pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
         <appender-ref ref="SIFT"/>
+        <appender-ref ref="STDOUT"/>
     </root>
 
 </configuration>

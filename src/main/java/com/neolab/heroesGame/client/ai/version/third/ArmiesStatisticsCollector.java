@@ -7,6 +7,7 @@ import com.neolab.heroesGame.arena.BattleArena;
 import com.neolab.heroesGame.arena.StringArmyFactory;
 import com.neolab.heroesGame.client.ai.Player;
 import com.neolab.heroesGame.client.ai.version.basic.AbstractServer;
+import com.neolab.heroesGame.client.ai.version.mechanics.ConverterForFourSizeArmy;
 import com.neolab.heroesGame.enumerations.GameEvent;
 import com.neolab.heroesGame.errors.HeroExceptions;
 import com.neolab.heroesGame.server.answers.Answer;
@@ -18,8 +19,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
-
-import static com.neolab.heroesGame.aditional.CommonFunction.EMPTY_UNIT;
 
 public class ArmiesStatisticsCollector extends AbstractServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(ArmiesStatisticsCollector.class);
@@ -54,27 +53,26 @@ public class ArmiesStatisticsCollector extends AbstractServer {
         final Set<String> setTwo = new HashSet<>();
         final Set<String> setOne = new HashSet<>();
         for (final String code : armies) {
-            switch (decide(code)) {
-                case 1 -> setOne.add(transformOneToThree(code));
-                case 2 -> setTwo.add(code);
-                case 3 -> setThree.add(transformThreeToOne(code));
+            switch (ConverterForFourSizeArmy.decide(code)) {
+                case 1 -> setOne.add(ConverterForFourSizeArmy.transformFirstType(code));
+                case 2 -> setTwo.add(ConverterForFourSizeArmy.transformSecondType(code));
+                case 3 -> setThree.add(ConverterForFourSizeArmy.transformThirdType(code));
             }
         }
         final Set<String[]> pairs = new HashSet<>();
-        pairs.addAll(createPairsThirdToThird(setThree));
-        pairs.addAll(createPairsOneToOne(setOne));
-        pairs.addAll(createPairsTwoToTwo(setTwo));
-        pairs.addAll(createPairsTwoToOne(setTwo, setOne));
-        pairs.addAll(createPairsTwoToThree(setTwo, setThree));
-        pairs.addAll(createPairsOneToThree(setOne, setThree));
+        pairs.addAll(createPairs(setThree));
+        pairs.addAll(createPairs(setOne));
+        pairs.addAll(createPairs(ConverterForFourSizeArmy.setDispositionSecondTypeVersusFirstType(setTwo)));
+        pairs.addAll(createPairs(ConverterForFourSizeArmy.setDispositionSecondTypeVersusFirstType(setTwo), setOne));
+        pairs.addAll(createPairs(ConverterForFourSizeArmy.setDispositionSecondTypeVersusThirdType(setTwo), setThree));
+        pairs.addAll(createPairs(setOne, setThree));
         return pairs;
     }
 
-    private static Set<String[]> createPairsOneToThree(final Set<String> setOne, final Set<String> setThree) {
-        final Set<String> stringSetThree = simplifyThreeSet(setThree);
+    private static Set<String[]> createPairs(final Set<String> firstCodeSet, final Set<String> secondCodeSet) {
         final Set<String[]> pairs = new HashSet<>();
-        for (final String one : setOne) {
-            for (final String anotherOne : stringSetThree) {
+        for (final String one : firstCodeSet) {
+            for (final String anotherOne : secondCodeSet) {
                 pairs.add(new String[]{one, anotherOne});
                 pairs.add(new String[]{anotherOne, one});
             }
@@ -82,147 +80,14 @@ public class ArmiesStatisticsCollector extends AbstractServer {
         return pairs;
     }
 
-    private static Set<String[]> createPairsTwoToOne(final Set<String> setTwo, final Set<String> setOne) {
-        final Set<String> stringSetTwo = new HashSet<>();
-        for (final String code : setTwo) {
-            final char[] codes = sortSecondLine(code).toCharArray();
-            for (int line = 0; line < 2; line++) {
-                codes[line * 3] = codes[line * 3] == EMPTY_UNIT ? codes[2 + line * 3] : codes[line * 3];
-                codes[1 + line * 3] = codes[1 + line * 3] == EMPTY_UNIT ? codes[2 + line * 3] : codes[1 + line * 3];
-                codes[2 + line * 3] = EMPTY_UNIT;
-            }
-            stringSetTwo.add(String.valueOf(codes));
-        }
+    private static Set<String[]> createPairs(final Set<String> singletonCodeSet) {
         final Set<String[]> pairs = new HashSet<>();
-        for (final String one : stringSetTwo) {
-            for (final String anotherOne : setOne) {
-                pairs.add(new String[]{one, anotherOne});
-                pairs.add(new String[]{anotherOne, one});
-            }
-        }
-        return pairs;
-    }
-
-    private static Set<String[]> createPairsTwoToThree(final Set<String> codeSetTwo, final Set<String> codeSetThree) {
-        final Set<String> stringSetTwo = new HashSet<>();
-        for (final String code : codeSetTwo) {
-            final char[] codes = sortSecondLine(code).toCharArray();
-            for (int line = 0; line < 2; line++) {
-                codes[line * 3] = codes[line * 3] == EMPTY_UNIT ? codes[1 + line * 3] : codes[line * 3];
-                codes[2 + line * 3] = codes[2 + line * 3] == EMPTY_UNIT ? codes[1 + line * 3] : codes[2 + line * 3];
-                codes[1 + line * 3] = EMPTY_UNIT;
-            }
-            stringSetTwo.add(String.valueOf(codes));
-        }
-        final Set<String> stringSetThree = simplifyThreeSet(codeSetThree);
-        final Set<String[]> pairs = new HashSet<>();
-        for (final String one : stringSetTwo) {
-            for (final String anotherOne : stringSetThree) {
-                pairs.add(new String[]{one, anotherOne});
-                pairs.add(new String[]{anotherOne, one});
-            }
-        }
-        return pairs;
-    }
-
-    private static Set<String[]> createPairsTwoToTwo(final Set<String> codesSet) {
-        final Set<String> stringSet = new HashSet<>();
-        for (final String code : codesSet) {
-            final char[] codes = sortSecondLine(code).toCharArray();
-            for (int line = 0; line < 2; line++) {
-                codes[line * 3] = codes[line * 3] == EMPTY_UNIT ? codes[1 + line * 3] : codes[line * 3];
-                codes[2 + line * 3] = codes[2 + line * 3] == EMPTY_UNIT ? codes[1 + line * 3] : codes[2 + line * 3];
-                codes[1 + line * 3] = EMPTY_UNIT;
-            }
-            stringSet.add(String.valueOf(codes));
-        }
-        final Set<String[]> pairs = new HashSet<>();
-        for (final String one : stringSet) {
-            for (final String anotherOne : stringSet) {
+        for (final String one : singletonCodeSet) {
+            for (final String anotherOne : singletonCodeSet) {
                 pairs.add(new String[]{one, anotherOne});
             }
         }
         return pairs;
-    }
-
-    private static Set<String[]> createPairsOneToOne(final Set<String> codesSet) {
-        final Set<String[]> pairs = new HashSet<>();
-        for (final String one : codesSet) {
-            for (final String anotherOne : codesSet) {
-                pairs.add(new String[]{one, anotherOne});
-            }
-        }
-        return pairs;
-    }
-
-    private static Set<String[]> createPairsThirdToThird(final Set<String> codesSet) {
-        final Set<String> stringSet = simplifyThreeSet(codesSet);
-        final Set<String[]> pairs = new HashSet<>();
-        for (final String one : stringSet) {
-            for (final String anotherOne : stringSet) {
-                pairs.add(new String[]{one, anotherOne});
-            }
-        }
-        return pairs;
-    }
-
-    private static Set<String> simplifyThreeSet(final Set<String> codesSet) {
-        final Set<String> stringSet = new HashSet<>();
-        for (final String code : codesSet) {
-            stringSet.add(sortSecondLine(code));
-        }
-        return stringSet;
-    }
-
-    private static String sortSecondLine(final String code) {
-        final char[] codes = code.toCharArray();
-        for (int i = 0; i < 2; i++) {
-            for (int j = i + 1; j < 3; j++) {
-                if (codes[i] > codes[j]) {
-                    final char temp = codes[j];
-                    codes[j] = codes[i];
-                    codes[i] = temp;
-                }
-            }
-        }
-        return String.valueOf(codes);
-    }
-
-    private static String transformThreeToOne(final String code) {
-        final char[] codes = code.toCharArray();
-        char temp = EMPTY_UNIT;
-        for (int i = 3; i < 6; i++) {
-            if (codes[i] != EMPTY_UNIT) {
-                temp = codes[i];
-                codes[i] = EMPTY_UNIT;
-            }
-        }
-        codes[4] = temp;
-        return String.valueOf(codes);
-    }
-
-    private static String transformOneToThree(final String code) {
-        final char[] codes = code.toCharArray();
-        char temp = EMPTY_UNIT;
-        for (int i = 0; i < 3; i++) {
-            if (codes[i] != EMPTY_UNIT) {
-                temp = codes[i];
-                codes[i] = EMPTY_UNIT;
-            }
-        }
-        codes[1] = temp;
-        return String.valueOf(codes);
-    }
-
-    private static int decide(final String code) {
-        final char[] codes = code.toCharArray();
-        int counter = 0;
-        for (int i = 0; i < 3; i++) {
-            if (codes[i] != EMPTY_UNIT) {
-                counter++;
-            }
-        }
-        return counter;
     }
 
     private static class Room implements Runnable {
@@ -254,10 +119,10 @@ public class ArmiesStatisticsCollector extends AbstractServer {
 
         public void run() {
             Optional<Player> whoIsWin;
-            final String firstArmy = CommonFunction.ArmyCodeToString(battleArena.getArmy(
-                    currentPlayer.getId()));
-            final String secondArmy = CommonFunction.ArmyCodeToString(battleArena.getArmy(
-                    waitingPlayer.getId()));
+            final String firstArmy = ConverterForFourSizeArmy.convertToCluster(CommonFunction
+                    .ArmyCodeToString(battleArena.getArmy(currentPlayer.getId())));
+            final String secondArmy = ConverterForFourSizeArmy.convertToCluster(CommonFunction
+                    .ArmyCodeToString(battleArena.getArmy(waitingPlayer.getId())));
             while (true) {
                 whoIsWin = someoneWhoWin();
                 if (whoIsWin.isPresent()) {
