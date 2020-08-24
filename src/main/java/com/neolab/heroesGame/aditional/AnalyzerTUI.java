@@ -1,7 +1,11 @@
 package com.neolab.heroesGame.aditional;
 
 import com.neolab.heroesGame.aditional.plotters.DynamicPlotter;
+import com.opencsv.CSVWriter;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 
 public class AnalyzerTUI {
@@ -44,25 +48,59 @@ public class AnalyzerTUI {
         strings.add("2. Показать информацию о паре");
         strings.add("3. Построить графики пары игроков");
         strings.add("4. Показать информацию о всех парах");
+        strings.add("5. Создать csv таблицу (старая будет перезаписана)");
         strings.add("0. Выйти");
         final int option = readAction(strings);
-        if (option == 1) {
-            analyzer.showAnomalisticResults();
-            return false;
+        switch (option) {
+            case 1:
+                analyzer.showAnomalisticResults();
+                break;
+            case 2:
+                workWithPair(analyzer);
+                break;
+            case 3:
+                plotGraphicsForPair(analyzer);
+                break;
+            case 4:
+                workWithAllPair(analyzer);
+                break;
+            case 5:
+                createCSV(analyzer);
+                break;
+            default:
+                return true;
         }
-        if (option == 2) {
-            workWithPair(analyzer);
-            return false;
+
+        return false;
+    }
+
+    private static void createCSV(final Analyzer analyzer) {
+        try (final CSVWriter writer = new CSVWriter(new PrintWriter(new FileWriter("table.csv")))) {
+            final List<String> allName = createListNames(analyzer);
+            Collections.sort(allName);
+            final String[] init = new String[allName.size() + 1];
+            init[0] = "";
+            for (int i = 0; i < allName.size(); i++) {
+                init[i + 1] = allName.get(i);
+            }
+            writer.writeNext(init);
+
+            for (final String firstName : allName) {
+                final String[] newLine = new String[allName.size() + 1];
+                newLine[0] = firstName;
+                for (int i = 0; i < allName.size(); i++) {
+                    final List<Double> info = analyzer.getInformationAboutMatchUp(firstName, allName.get(i));
+                    if (info.isEmpty()) {
+                        newLine[i + 1] = "";
+                    } else {
+                        newLine[i + 1] = String.format("%.0f/%.0f/%.0f", info.get(0), info.get(1), info.get(2));
+                    }
+                }
+                writer.writeNext(newLine);
+            }
+        } catch (final IOException ex) {
+            ex.printStackTrace();
         }
-        if (option == 3) {
-            plotGraphicsForPair(analyzer);
-            return false;
-        }
-        if (option == 4) {
-            workWithAllPair(analyzer);
-            return false;
-        }
-        return true;
     }
 
     private static void plotGraphicsForPair(final Analyzer analyzer) {

@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>neolab</groupId>
-    <artifactId>Heroes_Game</artifactId>
+    <artifactId>Statistics_Collector</artifactId>
     <version>1.0-SNAPSHOT</version>
     <build>
         <plugins>
@@ -25,7 +25,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>com.neolab.heroesGame.samplesSockets.Client</mainClass>
+                            <mainClass>com.neolab.heroesGame.client.ai.server.Server</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

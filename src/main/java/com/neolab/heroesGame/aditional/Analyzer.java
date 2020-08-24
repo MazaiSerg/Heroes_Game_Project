@@ -14,7 +14,7 @@ public class Analyzer {
         this.statisticMap = statisticMap;
         this.firstArmies = firstArmies;
         this.secondArmies = secondArmies;
-        this.allInformation = analiseAll();
+        allInformation = analiseAll();
     }
 
     public static Analyzer createAnalyserForArmies() {
@@ -39,8 +39,8 @@ public class Analyzer {
         final Set<String> setSecondArmies = new HashSet<>();
         if (!statistic.isEmpty()) {
             statistic.forEach(val -> {
-                Map<String, List<String>> temp = Optional.ofNullable(statisticMap.get(val[0])).orElse(new HashMap<>());
-                List<String> listTemp = Optional.ofNullable(temp.get(val[1])).orElse(new ArrayList<>());
+                final Map<String, List<String>> temp = Optional.ofNullable(statisticMap.get(val[0])).orElse(new HashMap<>());
+                final List<String> listTemp = Optional.ofNullable(temp.get(val[1])).orElse(new ArrayList<>());
                 listTemp.add(val[2]);
                 temp.put(val[1], listTemp);
                 statisticMap.put(val[0], temp);
@@ -55,6 +55,11 @@ public class Analyzer {
         return allInformation;
     }
 
+    public List<Double> getInformationAboutMatchUp(final String firstName, final String secondName) {
+        final Map<String, List<Double>> info = Optional.ofNullable(allInformation.get(firstName)).orElse(Collections.emptyMap());
+        return Optional.ofNullable(info.get(secondName)).orElse(Collections.emptyList());
+    }
+
     public Set<String> getFirstArmies() {
         return firstArmies;
     }
@@ -64,7 +69,7 @@ public class Analyzer {
     }
 
     public Map<String, List<String>> getInfoAboutPairPlayers(final String firstName, final String secondName) {
-        Map<String, List<String>> result = new HashMap<>();
+        final Map<String, List<String>> result = new HashMap<>();
         List<String> temp = Optional.ofNullable(statisticMap.get(firstName)).
                 orElse(Collections.emptyMap()).get(secondName);
         if (temp != null) {
@@ -79,7 +84,7 @@ public class Analyzer {
     }
 
     public Map<String, List<Double>> getAnalyzedInfoAboutPairPlayers(final String firstName, final String secondName) {
-        Map<String, List<Double>> result = new HashMap<>();
+        final Map<String, List<Double>> result = new HashMap<>();
         List<Double> temp = Optional.ofNullable(allInformation.get(firstName)).
                 orElse(Collections.emptyMap()).get(secondName);
         if (temp != null) {
@@ -94,8 +99,8 @@ public class Analyzer {
     }
 
     public Map<String, Map<String, List<Double>>> getAnomalisticResults() {
-        Map<String, Map<String, List<Double>>> anomalisticResults = new HashMap<>();
-        for (String firstMovedArmy : firstArmies) {
+        final Map<String, Map<String, List<Double>>> anomalisticResults = new HashMap<>();
+        for (final String firstMovedArmy : firstArmies) {
             final Map<String, List<Double>> infoAboutOne = Optional.ofNullable(allInformation.get(firstMovedArmy))
                     .orElse(Collections.emptyMap());
             if (heightWin(infoAboutOne) || heightLose(infoAboutOne)) {
@@ -106,14 +111,14 @@ public class Analyzer {
     }
 
     public void showAnomalisticResults() {
-        Map<String, Map<String, List<Double>>> anomalisticResults = getAnomalisticResults();
+        final Map<String, Map<String, List<Double>>> anomalisticResults = getAnomalisticResults();
         if (anomalisticResults.isEmpty()) {
             System.out.println("Аномальных результатов нет");
         }
-        for (String army : anomalisticResults.keySet()) {
+        for (final String army : anomalisticResults.keySet()) {
             System.out.printf("%-16s%10s%10s%10s\n", army, "win", "draw", "lose");
-            for (String secondArmy : anomalisticResults.get(army).keySet()) {
-                List<Double> winRate = anomalisticResults.get(army).get(secondArmy);
+            for (final String secondArmy : anomalisticResults.get(army).keySet()) {
+                final List<Double> winRate = anomalisticResults.get(army).get(secondArmy);
                 if (!winRate.isEmpty()) {
                     System.out.printf("    %-12s%9.0f%%%9.0f%%%9.0f%% %10d матчей\n", secondArmy, winRate.get(0),
                             winRate.get(1), winRate.get(2), winRate.get(3).longValue());
@@ -123,7 +128,7 @@ public class Analyzer {
     }
 
     private boolean heightLose(final Map<String, List<Double>> results) {
-        for (String key : results.keySet()) {
+        for (final String key : results.keySet()) {
             if (!results.get(key).isEmpty() && results.get(key).get(2) > heightWinOrLoseRate) {
                 return true;
             }
@@ -132,7 +137,7 @@ public class Analyzer {
     }
 
     private boolean heightWin(final Map<String, List<Double>> results) {
-        for (String key : results.keySet()) {
+        for (final String key : results.keySet()) {
             if (!results.get(key).isEmpty() && results.get(key).get(0) < heightWinOrLoseRate) {
                 return false;
             }
@@ -141,15 +146,15 @@ public class Analyzer {
     }
 
     private Map<String, Map<String, List<Double>>> analiseAll() {
-        Map<String, Map<String, List<Double>>> allInformation = new HashMap<>();
-        for (String firstMovedArmy : firstArmies) {
+        final Map<String, Map<String, List<Double>>> allInformation = new HashMap<>();
+        for (final String firstMovedArmy : firstArmies) {
             final Map<String, List<String>> infoAboutOne = Optional.ofNullable(statisticMap.get(firstMovedArmy))
                     .orElse(Collections.emptyMap());
-            Map<String, List<Double>> information = new HashMap<>();
-            for (String secondMovedArmy : secondArmies) {
+            final Map<String, List<Double>> information = new HashMap<>();
+            for (final String secondMovedArmy : secondArmies) {
                 final List<String> results = Optional.ofNullable(infoAboutOne.get(secondMovedArmy))
                         .orElse(Collections.emptyList());
-                List<Double> winRate = getListWinRate(results);
+                final List<Double> winRate = getListWinRate(results);
                 information.put(secondMovedArmy, winRate);
             }
             allInformation.put(firstMovedArmy, information);
@@ -158,11 +163,11 @@ public class Analyzer {
     }
 
     private List<Double> getListWinRate(final List<String> results) {
-        List<Double> winRate = new ArrayList<>();
+        final List<Double> winRate = new ArrayList<>();
         int counterWin = 0;
         int counterDraw = 0;
         int counterLose = 0;
-        for (String result : results) {
+        for (final String result : results) {
             if (result.equals("Win")) {
                 counterWin++;
             } else if (result.equals("Draw")) {

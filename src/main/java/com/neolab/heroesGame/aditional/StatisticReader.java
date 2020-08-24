@@ -6,6 +6,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -24,8 +26,13 @@ public class StatisticReader {
             e.printStackTrace();
         }
         ARMY_SIZE = PropertyUtils.getIntegerFromProperty(prop, "hero.army.size");
-        PLAYER_STATISTIC_FILE_PATH = String.format("src/main/resources/playerStatistic%d.csv", ARMY_SIZE);
-        ARMY_STATISTIC_FILE_PATH = "src/main/resources/armyStatistic.csv";
+        if (Files.exists(Paths.get("src/main/resources/"))) {
+            PLAYER_STATISTIC_FILE_PATH = String.format("src/main/resources/playerStatistic%d.csv", ARMY_SIZE);
+            ARMY_STATISTIC_FILE_PATH = "src/main/resources/armyStatistic.csv";
+        } else {
+            PLAYER_STATISTIC_FILE_PATH = String.format("resources/playerStatistic%d.csv", ARMY_SIZE);
+            ARMY_STATISTIC_FILE_PATH = "resources/armyStatistic.csv";
+        }
     }
 
     public static Optional<List<String[]>> readArmiesWinStatistic() {
@@ -36,7 +43,7 @@ public class StatisticReader {
         List<String[]> result = Collections.emptyList();
         try (final CSVReader reader = new CSVReader(new FileReader(csvInputFile))) {
             result = reader.readAll();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
         }
         return Optional.ofNullable(result);
@@ -50,7 +57,7 @@ public class StatisticReader {
         List<String[]> result = Collections.emptyList();
         try (final CSVReader reader = new CSVReader(new BufferedReader(new FileReader(csvInputFile)))) {
             result = reader.readAll();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
         }
         return Optional.ofNullable(result);

@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 public final class StatisticWriter {
@@ -27,8 +29,13 @@ public final class StatisticWriter {
             e.printStackTrace();
         }
         ARMY_SIZE = PropertyUtils.getIntegerFromProperty(prop, "hero.army.size");
-        PLAYER_STATISTIC_FILE_PATH = String.format("src/main/resources/playerStatistic%d.csv", ARMY_SIZE);
-        ARMY_STATISTIC_FILE_PATH = "src/main/resources/armyStatistic.csv";
+        if (Files.exists(Paths.get("src/main/resources/"))) {
+            PLAYER_STATISTIC_FILE_PATH = String.format("src/main/resources/playerStatistic%d.csv", ARMY_SIZE);
+            ARMY_STATISTIC_FILE_PATH = "src/main/resources/armyStatistic.csv";
+        } else {
+            PLAYER_STATISTIC_FILE_PATH = String.format("resources/playerStatistic%d.csv", ARMY_SIZE);
+            ARMY_STATISTIC_FILE_PATH = "resources/armyStatistic.csv";
+        }
     }
 
     public static void writePlayerWinStatistic(final String winnerPlayerName, final String looserPlayerName) throws IOException {
@@ -85,7 +92,7 @@ public final class StatisticWriter {
         writer.close();
     }
 
-    private static void write(final String[] data, String filePath) throws IOException {
+    private static void write(final String[] data, final String filePath) throws IOException {
         final CSVWriter writer = new CSVWriter(new PrintWriter(new FileWriter(filePath, true)));
         writer.writeNext(data);
         writer.close();
