@@ -6,40 +6,36 @@ import com.neolab.heroesGame.arena.Army;
 import com.neolab.heroesGame.arena.BattleArena;
 import com.neolab.heroesGame.arena.StringArmyFactory;
 import com.neolab.heroesGame.client.ai.Player;
+import com.neolab.heroesGame.client.ai.version.basic.AbstractServer;
 import com.neolab.heroesGame.enumerations.GameEvent;
 import com.neolab.heroesGame.errors.HeroExceptions;
 import com.neolab.heroesGame.server.answers.Answer;
 import com.neolab.heroesGame.server.answers.AnswerProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import static com.neolab.heroesGame.aditional.CommonFunction.EMPTY_UNIT;
-import static java.lang.Thread.sleep;
 
-public class GamingProcess {
-    public static final Integer MAX_ROUND = 15;
-    public static final Integer ARMY_SIZE = StatisticWriter.ARMY_SIZE;
-    private static final Integer MAX_COUNT_GAME_ROOMS = 5;
-    private static final Integer QUEUE_SIZE = 10;
-    final static long startTime = System.currentTimeMillis();
-    static int prevCounter = 0;
+public class ArmiesStatisticsCollector extends AbstractServer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ArmiesStatisticsCollector.class);
 
-    public static void main(final String[] args) throws Exception {
-        matches();
+    public ArmiesStatisticsCollector(final int MAX_COUNT_GAME_ROOMS, final int QUEUE_SIZE) {
+        super(MAX_COUNT_GAME_ROOMS, QUEUE_SIZE);
     }
 
-    private static void matches() throws Exception {
-        List<String> armies = CommonFunction.getAllAvailableArmiesCode(ARMY_SIZE);
-        final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(MAX_COUNT_GAME_ROOMS, MAX_COUNT_GAME_ROOMS,
-                10_000L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(QUEUE_SIZE));
+    @Override
+    public void matching() throws Exception {
+        final List<String> armies = CommonFunction.getAllAvailableArmiesCode(ARMY_SIZE);
+        final ThreadPoolExecutor threadPoolExecutor = createThreadPoolExecutor(new ArrayBlockingQueue<>(getQueueSize()));
 
-        Set<String[]> pairs = makePairs(armies);
+        final Set<String[]> pairs = makePairs(armies);
         for (int i = 0; i < 100; i++) {
-            for (String[] stringArmies : pairs) {
+            for (final String[] stringArmies : pairs) {
                 final Army firstArmy = new StringArmyFactory(stringArmies[0]).create();
                 final Army secondArmy = new StringArmyFactory(stringArmies[1]).create();
                 final Map<Integer, Army> mapArmies = new HashMap<>();
@@ -49,22 +45,22 @@ public class GamingProcess {
                 waitQueue(threadPoolExecutor);
                 threadPoolExecutor.execute(new Room(arena));
             }
-            System.out.println("i = " + (i + 1));
+            LOGGER.info("Закончен {} круг ", (i + 1));
         }
     }
 
-    private static Set<String[]> makePairs(List<String> armies) {
-        Set<String> setThree = new HashSet<>();
-        Set<String> setTwo = new HashSet<>();
-        Set<String> setOne = new HashSet<>();
-        for (String code : armies) {
+    private static Set<String[]> makePairs(final List<String> armies) {
+        final Set<String> setThree = new HashSet<>();
+        final Set<String> setTwo = new HashSet<>();
+        final Set<String> setOne = new HashSet<>();
+        for (final String code : armies) {
             switch (decide(code)) {
                 case 1 -> setOne.add(transformOneToThree(code));
                 case 2 -> setTwo.add(code);
                 case 3 -> setThree.add(transformThreeToOne(code));
             }
         }
-        Set<String[]> pairs = new HashSet<>();
+        final Set<String[]> pairs = new HashSet<>();
         pairs.addAll(createPairsThirdToThird(setThree));
         pairs.addAll(createPairsOneToOne(setOne));
         pairs.addAll(createPairsTwoToTwo(setTwo));
@@ -74,11 +70,11 @@ public class GamingProcess {
         return pairs;
     }
 
-    private static Set<String[]> createPairsOneToThree(Set<String> setOne, Set<String> setThree) {
-        Set<String> stringSetThree = simplifyThreeSet(setThree);
-        Set<String[]> pairs = new HashSet<>();
-        for (String one : setOne) {
-            for (String anotherOne : stringSetThree) {
+    private static Set<String[]> createPairsOneToThree(final Set<String> setOne, final Set<String> setThree) {
+        final Set<String> stringSetThree = simplifyThreeSet(setThree);
+        final Set<String[]> pairs = new HashSet<>();
+        for (final String one : setOne) {
+            for (final String anotherOne : stringSetThree) {
                 pairs.add(new String[]{one, anotherOne});
                 pairs.add(new String[]{anotherOne, one});
             }
@@ -86,10 +82,10 @@ public class GamingProcess {
         return pairs;
     }
 
-    private static Set<String[]> createPairsTwoToOne(Set<String> setTwo, Set<String> setOne) {
-        Set<String> stringSetTwo = new HashSet<>();
-        for (String code : setTwo) {
-            char[] codes = sortSecondLine(code).toCharArray();
+    private static Set<String[]> createPairsTwoToOne(final Set<String> setTwo, final Set<String> setOne) {
+        final Set<String> stringSetTwo = new HashSet<>();
+        for (final String code : setTwo) {
+            final char[] codes = sortSecondLine(code).toCharArray();
             for (int line = 0; line < 2; line++) {
                 codes[line * 3] = codes[line * 3] == EMPTY_UNIT ? codes[2 + line * 3] : codes[line * 3];
                 codes[1 + line * 3] = codes[1 + line * 3] == EMPTY_UNIT ? codes[2 + line * 3] : codes[1 + line * 3];
@@ -97,9 +93,9 @@ public class GamingProcess {
             }
             stringSetTwo.add(String.valueOf(codes));
         }
-        Set<String[]> pairs = new HashSet<>();
-        for (String one : stringSetTwo) {
-            for (String anotherOne : setOne) {
+        final Set<String[]> pairs = new HashSet<>();
+        for (final String one : stringSetTwo) {
+            for (final String anotherOne : setOne) {
                 pairs.add(new String[]{one, anotherOne});
                 pairs.add(new String[]{anotherOne, one});
             }
@@ -107,10 +103,10 @@ public class GamingProcess {
         return pairs;
     }
 
-    private static Set<String[]> createPairsTwoToThree(Set<String> codeSetTwo, Set<String> codeSetThree) {
-        Set<String> stringSetTwo = new HashSet<>();
-        for (String code : codeSetTwo) {
-            char[] codes = sortSecondLine(code).toCharArray();
+    private static Set<String[]> createPairsTwoToThree(final Set<String> codeSetTwo, final Set<String> codeSetThree) {
+        final Set<String> stringSetTwo = new HashSet<>();
+        for (final String code : codeSetTwo) {
+            final char[] codes = sortSecondLine(code).toCharArray();
             for (int line = 0; line < 2; line++) {
                 codes[line * 3] = codes[line * 3] == EMPTY_UNIT ? codes[1 + line * 3] : codes[line * 3];
                 codes[2 + line * 3] = codes[2 + line * 3] == EMPTY_UNIT ? codes[1 + line * 3] : codes[2 + line * 3];
@@ -118,10 +114,10 @@ public class GamingProcess {
             }
             stringSetTwo.add(String.valueOf(codes));
         }
-        Set<String> stringSetThree = simplifyThreeSet(codeSetThree);
-        Set<String[]> pairs = new HashSet<>();
-        for (String one : stringSetTwo) {
-            for (String anotherOne : stringSetThree) {
+        final Set<String> stringSetThree = simplifyThreeSet(codeSetThree);
+        final Set<String[]> pairs = new HashSet<>();
+        for (final String one : stringSetTwo) {
+            for (final String anotherOne : stringSetThree) {
                 pairs.add(new String[]{one, anotherOne});
                 pairs.add(new String[]{anotherOne, one});
             }
@@ -129,10 +125,10 @@ public class GamingProcess {
         return pairs;
     }
 
-    private static Set<String[]> createPairsTwoToTwo(Set<String> codesSet) {
-        Set<String> stringSet = new HashSet<>();
-        for (String code : codesSet) {
-            char[] codes = sortSecondLine(code).toCharArray();
+    private static Set<String[]> createPairsTwoToTwo(final Set<String> codesSet) {
+        final Set<String> stringSet = new HashSet<>();
+        for (final String code : codesSet) {
+            final char[] codes = sortSecondLine(code).toCharArray();
             for (int line = 0; line < 2; line++) {
                 codes[line * 3] = codes[line * 3] == EMPTY_UNIT ? codes[1 + line * 3] : codes[line * 3];
                 codes[2 + line * 3] = codes[2 + line * 3] == EMPTY_UNIT ? codes[1 + line * 3] : codes[2 + line * 3];
@@ -140,50 +136,50 @@ public class GamingProcess {
             }
             stringSet.add(String.valueOf(codes));
         }
-        Set<String[]> pairs = new HashSet<>();
-        for (String one : stringSet) {
-            for (String anotherOne : stringSet) {
+        final Set<String[]> pairs = new HashSet<>();
+        for (final String one : stringSet) {
+            for (final String anotherOne : stringSet) {
                 pairs.add(new String[]{one, anotherOne});
             }
         }
         return pairs;
     }
 
-    private static Set<String[]> createPairsOneToOne(Set<String> codesSet) {
-        Set<String[]> pairs = new HashSet<>();
-        for (String one : codesSet) {
-            for (String anotherOne : codesSet) {
+    private static Set<String[]> createPairsOneToOne(final Set<String> codesSet) {
+        final Set<String[]> pairs = new HashSet<>();
+        for (final String one : codesSet) {
+            for (final String anotherOne : codesSet) {
                 pairs.add(new String[]{one, anotherOne});
             }
         }
         return pairs;
     }
 
-    private static Set<String[]> createPairsThirdToThird(Set<String> codesSet) {
-        Set<String> stringSet = simplifyThreeSet(codesSet);
-        Set<String[]> pairs = new HashSet<>();
-        for (String one : stringSet) {
-            for (String anotherOne : stringSet) {
+    private static Set<String[]> createPairsThirdToThird(final Set<String> codesSet) {
+        final Set<String> stringSet = simplifyThreeSet(codesSet);
+        final Set<String[]> pairs = new HashSet<>();
+        for (final String one : stringSet) {
+            for (final String anotherOne : stringSet) {
                 pairs.add(new String[]{one, anotherOne});
             }
         }
         return pairs;
     }
 
-    private static Set<String> simplifyThreeSet(Set<String> codesSet) {
-        Set<String> stringSet = new HashSet<>();
-        for (String code : codesSet) {
+    private static Set<String> simplifyThreeSet(final Set<String> codesSet) {
+        final Set<String> stringSet = new HashSet<>();
+        for (final String code : codesSet) {
             stringSet.add(sortSecondLine(code));
         }
         return stringSet;
     }
 
-    private static String sortSecondLine(String code) {
-        char[] codes = code.toCharArray();
+    private static String sortSecondLine(final String code) {
+        final char[] codes = code.toCharArray();
         for (int i = 0; i < 2; i++) {
             for (int j = i + 1; j < 3; j++) {
                 if (codes[i] > codes[j]) {
-                    char temp = codes[j];
+                    final char temp = codes[j];
                     codes[j] = codes[i];
                     codes[i] = temp;
                 }
@@ -192,8 +188,8 @@ public class GamingProcess {
         return String.valueOf(codes);
     }
 
-    private static String transformThreeToOne(String code) {
-        char[] codes = code.toCharArray();
+    private static String transformThreeToOne(final String code) {
+        final char[] codes = code.toCharArray();
         char temp = EMPTY_UNIT;
         for (int i = 3; i < 6; i++) {
             if (codes[i] != EMPTY_UNIT) {
@@ -205,8 +201,8 @@ public class GamingProcess {
         return String.valueOf(codes);
     }
 
-    private static String transformOneToThree(String code) {
-        char[] codes = code.toCharArray();
+    private static String transformOneToThree(final String code) {
+        final char[] codes = code.toCharArray();
         char temp = EMPTY_UNIT;
         for (int i = 0; i < 3; i++) {
             if (codes[i] != EMPTY_UNIT) {
@@ -218,8 +214,8 @@ public class GamingProcess {
         return String.valueOf(codes);
     }
 
-    private static int decide(String code) {
-        char[] codes = code.toCharArray();
+    private static int decide(final String code) {
+        final char[] codes = code.toCharArray();
         int counter = 0;
         for (int i = 0; i < 3; i++) {
             if (codes[i] != EMPTY_UNIT) {
@@ -229,46 +225,13 @@ public class GamingProcess {
         return counter;
     }
 
-
-    /**
-     * Ожидаем пока не освободится один из занятых потоков.
-     *
-     * @param threadPoolExecutor группа, в которой создаются потоки
-     */
-    private static void waitQueue(final ThreadPoolExecutor threadPoolExecutor) throws Exception {
-        while (threadPoolExecutor.getQueue().size() >= QUEUE_SIZE - 3) {
-            sleep(100);
-        }
-        printTimeInformation(threadPoolExecutor);
-    }
-
-    /**
-     * Ожидаем пока не освободятся все потоки
-     *
-     * @param threadPoolExecutor группа, в которой создаются потоки
-     */
-    private static void waitEnd(final ThreadPoolExecutor threadPoolExecutor) throws Exception {
-        while (threadPoolExecutor.getActiveCount() > 0) {
-            sleep(100);
-            printTimeInformation(threadPoolExecutor);
-        }
-    }
-
-    private static void printTimeInformation(final ThreadPoolExecutor threadPoolExecutor) {
-        if ((threadPoolExecutor.getCompletedTaskCount() - prevCounter >= 100)) {
-            prevCounter = (int) threadPoolExecutor.getCompletedTaskCount();
-            long currentTime = System.currentTimeMillis();
-            System.out.printf("прошло %d игр. Текущее время %s, с начала прошло %dс\n",
-                    prevCounter, new Date(currentTime), (currentTime - startTime) / 1000);
-        }
-    }
-
     private static class Room implements Runnable {
         private Player currentPlayer;
         private Player waitingPlayer;
         private final AnswerProcessor answerProcessor;
         private final BattleArena battleArena;
         private int counter = 0;
+        public final int maxRound = 15;
 
         public Room(final BattleArena arena) {
             currentPlayer = new MultiArmedWIthCoefficient(1);
@@ -302,7 +265,7 @@ public class GamingProcess {
                 }
                 if (!battleArena.canSomeoneAct()) {
                     counter++;
-                    if (counter > MAX_ROUND) {
+                    if (counter > maxRound) {
                         break;
                     }
                     battleArena.endRound();
@@ -310,14 +273,14 @@ public class GamingProcess {
                 if (checkCanMove(currentPlayer.getId())) {
                     try {
                         askPlayerProcess();
-                    } catch (Exception ex) {
+                    } catch (final Exception ex) {
                         ex.printStackTrace();
                     }
                 }
                 changeCurrentAndWaitingPlayers();
             }
-            GameEvent endMatch;
-            int firstPlayerId = 1;
+            final GameEvent endMatch;
+            final int firstPlayerId = 1;
             if (whoIsWin.isEmpty()) {
                 endMatch = GameEvent.GAME_END_WITH_A_TIE;
             } else if (whoIsWin.get().getId() == firstPlayerId) {
@@ -327,7 +290,7 @@ public class GamingProcess {
             }
             try {
                 StatisticWriter.writeArmiesWinStatistic(firstArmy, secondArmy, endMatch);
-            } catch (Exception ex) {
+            } catch (final Exception ex) {
                 ex.printStackTrace();
             }
         }

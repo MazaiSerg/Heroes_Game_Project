@@ -1,71 +1,75 @@
 package com.neolab.heroesGame.client.ai.version.third;
 
-import com.neolab.heroesGame.aditional.CommonFunction;
-import com.neolab.heroesGame.aditional.StatisticWriter;
-import com.neolab.heroesGame.arena.Army;
 import com.neolab.heroesGame.arena.BattleArena;
-import com.neolab.heroesGame.arena.StringArmyFactory;
 import com.neolab.heroesGame.client.ai.Player;
 import com.neolab.heroesGame.client.ai.PlayerFactory;
 import com.neolab.heroesGame.client.ai.enums.BotType;
 import com.neolab.heroesGame.client.ai.server.elo.RatingElo;
 import com.neolab.heroesGame.client.ai.server.elo.SelfPlayRoomFroCorrectingElo;
-import com.neolab.heroesGame.errors.HeroExceptions;
+import com.neolab.heroesGame.client.ai.version.basic.AbstractServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
-import static java.lang.Thread.sleep;
 
-public class Evolver {
-    public static final Integer ARMY_SIZE = StatisticWriter.ARMY_SIZE;
-    private static final long SEED = 156517;
-    private static final Random RANDOM = new Random(SEED);
-    private static final Integer MAX_COUNT_GAME_ROOMS = 5;
-    private static final Integer STEP_NUMBERS = 5;
-    private static final Integer MUTATE_STRENGTH = 4;
-    private static long startTime;
-    private static final String START_GENOME = "ADMH";
-    private static final BotType BOT_TYPE = BotType.MULTI_ARMED_WITH_COEFFICIENTS;
-    private static final List<String> armies = CommonFunction.getAllAvailableArmiesCode(ARMY_SIZE);
+/**
+ * 1. Формируем стартовый генофонд
+ * 2. Определяем рейтинг Эло для этого генофонда
+ * 3. Формируем новый генофонд
+ * 3.1. Оставляем двух сильнейших
+ * 3.2. Добавляем двух мутировавших сильнейших
+ * 3.3. Объединяем гены сильнейших по правилу 2 первых гена одного + 2 последних гена второго
+ * 3.4. Добавляем мутированных скрещенных
+ */
+public class Evolver extends AbstractServer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Evolver.class);
+    private final long SEED = 456123;
+    private final Random RANDOM = new Random(SEED);
+    private final int numberStep;
+    private final int mutateStrength = 4;
+    private final String startGenome = "ADMH";
+    private final BotType BOT_TYPE = BotType.MULTI_ARMED_WITH_COEFFICIENTS;
 
-    /**
-     * 1. Формируем стартовый генофонд
-     * 2. Определяем рейтинг Эло для этого генофонда
-     * 3. Формируем новый генофонд
-     * 3.1. Оставляем двух сильнейших
-     * 3.2. Добавляем двух мутировавших сильнейших
-     * 3.3. Объединяем гены сильнейших по правилу 2 первых гена одного + 2 последних гена второго
-     * 3.4. Добавляем мутированных скрещенных
-     */
-    public static void main(final String[] args) throws Exception {
+
+    public Evolver(final int MAX_COUNT_GAME_ROOMS, final int QUEUE_SIZE) {
+        this(MAX_COUNT_GAME_ROOMS, QUEUE_SIZE, 5);
+    }
+
+    public Evolver(final int MAX_COUNT_GAME_ROOMS, final int QUEUE_SIZE,
+                   final int numberStep) {
+        super(MAX_COUNT_GAME_ROOMS, QUEUE_SIZE);
+        this.numberStep = numberStep;
+    }
+
+    @Override
+    public void matching() throws Exception {
         List<String> genomes = new ArrayList<>(6);
-        genomes.add(START_GENOME);
-        genomes.add(mutate(START_GENOME));
-        genomes.add(mutate(START_GENOME));
-        genomes.add(mutate(START_GENOME));
-        genomes.add(mutate(START_GENOME));
-        genomes.add(mutate(START_GENOME));
+        genomes.add(startGenome);
+        genomes.add(mutate(startGenome));
+        genomes.add(mutate(startGenome));
+        genomes.add(mutate(startGenome));
+        genomes.add(mutate(startGenome));
+        genomes.add(mutate(startGenome));
         MultiArmedWIthCoefficient.startEvolve();
         for (int i = 0; i < 20; i++) {
             System.out.print(new Date(System.currentTimeMillis()) + " Genomes: ");
             System.out.println(String.join(" ", genomes));
             final RatingElo ratingElo = RatingElo.createRatingElo(genomes);
-            for (int stepCounter = 0; stepCounter < STEP_NUMBERS; stepCounter++) {
+            for (int stepCounter = 0; stepCounter < numberStep; stepCounter++) {
                 final Map<String, List<String>> matching = new HashMap<>();
                 for (final String genome : genomes) {
                     matching.put(genome, ratingElo.getOpponents(genome));
                 }
-                startTime = System.currentTimeMillis();
-                final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(MAX_COUNT_GAME_ROOMS, MAX_COUNT_GAME_ROOMS,
-                        0L, TimeUnit.SECONDS, getQueue(matching, ratingElo));
+                setStartTime(System.currentTimeMillis());
+                final ThreadPoolExecutor threadPoolExecutor = createThreadPoolExecutor(getQueue(matching, ratingElo));
                 threadPoolExecutor.prestartAllCoreThreads();
                 waitEnd(threadPoolExecutor);
-                System.out.printf("На %d потрачено %dс\n", stepCounter + 1, (System.currentTimeMillis() - startTime) / 1000);
+                LOGGER.info("На {} потрачено {}с\n", stepCounter + 1,
+                        (System.currentTimeMillis() - getStartTime()) / 1000);
                 threadPoolExecutor.shutdown();
             }
             ratingElo.printRating();
@@ -82,7 +86,7 @@ public class Evolver {
      * @param twoBest гены двух сильнейших ботов
      * @return ArrayList с новым генофондом
      */
-    private static List<String> evolveGenomes(final String[] twoBest) {
+    private List<String> evolveGenomes(final String[] twoBest) {
         final List<String> genomes = new ArrayList<>(6);
         genomes.add(twoBest[1]);
         genomes.add(twoBest[0]);
@@ -100,7 +104,7 @@ public class Evolver {
      * @param firstOne  геном первого бота
      * @param SecondOne геном второго бота
      */
-    private static String makeHybrid(final String firstOne, final String SecondOne) {
+    private String makeHybrid(final String firstOne, final String SecondOne) {
         final char[] newOne = new char[4];
         for (int i = 0; i < 2; i++) {
             newOne[i] = firstOne.charAt(i);
@@ -116,11 +120,11 @@ public class Evolver {
      * @param original стартовый геном
      * @return мутировавший геном
      */
-    private static String mutate(final String original) {
+    private String mutate(final String original) {
         final char[] newOne = new char[4];
         for (int i = 0; i < 4; i++) {
             final char temp = (char) (original.charAt(i)
-                    + (RANDOM.nextInt(MUTATE_STRENGTH * 2 + 1) - MUTATE_STRENGTH));
+                    + (RANDOM.nextInt(mutateStrength * 2 + 1) - mutateStrength));
             newOne[i] = (temp < 'A' || temp > 'Z') ? (temp < 'A' ? 'A' : 'Z') : temp;
         }
         return String.valueOf(newOne);
@@ -130,8 +134,8 @@ public class Evolver {
      * Формируем очередь матчей
      * Для ботов в том числе задается их геном
      */
-    private static BlockingQueue<Runnable> getQueue(final Map<String, List<String>> matching,
-                                                    final RatingElo ratingElo) throws Exception {
+    private BlockingQueue<Runnable> getQueue(final Map<String, List<String>> matching,
+                                             final RatingElo ratingElo) throws Exception {
         final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(2100);
         for (final String firstGenome : matching.keySet()) {
             for (final String secondGenome : matching.get(firstGenome)) {
@@ -151,44 +155,5 @@ public class Evolver {
             }
         }
         return queue;
-    }
-
-    /**
-     * выбираем одну из случайных армий
-     *
-     * @return созданная арена со случайными армиями
-     */
-    private static BattleArena CreateBattleArena() throws IOException, HeroExceptions {
-        final String stringArmy = armies.get(RANDOM.nextInt(armies.size()));
-        final Army army = new StringArmyFactory(stringArmy).create();
-        final Map<Integer, Army> mapArmies = new HashMap<>();
-        mapArmies.put(1, army.getCopy());
-        mapArmies.put(2, army);
-        return new BattleArena(mapArmies);
-    }
-
-    /**
-     * Ожидаем пока не освободятся все потоки
-     *
-     * @param threadPoolExecutor группа, в которой создаются потоки
-     */
-    private static void waitEnd(final ThreadPoolExecutor threadPoolExecutor) throws Exception {
-        while (threadPoolExecutor.getActiveCount() > 0) {
-            sleep(5000);
-            //printTimeInformation(threadPoolExecutor);
-        }
-    }
-
-    private static void printTimeInformation(final ThreadPoolExecutor threadPoolExecutor) {
-        final long endTime = System.currentTimeMillis();
-        final long completed = threadPoolExecutor.getCompletedTaskCount();
-        if (completed == 0) {
-            return;
-        }
-        final long timeNeed = (((endTime - startTime) / completed)
-                * (threadPoolExecutor.getTaskCount() - completed)) / 1000;
-        final int timeFromStart = (int) ((endTime - startTime) / 1000);
-        System.out.printf("Прошло %d испытаний из %d. Прошло: %d секунд. Примерно осталось : %d секунд\n",
-                completed, threadPoolExecutor.getTaskCount(), timeFromStart, timeNeed);
     }
 }
