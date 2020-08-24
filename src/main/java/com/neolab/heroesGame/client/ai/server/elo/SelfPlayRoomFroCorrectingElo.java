@@ -15,7 +15,7 @@ import java.util.Optional;
 
 public class SelfPlayRoomFroCorrectingElo extends Thread {
     public static final Integer MAX_ROUND = 15;
-    private static final Logger LOGGER = LoggerFactory.getLogger(com.neolab.heroesGame.client.ai.server.SelfPlayRoom.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SelfPlayRoomFroCorrectingElo.class);
     private final Player firstPlayer;
     private final Player secondPlayer;
     private Player currentPlayer;
@@ -48,7 +48,7 @@ public class SelfPlayRoomFroCorrectingElo extends Thread {
     @Override
     public void run() {
         Optional<Player> whoIsWin;
-        LOGGER.info("Игрок {} - {}; Игрок {} - {}",
+        LOGGER.trace("Игрок {} - {}; Игрок {} - {}",
                 firstPlayer.getId(), firstPlayer.getName(),
                 secondPlayer.getId(), secondPlayer.getName());
         while (true) {
@@ -74,7 +74,6 @@ public class SelfPlayRoomFroCorrectingElo extends Thread {
                     }
                 } catch (final Exception e) {
                     LOGGER.error(e.toString());
-                    //throw new IllegalThreadStateException();
                 }
             }
             changeCurrentAndWaitingPlayers();
@@ -143,8 +142,8 @@ public class SelfPlayRoomFroCorrectingElo extends Thread {
         ratingElo.refreshRating(firstPlayer.getName(), secondPlayer.getName(), endMatch);
         try {
             StatisticWriter.writePlayerAnyStatistic(firstPlayer.getName(), secondPlayer.getName(), endMatch);
-            LOGGER.info("{} vs {} = {}", firstPlayer.getName(), secondPlayer.getName(), endMatch.getDescription());
-            LOGGER.info("{} - {}ms; Игрок {} - {}ms",
+            LOGGER.trace("{} vs {} = {}", firstPlayer.getName(), secondPlayer.getName(), endMatch.getDescription());
+            LOGGER.trace("{} - {}ms; Игрок {} - {}ms",
                     firstPlayer.getName(), timeForFirst,
                     secondPlayer.getName(), timeForSecond);
         } catch (final Exception ex) {

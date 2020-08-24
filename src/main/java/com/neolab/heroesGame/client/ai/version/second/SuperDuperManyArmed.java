@@ -54,7 +54,7 @@ public class SuperDuperManyArmed extends BasicMonteCarloBot {
         }
         for (int counter = 0; ; ) {
             if (System.currentTimeMillis() - startTime > getTimeToThink()) {
-                LOGGER.info("Количество симуляций за {}мс: {}", System.currentTimeMillis() - startTime, counter);
+                LOGGER.trace("Количество симуляций за {}мс: {}", System.currentTimeMillis() - startTime, counter);
                 break;
             }
             final double[] priorityFunction = countPriorityFunction(scores, simulationsCounter, counter);

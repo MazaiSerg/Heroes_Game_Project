@@ -57,6 +57,7 @@ public class ServerForCorrectingElo extends AbstractServer {
     public void matching() throws Exception {
         final RatingElo ratingElo = RatingElo.createRatingEloForBot(typeBotByName.keySet());
         for (int stepCounter = 0; stepCounter < numberStep; stepCounter++) {
+            setPrevCounter(0);
             final Map<String, List<String>> matching = new HashMap<>();
             for (final String type : typeBotByName.keySet()) {
                 matching.put(type, ratingElo.getOpponents(type));

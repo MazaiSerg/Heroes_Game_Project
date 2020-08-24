@@ -44,7 +44,7 @@ public class MinMaxWithoutTree extends Player {
         final PairAnswerHeuristic bestAction = recursiveSimulation(processor,
                 new PairAnswerHeuristic(Answer.getDefaultAnswer(), Integer.MAX_VALUE));
         if (System.currentTimeMillis() - startTime > MAX_TIME) {
-            LOGGER.info("На обход дерева глубиной {} потрачено {}мс. Размер армии - {}, количество доступных юнитов - {}",
+            LOGGER.trace("На обход дерева глубиной {} потрачено {}мс. Размер армии - {}, количество доступных юнитов - {}",
                     maxDepthForFastWork, System.currentTimeMillis() - startTime, arena.getArmy(getId()).getHeroes().size(),
                     arena.getArmy(getId()).getAvailableHeroes().size());
         }

@@ -99,7 +99,7 @@ public class MultiArmedWIthCoefficient extends BasicMonteCarloBot {
         }
         for (int i = 0; ; ) {
             if (System.currentTimeMillis() - startTime > TIME_TO_THINK) {
-                LOGGER.info("Количество симуляций за {}мс: {}", System.currentTimeMillis() - startTime, i);
+                LOGGER.trace("Количество симуляций за {}мс: {}", System.currentTimeMillis() - startTime, i);
                 break;
             }
             final double[] priorityFunction = countPriorityFunction(scores, simulationsCounter, i);

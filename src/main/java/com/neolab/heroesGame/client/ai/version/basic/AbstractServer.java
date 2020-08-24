@@ -52,6 +52,10 @@ public abstract class AbstractServer {
         this.startTime = startTime;
     }
 
+    public void setPrevCounter(int prevCounter) {
+        this.prevCounter = prevCounter;
+    }
+
     public int getMaxCountGameRoom() {
         return maxCountGameRoom;
     }

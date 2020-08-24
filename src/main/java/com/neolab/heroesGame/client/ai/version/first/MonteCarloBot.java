@@ -72,7 +72,7 @@ public class MonteCarloBot extends BasicMonteCarloBot {
         final SimulationsTree tree = new SimulationsTree();
         for (int i = 0; ; i++) {
             if (System.currentTimeMillis() - startTime > getTimeToThink()) {
-                LOGGER.info("Количество симуляций за {}мс: {}", System.currentTimeMillis() - startTime, i);
+                LOGGER.trace("Количество симуляций за {}мс: {}", System.currentTimeMillis() - startTime, i);
                 break;
             }
             final GameProcessor processor = new GameProcessor(getId(), arena.getCopy(), getCurrentRound());
