@@ -6,10 +6,7 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.neolab.heroesGame.enumerations.GameEvent.YOU_LOSE_GAME;
 import static com.neolab.heroesGame.enumerations.GameEvent.YOU_WIN_GAME;
@@ -34,6 +31,21 @@ public class RatingElo {
         for (final BotType type : BotType.values()) {
             if (!ratingMap.containsKey(type.toString())) {
                 ratingMap.put(type.toString(), START_RATING);
+            }
+        }
+        return new RatingElo(ratingMap);
+    }
+
+    static public RatingElo createRatingEloForBot(Set<String> botNames) {
+        final Map<String, Integer> ratingMap = readFromFile();
+        for (String botName : new HashSet<>(ratingMap.keySet())) {
+            if (!botNames.contains(botName)) {
+                ratingMap.remove(botName);
+            }
+        }
+        for (final String botName : botNames) {
+            if (!ratingMap.containsKey(botName)) {
+                ratingMap.put(botName, START_RATING);
             }
         }
         return new RatingElo(ratingMap);

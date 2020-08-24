@@ -25,7 +25,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>com.neolab.heroesGame.samplesSockets.Server</mainClass>
+                            <mainClass>com.neolab.heroesGame.samplesSockets.Client</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

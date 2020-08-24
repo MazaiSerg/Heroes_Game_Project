@@ -90,11 +90,8 @@ public class SelfPlayRoomFroCorrectingElo extends Thread {
      * @throws IOException    Проблемы с отображением картинки для пользователя
      */
     private void askPlayerProcess() throws HeroExceptions, IOException {
-        //battleArena.toLog();
         final Answer answer = currentPlayer.getAnswer(battleArena);
         answerProcessor.handleAnswer(answer);
-        //answer.toLog();
-        //answerProcessor.getActionEffect().toLog();
     }
 
     private Optional<Player> someoneWhoWin() {
@@ -143,7 +140,7 @@ public class SelfPlayRoomFroCorrectingElo extends Thread {
         } else {
             endMatch = GameEvent.YOU_LOSE_GAME;
         }
-        ratingElo.refreshRating(firstPlayer.getType(), secondPlayer.getType(), endMatch);
+        ratingElo.refreshRating(firstPlayer.getName(), secondPlayer.getName(), endMatch);
         try {
             StatisticWriter.writePlayerAnyStatistic(firstPlayer.getName(), secondPlayer.getName(), endMatch);
             LOGGER.info("{} vs {} = {}", firstPlayer.getName(), secondPlayer.getName(), endMatch.getDescription());

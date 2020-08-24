@@ -1,7 +1,6 @@
 package com.neolab.heroesGame.client.ai.version.second;
 
-import com.neolab.heroesGame.aditional.CommonFunction;
-import com.neolab.heroesGame.client.ai.Player;
+import com.neolab.heroesGame.client.ai.version.basic.BasicMonteCarloBot;
 import com.neolab.heroesGame.client.ai.version.mechanics.GameProcessor;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.Answer;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.Army;
@@ -13,10 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Random;
 
 import static com.neolab.heroesGame.client.ai.enums.BotType.SUPER_DUPER_MANY_ARMED;
-import static com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator.initializeHashTable;
 
 /**
  * Бот на верхнем уровне выбирает действие с наивысшим преоритетом
@@ -25,19 +22,18 @@ import static com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator.
  * В качестве ответа бот отправляет действие с наивысшим преоритетом
  * Во время симулация бот (!)учитывает возможность промахнуться и колебания урона
  */
-public class SuperDuperManyArmed extends Player {
-    private static final String BOT_NAME = "Super Duper Many Armed";
+public class SuperDuperManyArmed extends BasicMonteCarloBot {
     private static final Logger LOGGER = LoggerFactory.getLogger(SuperDuperManyArmed.class);
-    private static final int TIME_TO_THINK = 900;
+    private static final int TIME_TO_THINK = 100;
     private static final double LN_2D = Math.log(2d);
     private static final boolean USE_RANDOM = true;
-    private final long SEED = 5916;
-    private final Random RANDOM = new Random(SEED);
-    private int currentRound = -1;
+
+    public SuperDuperManyArmed(final int id, final int timeToThink) {
+        super(SUPER_DUPER_MANY_ARMED.toString(), timeToThink, id);
+    }
 
     public SuperDuperManyArmed(final int id) {
-        super(id, BOT_NAME);
-        initializeHashTable();
+        super(SUPER_DUPER_MANY_ARMED.toString(), TIME_TO_THINK, id);
     }
 
     @Override
@@ -46,7 +42,7 @@ public class SuperDuperManyArmed extends Player {
 
         final long startTime = System.currentTimeMillis();
         if (board.getArmy(getId()).getHeroes().size() == board.getArmy(getId()).getAvailableHeroes().size()) {
-            currentRound++;
+            increaseCurrentRound();
         }
         final BattleArena arena = BattleArena.getCopyFromOriginalClass(board);
         final List<Answer> actions = arena.getAllActionForPlayer(getId());
@@ -57,12 +53,12 @@ public class SuperDuperManyArmed extends Player {
             scores[i] = 5;
         }
         for (int counter = 0; ; ) {
-            if (System.currentTimeMillis() - startTime > TIME_TO_THINK) {
+            if (System.currentTimeMillis() - startTime > getTimeToThink()) {
                 LOGGER.info("Количество симуляций за {}мс: {}", System.currentTimeMillis() - startTime, counter);
                 break;
             }
             final double[] priorityFunction = countPriorityFunction(scores, simulationsCounter, counter);
-            final GameProcessor processor = new GameProcessor(getId(), arena.getCopy(), currentRound, USE_RANDOM);
+            final GameProcessor processor = new GameProcessor(getId(), arena.getCopy(), getCurrentRound(), USE_RANDOM);
             final int index = findBest(priorityFunction);
             final double score = recursiveSimulation(processor, actions.get(index), 0);
             counter++;
@@ -92,22 +88,6 @@ public class SuperDuperManyArmed extends Player {
                     : scores[i] + Math.sqrt(2 * Math.log(counter) / simulationsCounter[i] / LN_2D);
         }
         return priorityFunction;
-    }
-
-    @Override
-    public String getStringArmyFirst(final int armySize) {
-        final List<String> armies = CommonFunction.getAllAvailableArmiesCode(armySize);
-        return armies.get(RANDOM.nextInt(armies.size()));
-    }
-
-    @Override
-    public String getStringArmySecond(final int armySize, final com.neolab.heroesGame.arena.Army army) {
-        return getStringArmyFirst(armySize);
-    }
-
-    @Override
-    public String getType() {
-        return SUPER_DUPER_MANY_ARMED.toString();
     }
 
     /**
@@ -146,22 +126,5 @@ public class SuperDuperManyArmed extends Player {
         final Army enemyArmy = arena.getEnemyArmy(getId());
 
         return 12 + botArmy.getHeroes().size() - 2 * enemyArmy.getHeroes().size();
-    }
-
-    /**
-     * Выбираем случайное действие с учетом приоретета действий
-     */
-    private int chooseAction(@NotNull final double[] actionPriority) {
-        final double random = RANDOM.nextDouble() * actionPriority[actionPriority.length - 1];
-        for (int i = 0; i < actionPriority.length; i++) {
-            if (actionPriority[i] > random) {
-                return i;
-            }
-        }
-        LOGGER.error("WTF!!!");
-        for (final double aDouble : actionPriority) {
-            LOGGER.trace("RANDOM: {}, Action: {}", random, aDouble);
-        }
-        return 0;
     }
 }

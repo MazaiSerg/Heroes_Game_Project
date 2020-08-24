@@ -1,8 +1,6 @@
 package com.neolab.heroesGame.client.ai.version.third;
 
-import com.neolab.heroesGame.aditional.CommonFunction;
-import com.neolab.heroesGame.client.ai.Player;
-import com.neolab.heroesGame.client.ai.enums.BotType;
+import com.neolab.heroesGame.client.ai.version.basic.BasicMonteCarloBot;
 import com.neolab.heroesGame.client.ai.version.mechanics.GameProcessor;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.Answer;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.Army;
@@ -16,9 +14,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
-import static com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator.initializeHashTable;
+import static com.neolab.heroesGame.client.ai.enums.BotType.MULTI_ARMED_WITH_COEFFICIENTS;
 
 /**
  * Бот на верхнем уровне выбирает случайное действие с постепенно меняющимися преоритетами
@@ -27,23 +24,23 @@ import static com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator.
  * В качестве ответа бот отправляет действие с наивысшим преоритетом
  * Во время симулация бот учитывает возможность промахнуться и колебания урона
  */
-public class MultiArmedWIthCoefficient extends Player {
-    private static final String BOT_NAME = "Many Armed With Coefficients";
+public class MultiArmedWIthCoefficient extends BasicMonteCarloBot {
     private static final Logger LOGGER = LoggerFactory.getLogger(MultiArmedWIthCoefficient.class);
-    private static final int TIME_TO_THINK = 900;
+    private static final int TIME_TO_THINK = 100;
     private static final double LN_2D = Math.log(2d);
     private static final boolean USE_RANDOM = true;
-    private final long SEED = 5916;
-    private final Random RANDOM = new Random(SEED);
-    private int currentRound = -1;
     private List<Double> geneticCoefficients;
     private static boolean isEvolve = false;
     private String genotype = "BIQK";
 
-    public MultiArmedWIthCoefficient(final int id) {
-        super(id, BOT_NAME);
+    public MultiArmedWIthCoefficient(final int id, final int timeToThink) {
+        super(MULTI_ARMED_WITH_COEFFICIENTS.toString(), timeToThink, id);
         geneticCoefficients = updateCoefficient();
-        initializeHashTable();
+    }
+
+    public MultiArmedWIthCoefficient(final int id) {
+        super(MULTI_ARMED_WITH_COEFFICIENTS.toString(), TIME_TO_THINK, id);
+        geneticCoefficients = updateCoefficient();
     }
 
     /**
@@ -79,10 +76,6 @@ public class MultiArmedWIthCoefficient extends Player {
         isEvolve = true;
     }
 
-    public String getGenotype() {
-        return genotype;
-    }
-
     public void setGenotype(final String genotype) {
         this.genotype = genotype;
         geneticCoefficients = updateCoefficient();
@@ -94,7 +87,7 @@ public class MultiArmedWIthCoefficient extends Player {
 
         final long startTime = System.currentTimeMillis();
         if (board.getArmy(getId()).getHeroes().size() == board.getArmy(getId()).getAvailableHeroes().size()) {
-            currentRound++;
+            increaseCurrentRound();
         }
         final BattleArena arena = BattleArena.getCopyFromOriginalClass(board);
         final List<Answer> actions = arena.getAllActionForPlayer(getId());
@@ -111,13 +104,22 @@ public class MultiArmedWIthCoefficient extends Player {
             }
             final double[] priorityFunction = countPriorityFunction(scores, simulationsCounter, i);
             final int index = chooseAction(priorityFunction);
-            final GameProcessor processor = new GameProcessor(getId(), arena.getCopy(), currentRound, USE_RANDOM);
+            final GameProcessor processor = new GameProcessor(getId(), arena.getCopy(), getCurrentRound(), USE_RANDOM);
             final double score = recursiveSimulation(processor, actions.get(index), 0);
             i++;
             scores[index] = (scores[index] * simulationsCounter[index] + score) / (simulationsCounter[index] + 1);
             simulationsCounter[index]++;
         }
         return actions.get(findBest(scores)).getCommonAnswer(getId());
+    }
+
+    @Override
+    public String getName() {
+        if (isEvolve) {
+            return genotype;
+        } else {
+            return super.getName();
+        }
     }
 
     private int findBest(final double[] scores) {
@@ -147,25 +149,6 @@ public class MultiArmedWIthCoefficient extends Player {
             }
         }
         return priorityFunction;
-    }
-
-    @Override
-    public String getStringArmyFirst(final int armySize) {
-        final List<String> armies = CommonFunction.getAllAvailableArmiesCode(armySize);
-        return armies.get(RANDOM.nextInt(armies.size()));
-    }
-
-    @Override
-    public String getStringArmySecond(final int armySize, final com.neolab.heroesGame.arena.Army army) {
-        return getStringArmyFirst(armySize);
-    }
-
-    @Override
-    public String getType() {
-        if (isEvolve) {
-            return getGenotype();
-        }
-        return BotType.MULTI_ARMED_WITH_COEFFICIENTS.toString();
     }
 
     /**
@@ -213,22 +196,5 @@ public class MultiArmedWIthCoefficient extends Player {
         final Army enemyArmy = arena.getEnemyArmy(getId());
 
         return 12 + botArmy.getHeroes().size() - 2 * enemyArmy.getHeroes().size();
-    }
-
-    /**
-     * Выбираем случайное действие с учетом приоретета действий
-     */
-    private int chooseAction(@NotNull final double[] actionPriority) {
-        final double random = RANDOM.nextDouble() * actionPriority[actionPriority.length - 1];
-        for (int i = 0; i < actionPriority.length; i++) {
-            if (actionPriority[i] > random) {
-                return i;
-            }
-        }
-        LOGGER.error("WTF!!!");
-        for (final double aDouble : actionPriority) {
-            LOGGER.trace("RANDOM: {}, Action: {}", random, aDouble);
-        }
-        return 0;
     }
 }

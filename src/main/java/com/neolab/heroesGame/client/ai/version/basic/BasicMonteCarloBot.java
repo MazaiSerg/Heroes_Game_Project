@@ -1,0 +1,80 @@
+package com.neolab.heroesGame.client.ai.version.basic;
+
+import com.neolab.heroesGame.arena.Army;
+import com.neolab.heroesGame.arena.BattleArena;
+import com.neolab.heroesGame.client.ai.Player;
+import com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator;
+import com.neolab.heroesGame.errors.HeroExceptions;
+import com.neolab.heroesGame.server.answers.Answer;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Random;
+
+public class BasicMonteCarloBot extends Player {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicMonteCarloBot.class);
+    private final Random RANDOM = new Random();
+    private final String basicName;
+    private final int timeToThink;
+    private int currentRound = -1;
+
+    protected BasicMonteCarloBot(final String basicName, final int timeToThink, final int id) {
+        super(id, String.format("%s_%d", basicName, timeToThink));
+        this.basicName = basicName;
+        this.timeToThink = timeToThink;
+        AnswerValidator.initializeHashTable();
+    }
+
+    @Override
+    public Answer getAnswer(BattleArena board) throws HeroExceptions {
+        return null;
+    }
+
+    @Override
+    public String getStringArmyFirst(int armySize) {
+        return null;
+    }
+
+    @Override
+    public String getStringArmySecond(int armySize, Army army) {
+        return null;
+    }
+
+    public String getBasicName() {
+        return basicName;
+    }
+
+    public final int getTimeToThink() {
+        return timeToThink;
+    }
+
+    public int getCurrentRound() {
+        return currentRound;
+    }
+
+    public int restartCurrentRound() {
+        return currentRound = -1;
+    }
+
+    public void increaseCurrentRound() {
+        this.currentRound++;
+    }
+
+    /**
+     * Выбираем случайное действие с учетом приоретета действий
+     */
+    protected final int chooseAction(@NotNull final double[] actionPriority) {
+        final double random = RANDOM.nextDouble() * actionPriority[actionPriority.length - 1];
+        for (int i = 0; i < actionPriority.length; i++) {
+            if (actionPriority[i] > random) {
+                return i;
+            }
+        }
+        LOGGER.trace("WTF!!!");
+        for (final double aDouble : actionPriority) {
+            LOGGER.trace("RANDOM: {}, Action: {}", random, aDouble);
+        }
+        return 0;
+    }
+}

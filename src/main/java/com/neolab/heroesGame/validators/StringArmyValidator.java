@@ -14,8 +14,8 @@ public class StringArmyValidator {
         char[] characters = new char[6];
         army.getChars(0, 6, characters, 0);
         return !containWrongCharacter(characters)
-                || full(characters, armySize) <= 0
-                || !containNotOneWarlord(characters);
+                || full(characters, armySize) >= 0
+                || containNotOneWarlord(characters);
     }
 
     private static boolean containNotOneWarlord(char[] characters) {

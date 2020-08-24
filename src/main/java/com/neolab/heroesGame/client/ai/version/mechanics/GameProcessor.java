@@ -151,4 +151,16 @@ public class GameProcessor {
         board.removeUsedHeroesById(activeUnitCoordinate, activePlayerId);
     }
 
+    public Hero getAlliesHero(final SquareCoordinate coordinate) {
+        return getActivePlayerArmy().getHero(coordinate).orElseThrow();
+    }
+
+    public Hero getEnemyHero(final SquareCoordinate coordinate) {
+        return getWaitingPlayerArmy().getHero(coordinate).orElseThrow();
+    }
+
+    public int getEnemyArmySize() {
+        return getWaitingPlayerArmy().getHeroes().size();
+    }
+
 }

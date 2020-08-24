@@ -27,10 +27,31 @@ public class ServerForCorrectingElo {
     public static final Integer ARMY_SIZE = StatisticWriter.ARMY_SIZE;
     private static final long SEED = 156517;
     private static final Random RANDOM = new Random(SEED);
-    private static final Integer MAX_COUNT_GAME_ROOMS = 3;
-    private static final Integer STEP_NUMBERS = 5;
+    private static final Integer MAX_COUNT_GAME_ROOMS = 5;
+    private static final Integer STEP_NUMBERS = 20;
     private static long startTime;
     private static final List<String> armies = CommonFunction.getAllAvailableArmiesCode(ARMY_SIZE);
+    private static final Map<String, Integer> timeToThinkForBot;
+    private static final Map<String, BotType> typeBotByName;
+
+    static {
+        timeToThinkForBot = new HashMap<>();
+        typeBotByName = new HashMap<>();
+        final int[] times = new int[]{100, 500, 1000, 1300};
+        timeToThinkForBot.put(BotType.RANDOM.toString(), 0);
+        typeBotByName.put(BotType.RANDOM.toString(), BotType.RANDOM);
+        timeToThinkForBot.put(MIN_MAX_WITHOUT_TREE.toString(), 0);
+        typeBotByName.put(MIN_MAX_WITHOUT_TREE.toString(), MIN_MAX_WITHOUT_TREE);
+        for (final int time : times) {
+            timeToThinkForBot.put(String.format("%s_%d", MONTE_CARLO.toString(), time), time);
+            timeToThinkForBot.put(String.format("%s_%d", SUPER_DUPER_MANY_ARMED.toString(), time), time);
+            timeToThinkForBot.put(String.format("%s_%d", MULTI_ARMED_WITH_COEFFICIENTS.toString(), time), time);
+
+            typeBotByName.put(String.format("%s_%d", MONTE_CARLO.toString(), time), MONTE_CARLO);
+            typeBotByName.put(String.format("%s_%d", SUPER_DUPER_MANY_ARMED.toString(), time), SUPER_DUPER_MANY_ARMED);
+            typeBotByName.put(String.format("%s_%d", MULTI_ARMED_WITH_COEFFICIENTS.toString(), time), MULTI_ARMED_WITH_COEFFICIENTS);
+        }
+    }
 
     /**
      * 1. Загружаем рейтинг Эло
@@ -45,19 +66,11 @@ public class ServerForCorrectingElo {
      * @param args не использует входные параметры
      */
     public static void main(final String[] args) throws Exception {
-        final RatingElo ratingElo = RatingElo.createRatingEloForBot();
-        final BotType[] bots = {MONTE_CARLO,
-                MANY_ARMED_BANDIT,
-                MANY_ARMED_BANDIT_WITH_RANDOM,
-                SUPER_DUPER_MANY_ARMED,
-                MULTI_ARMED_WITH_COEFFICIENTS,
-                MIN_MAX,
-                MIN_MAX_WITHOUT_TREE,
-                BotType.RANDOM};
+        final RatingElo ratingElo = RatingElo.createRatingEloForBot(typeBotByName.keySet());
         for (int stepCounter = 0; stepCounter < STEP_NUMBERS; stepCounter++) {
-            final Map<BotType, List<String>> matching = new HashMap<>();
-            for (final BotType type : bots) {
-                matching.put(type, ratingElo.getOpponents(type.toString()));
+            final Map<String, List<String>> matching = new HashMap<>();
+            for (final String type : typeBotByName.keySet()) {
+                matching.put(type, ratingElo.getOpponents(type));
             }
             startTime = System.currentTimeMillis();
             final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(MAX_COUNT_GAME_ROOMS,
@@ -79,23 +92,26 @@ public class ServerForCorrectingElo {
      * @return ArrayBlockingQueue с комнатами для всех матчей
      * @throws Exception может появиться при создании армий
      */
-    private static BlockingQueue<Runnable> getQueue(final Map<BotType, List<String>> matching,
+    private static BlockingQueue<Runnable> getQueue(final Map<String, List<String>> matching,
                                                     final RatingElo ratingElo) throws Exception {
         final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(2100);
-        for (final BotType type : matching.keySet()) {
-            for (final String name : matching.get(type)) {
+        for (final String firstBotName : matching.keySet()) {
+            for (final String secondBotName : matching.get(firstBotName)) {
                 final BattleArena arena = CreateBattleArena();
-
-                final Player firstPlayer1 = PlayerFactory.createPlayerBot(type, 1);
-                final Player secondPlayer1 = PlayerFactory.createPlayerBot(BotType.valueOf(name), 2);
-                queue.add(new SelfPlayRoomFroCorrectingElo(arena.getCopy(), firstPlayer1, secondPlayer1, ratingElo));
-
-                final Player firstPlayer2 = PlayerFactory.createPlayerBot(BotType.valueOf(name), 2);
-                final Player secondPlayer2 = PlayerFactory.createPlayerBot(type, 1);
-                queue.add(new SelfPlayRoomFroCorrectingElo(arena.getCopy(), firstPlayer2, secondPlayer2, ratingElo));
+                queue.add(createRoom(arena, firstBotName, secondBotName, ratingElo));
+                queue.add(createRoom(arena, secondBotName, firstBotName, ratingElo));
             }
         }
         return queue;
+    }
+
+    private static Runnable createRoom(final BattleArena arena, final String firstBotName,
+                                       final String secondBotName, final RatingElo ratingElo) {
+        final Player firstPlayer = PlayerFactory.createMonteCarloBotWithTimeLimit(typeBotByName.get(firstBotName),
+                1, timeToThinkForBot.get(firstBotName));
+        final Player secondPlayer = PlayerFactory.createMonteCarloBotWithTimeLimit(typeBotByName.get(secondBotName),
+                2, timeToThinkForBot.get(secondBotName));
+        return new SelfPlayRoomFroCorrectingElo(arena.getCopy(), firstPlayer, secondPlayer, ratingElo);
     }
 
     /**

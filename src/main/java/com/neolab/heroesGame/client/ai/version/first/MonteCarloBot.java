@@ -1,8 +1,6 @@
 package com.neolab.heroesGame.client.ai.version.first;
 
-import com.neolab.heroesGame.aditional.CommonFunction;
-import com.neolab.heroesGame.client.ai.Player;
-import com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator;
+import com.neolab.heroesGame.client.ai.version.basic.BasicMonteCarloBot;
 import com.neolab.heroesGame.client.ai.version.mechanics.GameProcessor;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.Answer;
 import com.neolab.heroesGame.client.ai.version.mechanics.arena.BattleArena;
@@ -18,8 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.neolab.heroesGame.client.ai.enums.BotType.MONTE_CARLO;
 
@@ -31,19 +27,19 @@ import static com.neolab.heroesGame.client.ai.enums.BotType.MONTE_CARLO;
  * Случайных характер попадания и урона не учитывается
  * Максимальное время должно быть немного ниже реально доступного времени, чтобы гарантированно укладываться
  */
-public class MonteCarloBot extends Player {
-    private static final String BOT_NAME = "Monte Carlo";
+public class MonteCarloBot extends BasicMonteCarloBot {
     private static final Logger LOGGER = LoggerFactory.getLogger(MonteCarloBot.class);
-    private static final int TIME_TO_THINK = 900;
-    private final long SEED = 5916;
-    private final Random RANDOM = new Random(SEED);
-    private int currentRound = -1;
+    private static final int TIME_TO_THINK = 100;
     private final List<Double> geneticCoefficients;
 
-    public MonteCarloBot(final int id) {
-        super(id, BOT_NAME);
+    public MonteCarloBot(final int id, final int timeToThink) {
+        super(MONTE_CARLO.toString(), timeToThink, id);
         geneticCoefficients = createCoefficient();
-        AnswerValidator.initializeHashTable();
+    }
+
+    public MonteCarloBot(final int id) {
+        super(MONTE_CARLO.toString(), TIME_TO_THINK, id);
+        geneticCoefficients = createCoefficient();
     }
 
     /**
@@ -70,36 +66,20 @@ public class MonteCarloBot extends Player {
 
         final long startTime = System.currentTimeMillis();
         if (board.getArmy(getId()).getHeroes().size() == board.getArmy(getId()).getAvailableHeroes().size()) {
-            currentRound++;
+            increaseCurrentRound();
         }
         final BattleArena arena = BattleArena.getCopyFromOriginalClass(board);
         final SimulationsTree tree = new SimulationsTree();
         for (int i = 0; ; i++) {
-            if (System.currentTimeMillis() - startTime > TIME_TO_THINK) {
+            if (System.currentTimeMillis() - startTime > getTimeToThink()) {
                 LOGGER.info("Количество симуляций за {}мс: {}", System.currentTimeMillis() - startTime, i);
                 break;
             }
-            final GameProcessor processor = new GameProcessor(getId(), arena.getCopy(), currentRound);
+            final GameProcessor processor = new GameProcessor(getId(), arena.getCopy(), getCurrentRound());
             recursiveSimulation(processor, tree);
             tree.toRoot();
         }
         return tree.getBestAction().getCommonAnswer(getId());
-    }
-
-    @Override
-    public String getStringArmyFirst(final int armySize) {
-        final List<String> armies = CommonFunction.getAllAvailableArmiesCode(armySize);
-        return armies.get(RANDOM.nextInt(armies.size()));
-    }
-
-    @Override
-    public String getStringArmySecond(final int armySize, final com.neolab.heroesGame.arena.Army army) {
-        return getStringArmyFirst(armySize);
-    }
-
-    @Override
-    public String getType() {
-        return MONTE_CARLO.toString();
     }
 
     /**
@@ -143,17 +123,17 @@ public class MonteCarloBot extends Player {
 
     private @NotNull double[] calculateActionPriority(@NotNull final List<Answer> actions,
                                                       @NotNull final GameProcessor processor) {
-        //final List<Double> actionPriority = new ArrayList<>();
         final double[] actionPriority = new double[actions.size()];
-        final AtomicInteger counter = new AtomicInteger(0);
-        actions.forEach((action) -> actionPriority[counter.getAndAdd(1)] = (modificate(action, processor)));
+        for (int i = 0; i < actions.size(); i++) {
+            actionPriority[i] = modify(actions.get(i), processor);
+        }
         return actionPriority;
     }
 
     /**
      * Задаем базовую "важность" действия
      */
-    private double modificate(final @NotNull Answer answer, final GameProcessor processor) {
+    private double modify(final @NotNull Answer answer, final GameProcessor processor) {
         if (answer.getAction() == HeroActions.DEFENCE) {
             if (answer.getActiveHeroCoordinate().getY() == 0) {
                 return geneticCoefficients.get(0);
@@ -171,8 +151,8 @@ public class MonteCarloBot extends Player {
      * Если у юнита нормально хп, то не очень важно
      */
     private double calculateHeal(final Answer answer, final GameProcessor processor) {
-        final Hero hero = processor.getActivePlayerArmy().getHero(answer.getActiveHeroCoordinate()).orElseThrow();
-        final Hero target = processor.getActivePlayerArmy().getHero(answer.getTargetUnitCoordinate()).orElseThrow();
+        final Hero hero = processor.getAlliesHero(answer.getActiveHeroCoordinate());
+        final Hero target = processor.getAlliesHero(answer.getTargetUnitCoordinate());
         if (target.getHp() < hero.getDamage()) {
             return (target.getHpMax() * 1.0 / target.getHp() * target.getDamage() * hero.getDamage());
         }
@@ -184,31 +164,14 @@ public class MonteCarloBot extends Player {
      * Если юнит после атаки умрем - удваеваем важность атаки
      */
     private double calculateDamage(final Answer answer, final GameProcessor processor) {
-        final Hero hero = processor.getActivePlayerArmy().getHero(answer.getActiveHeroCoordinate()).orElseThrow();
+        final Hero hero = processor.getAlliesHero(answer.getActiveHeroCoordinate());
         if (hero instanceof Magician) {
-            return (double) hero.getDamage() * processor.getWaitingPlayerArmy().getHeroes().size();
+            return (double) hero.getDamage() * processor.getEnemyArmySize();
         }
-        if (hero.getDamage() > processor.getWaitingPlayerArmy().getHero(answer.getTargetUnitCoordinate()).orElseThrow().getHp()) {
+        if (hero.getDamage() > processor.getEnemyHero(answer.getTargetUnitCoordinate()).getHp()) {
             return hero.getDamage() * 2d;
         }
         return hero.getDamage();
-    }
-
-    /**
-     * Выбираем случайное действие с учетом приоретета действий
-     */
-    private int chooseAction(@NotNull final double[] actionPriority) {
-        final double random = RANDOM.nextDouble() * actionPriority[actionPriority.length - 1];
-        for (int i = 0; i < actionPriority.length; i++) {
-            if (actionPriority[i] > random) {
-                return i;
-            }
-        }
-        LOGGER.trace("WTF!!!");
-        for (final double aDouble : actionPriority) {
-            LOGGER.trace("RANDOM: {}, Action: {}", random, aDouble);
-        }
-        return 0;
     }
 }
 

@@ -19,13 +19,10 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.neolab.heroesGame.client.ai.enums.BotType.MIN_MAX_WITHOUT_TREE;
-
 public class MinMaxWithoutTree extends Player {
-    private static final String BOT_NAME = "Min Max Without Tree";
+    private static final String BOT_NAME = "MIN_MAX_WITHOUT_TREE";
     private static final Logger LOGGER = LoggerFactory.getLogger(MinMaxWithoutTree.class);
     private final long SEED = 5916;
-    private static final int MAX_DEPTH = 6;
     private static final int MAX_TIME = 1000;
     private int maxDepthForFastWork;
     private final Random RANDOM = new Random(SEED);
@@ -63,11 +60,6 @@ public class MinMaxWithoutTree extends Player {
     @Override
     public String getStringArmySecond(final int armySize, final com.neolab.heroesGame.arena.Army army) {
         return getStringArmyFirst(armySize);
-    }
-
-    @Override
-    public String getType() {
-        return MIN_MAX_WITHOUT_TREE.toString();
     }
 
     /**

@@ -46,10 +46,10 @@ public class SelfPlayServerForNight {
         final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(0, MAX_COUNT_GAME_ROOMS,
                 0L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(QUEUE_SIZE));
         final List<BotType> botTypeForTest = Arrays.asList(
-                MANY_ARMED_BANDIT_WITH_RANDOM,
+                MONTE_CARLO,
                 SUPER_DUPER_MANY_ARMED,
                 MIN_MAX_WITHOUT_TREE,
-                MIN_MAX);
+                MULTI_ARMED_WITH_COEFFICIENTS);
         for (final BotType firstType : botTypeForTest) {
             for (final BotType secondType : botTypeForTest) {
                 if (firstType.equals(secondType)) {

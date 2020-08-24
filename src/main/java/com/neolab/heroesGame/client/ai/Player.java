@@ -25,8 +25,6 @@ public abstract class Player {
 
     public abstract String getStringArmySecond(final int armySize, final Army army) throws IOException;
 
-    public abstract String getType();
-
     public int getId() {
         return id;
     }
