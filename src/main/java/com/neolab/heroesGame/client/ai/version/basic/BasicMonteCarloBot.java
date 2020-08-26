@@ -17,7 +17,7 @@ import java.util.Random;
 public class BasicMonteCarloBot extends Player {
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicMonteCarloBot.class);
     private static final MatchUpAnalyzer analyzer;
-    private final Random RANDOM = new Random();
+    private static final Random RANDOM = new Random();
     private final int timeToThink;
     private int currentRound = -1;
 
@@ -69,7 +69,7 @@ public class BasicMonteCarloBot extends Player {
     /**
      * Выбираем случайное действие с учетом приоретета действий
      */
-    protected final int chooseAction(@NotNull final double[] actionPriority) {
+    protected static int chooseAction(@NotNull final double[] actionPriority) {
         final double random = RANDOM.nextDouble() * actionPriority[actionPriority.length - 1];
         for (int i = 0; i < actionPriority.length; i++) {
             if (actionPriority[i] > random) {

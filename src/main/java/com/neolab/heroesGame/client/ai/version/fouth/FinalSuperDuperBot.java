@@ -14,23 +14,32 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.neolab.heroesGame.client.ai.enums.BotType.MULTI_ARMED_WITHOUT_RECURSIVE;
+import static com.neolab.heroesGame.client.ai.enums.BotType.FINAL_BOT;
 
-public class MultiArmedWithoutRecursive extends BasicMonteCarloBot {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MultiArmedWithoutRecursive.class);
+public class FinalSuperDuperBot extends BasicMonteCarloBot {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FinalSuperDuperBot.class);
     private static final int TIME_TO_THINK = 1000;
     private static final double LN_2D = Math.log(2d);
     private static final boolean USE_RANDOM = true;
-    private final List<Double> geneticCoefficients;
+    private static final int THREAD_COUNT = 3;
+    private static List<Double> geneticCoefficients;
 
-    public MultiArmedWithoutRecursive(final int id, final int timeToThink) {
-        super(MULTI_ARMED_WITHOUT_RECURSIVE.toString(), timeToThink, id);
+    static {
+        geneticCoefficients = new ArrayList<>();
+    }
+
+    public FinalSuperDuperBot(final int id, final int timeToThink) {
+        super(FINAL_BOT.toString(), timeToThink, id);
         geneticCoefficients = updateCoefficient();
     }
 
-    public MultiArmedWithoutRecursive(final int id) {
-        super(MULTI_ARMED_WITHOUT_RECURSIVE.toString(), TIME_TO_THINK, id);
+    public FinalSuperDuperBot(final int id) {
+        super(FINAL_BOT.toString(), TIME_TO_THINK, id);
         geneticCoefficients = updateCoefficient();
     }
 
@@ -61,7 +70,7 @@ public class MultiArmedWithoutRecursive extends BasicMonteCarloBot {
 
     @Override
     public com.neolab.heroesGame.server.answers.Answer getAnswer(
-            final com.neolab.heroesGame.arena.@NotNull BattleArena board) throws HeroExceptions {
+            final com.neolab.heroesGame.arena.@NotNull BattleArena board) {
 
         final long startTime = System.currentTimeMillis();
         if (board.getArmy(getId()).getHeroes().size() == board.getArmy(getId()).getAvailableHeroes().size()) {
@@ -71,6 +80,8 @@ public class MultiArmedWithoutRecursive extends BasicMonteCarloBot {
         final List<Answer> actions = arena.getAllActionForPlayer(getId());
         final int[] simulationsCounter = new int[actions.size()];
         final double[] scores = new double[actions.size()];
+        final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(THREAD_COUNT, THREAD_COUNT,
+                10L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(3));
         for (int i = 0; i < scores.length; i++) {
             simulationsCounter[i] = 0;
             scores[i] = modify(actions.get(i));
@@ -81,12 +92,28 @@ public class MultiArmedWithoutRecursive extends BasicMonteCarloBot {
                 break;
             }
             final double[] priorityFunction = countPriorityFunction(scores, simulationsCounter, i);
-            final int index = chooseAction(priorityFunction);
-            final GameProcessor processor = new GameProcessor(getId(), arena.getCopy(), getCurrentRound(), USE_RANDOM);
-            final double score = recursiveSimulation(processor, actions.get(index));
-            i++;
-            scores[index] = (scores[index] * simulationsCounter[index] + score) / (simulationsCounter[index] + 1);
-            simulationsCounter[index]++;
+            final int[] indexes = new int[THREAD_COUNT];
+            List<AtomicInteger> results = new ArrayList<>(THREAD_COUNT);
+            for (int j = 0; j < THREAD_COUNT; j++) {
+                final int index = chooseAction(priorityFunction);
+                indexes[j] = index;
+                results.add(new AtomicInteger(0));
+                final GameProcessor processor = new GameProcessor(getId(), arena.getCopy(), getCurrentRound(), USE_RANDOM);
+                threadPoolExecutor.execute(new Room(processor, actions.get(index), results.get(j), getId()));
+            }
+            try {
+                while (threadPoolExecutor.getActiveCount() != 0 || threadPoolExecutor.getQueue().size() != 0) {
+                    Thread.sleep(0l, 5);
+                }
+            } catch (InterruptedException ex) {
+                LOGGER.error(ex.getMessage());
+            }
+            i += 3;
+            for (int j = 0; j < THREAD_COUNT; j++) {
+                scores[indexes[j]] = (scores[indexes[j]] * simulationsCounter[indexes[j]] + results.get(j).get())
+                        / (simulationsCounter[indexes[j]] + 1);
+                simulationsCounter[indexes[j]]++;
+            }
         }
         return actions.get(findBest(scores)).getCommonAnswer(getId());
     }
@@ -120,35 +147,7 @@ public class MultiArmedWithoutRecursive extends BasicMonteCarloBot {
         return priorityFunction;
     }
 
-    /**
-     * Рекурсивная функция для построение симуляционного дерева
-     */
-    private int recursiveSimulation(final GameProcessor processor, final Answer action) throws HeroExceptions {
-        Answer currentAction = action;
-        while (true) {
-            processor.handleAnswer(currentAction);
-            final GameEvent event = processor.matchOver();
-
-            if (event == GameEvent.NOTHING_HAPPEN) {
-                final List<Answer> actions = processor.getAllActionsForCurrentPlayer();
-                final int index = chooseAction(createActionsPriority(actions));
-                currentAction = actions.get(index);
-            } else {
-                return calculateHeuristic(processor.getBoard());
-            }
-        }
-    }
-
-    private double[] createActionsPriority(@NotNull final List<Answer> actions) {
-        final double[] actionPriority = new double[actions.size()];
-        actionPriority[0] = modify(actions.get(0));
-        for (int i = 1; i < actionPriority.length; i++) {
-            actionPriority[i] = actionPriority[i - 1] + modify(actions.get(i));
-        }
-        return actionPriority;
-    }
-
-    private double modify(final Answer answer) {
+    private static double modify(final Answer answer) {
         if (answer.getAction() == HeroActions.DEFENCE) {
             if (answer.getActiveHeroCoordinate().getY() == 0) {
                 return geneticCoefficients.get(0);
@@ -161,10 +160,56 @@ public class MultiArmedWithoutRecursive extends BasicMonteCarloBot {
         return geneticCoefficients.get(3);
     }
 
-    private int calculateHeuristic(final BattleArena arena) {
-        final Army botArmy = arena.getArmy(getId());
-        final Army enemyArmy = arena.getEnemyArmy(getId());
+    private static class Room implements Runnable {
+        private final GameProcessor processor;
+        private final Answer action;
+        private final AtomicInteger score;
+        private final int botId;
 
-        return 12 + botArmy.getHeroes().size() - 2 * enemyArmy.getHeroes().size();
+        public Room(final GameProcessor processor, final Answer action, final AtomicInteger score, final int botId) {
+            this.processor = processor;
+            this.action = action;
+            this.score = score;
+            this.botId = botId;
+        }
+
+        @Override
+        public void run() {
+            Answer currentAction = action;
+            while (true) {
+                try {
+                    processor.handleAnswer(currentAction);
+                } catch (HeroExceptions ex) {
+                    LOGGER.error(ex.getMessage());
+                    throw new AssertionError();
+                }
+                final GameEvent event = processor.matchOver();
+
+                if (event == GameEvent.NOTHING_HAPPEN) {
+                    final List<Answer> actions = processor.getAllActionsForCurrentPlayer();
+                    final int index = chooseAction(createActionsPriority(actions));
+                    currentAction = actions.get(index);
+                } else {
+                    score.set(calculateHeuristic(processor.getBoard()));
+                    break;
+                }
+            }
+        }
+
+        private double[] createActionsPriority(@NotNull final List<Answer> actions) {
+            final double[] actionPriority = new double[actions.size()];
+            actionPriority[0] = modify(actions.get(0));
+            for (int i = 1; i < actionPriority.length; i++) {
+                actionPriority[i] = actionPriority[i - 1] + modify(actions.get(i));
+            }
+            return actionPriority;
+        }
+
+        private int calculateHeuristic(final BattleArena arena) {
+            final Army botArmy = arena.getArmy(botId);
+            final Army enemyArmy = arena.getEnemyArmy(botId);
+
+            return 12 + botArmy.getHeroes().size() - 2 * enemyArmy.getHeroes().size();
+        }
     }
 }
