@@ -13,9 +13,9 @@ public class StringArmyValidator {
     public static boolean validateArmyString(final String army, final int armySize) {
         char[] characters = new char[6];
         army.getChars(0, 6, characters, 0);
-        return !containWrongCharacter(characters)
-                || full(characters, armySize) >= 0
-                || containNotOneWarlord(characters);
+        return !(containWrongCharacter(characters)
+                || full(characters, armySize) > 0
+                || containNotOneWarlord(characters));
     }
 
     private static boolean containNotOneWarlord(char[] characters) {
@@ -37,15 +37,15 @@ public class StringArmyValidator {
         Set<Character> correctCharactersFrontLine = new HashSet<>(Arrays.asList('f', 'F', emptyUnit));
         for (int i = 0; i < 3; i++) {
             if (!correctCharactersBackLine.contains(army[i])) {
-                return false;
+                return true;
             }
         }
         for (int i = 3; i < 6; i++) {
             if (!correctCharactersFrontLine.contains(army[i])) {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     private static int full(final char[] currentString, final int armySize) {

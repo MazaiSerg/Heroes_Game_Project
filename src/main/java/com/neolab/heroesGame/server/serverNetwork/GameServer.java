@@ -92,6 +92,7 @@ public class GameServer {
             this.answerProcessor = new AnswerProcessor(currentPlayer.getPlayerId(),
                     waitingPlayer.getPlayerId(), battleArena);
 
+            LOGGER.warn("First player army: {}, second player army: {}", player1ArmyResponse, player2ArmyResponse);
             currentPlayer.send(GameEvent.ARMY_IS_CREATED.toString());
             waitingPlayer.send(GameEvent.ARMY_IS_CREATED.toString());
             return null;
@@ -148,6 +149,7 @@ public class GameServer {
                 return;
             }
             final Answer answer = new ClientResponse(response).getAnswer();
+            battleArena.toLog();
             answer.toLog();
             try {
                 answerProcessor.handleAnswer(answer);

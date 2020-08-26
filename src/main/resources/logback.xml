@@ -20,8 +20,11 @@
         </encoder>
     </appender>
 
-    <root level="TRACE">
+    <root level="INFO">
         <appender-ref ref="SIFT"/>
+    </root>
+
+    <root level="WARM">
         <appender-ref ref="STDOUT"/>
     </root>
 

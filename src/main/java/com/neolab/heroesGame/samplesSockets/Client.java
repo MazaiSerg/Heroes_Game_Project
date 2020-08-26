@@ -10,7 +10,6 @@ import com.neolab.heroesGame.errors.HeroExceptions;
 
 import java.io.*;
 import java.net.Socket;
-import java.text.SimpleDateFormat;
 
 /**
  * Консольный многопользовательский чат.
@@ -20,7 +19,6 @@ public class Client {
 
     private static final String IP = "127.0.0.1";//"localhost";
     private static final int PORT = 8081;
-    private static final SimpleDateFormat DATE_FORMAT = PlayerSocket.DATE_FORMAT;
 
     private final String ip; // ip адрес клиента
     private final int port; // порт соединения
@@ -165,12 +163,13 @@ public class Client {
     }
 
 
-    public static void main(final String[] args) throws IOException {
+    public static void main(final String[] args) {
         final Client client = new Client(IP, PORT);
         if (args.length == 0) {
-            throw new AssertionError();
+            client.player = ClientPlayerImitation.createBot(0, BotType.MULTI_ARMED_WITH_COEFFICIENTS);
+        } else {
+            client.player = ClientPlayerImitation.createBot(0, BotType.valueOf(args[0]));
         }
-        client.player = ClientPlayerImitation.createBot(0, BotType.valueOf(args[0]));
         client.startClient();
     }
 }

@@ -1,10 +1,13 @@
 package com.neolab.heroesGame.client.ai.version.mechanics;
 
 import com.neolab.heroesGame.aditional.StatisticReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 public class MatchUpAnalyzer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MatchUpAnalyzer.class);
     private final Map<String, Map<String, Double>> armiesPriority;
     private final Map<String, Double> bestArmies;
 
@@ -21,7 +24,13 @@ public class MatchUpAnalyzer {
     }
 
     public String getBestArmy() {
-        return bestArmies.keySet().stream().max(Comparator.comparing(bestArmies::get)).orElseThrow();
+        String result = getDefaultArmy(4);
+        for (String key : bestArmies.keySet()) {
+            if (bestArmies.get(key) > bestArmies.get(result)) {
+                result = key;
+            }
+        }
+        return result;
     }
 
     public String getOneOfBestArmy() {
@@ -39,11 +48,19 @@ public class MatchUpAnalyzer {
                 return armies.get(i);
             }
         }
+        LOGGER.error("Что-то пошло не так");
         return getBestArmy();
     }
 
     public String getBestResponse(final String enemy) {
-        return armiesPriority.get(enemy).keySet().stream().min(Comparator.comparing(bestArmies::get)).orElseThrow();
+        String convertedEnemy = ConverterForFourSizeArmy.convertToCluster(enemy);
+        String result = getDefaultArmy(4);
+        for (String key : armiesPriority.get(convertedEnemy).keySet()) {
+            if (armiesPriority.get(convertedEnemy).get(key) < armiesPriority.get(convertedEnemy).get(result)) {
+                result = key;
+            }
+        }
+        return result;
     }
 
     public String getDefaultArmy(final int armySize) {
