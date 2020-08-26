@@ -1,4 +1,4 @@
-package com.neolab.heroesGame.client.ai.version.third;
+package com.neolab.heroesGame.client.ai.version.fouth;
 
 import com.neolab.heroesGame.client.ai.version.basic.BasicMonteCarloBot;
 import com.neolab.heroesGame.client.ai.version.mechanics.GameProcessor;
@@ -15,31 +15,22 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.neolab.heroesGame.client.ai.enums.BotType.MULTI_ARMED_WITH_COEFFICIENTS;
+import static com.neolab.heroesGame.client.ai.enums.BotType.MULTI_ARMED_WITHOUT_RECURSIVE;
 
-/**
- * Бот на верхнем уровне выбирает случайное действие с постепенно меняющимися преоритетами
- * В самом начале приоретет зависит от коэффициентов для действий, которые определяются геномом
- * На последующих уровнях бот выбирает случайное действие. Приорететы действий зависят от генома
- * В качестве ответа бот отправляет действие с наивысшим преоритетом
- * Во время симулация бот учитывает возможность промахнуться и колебания урона
- */
-public class MultiArmedWIthCoefficient extends BasicMonteCarloBot {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MultiArmedWIthCoefficient.class);
+public class MultiArmedWithoutRecursive extends BasicMonteCarloBot {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MultiArmedWithoutRecursive.class);
     private static final int TIME_TO_THINK = 1000;
     private static final double LN_2D = Math.log(2d);
     private static final boolean USE_RANDOM = true;
-    private List<Double> geneticCoefficients;
-    private static boolean isEvolve = false;
-    private String genotype = "BIQK";
+    private final List<Double> geneticCoefficients;
 
-    public MultiArmedWIthCoefficient(final int id, final int timeToThink) {
-        super(MULTI_ARMED_WITH_COEFFICIENTS.toString(), timeToThink, id);
+    public MultiArmedWithoutRecursive(final int id, final int timeToThink) {
+        super(MULTI_ARMED_WITHOUT_RECURSIVE.toString(), timeToThink, id);
         geneticCoefficients = updateCoefficient();
     }
 
-    public MultiArmedWIthCoefficient(final int id) {
-        super(MULTI_ARMED_WITH_COEFFICIENTS.toString(), TIME_TO_THINK, id);
+    public MultiArmedWithoutRecursive(final int id) {
+        super(MULTI_ARMED_WITHOUT_RECURSIVE.toString(), TIME_TO_THINK, id);
         geneticCoefficients = updateCoefficient();
     }
 
@@ -56,6 +47,7 @@ public class MultiArmedWIthCoefficient extends BasicMonteCarloBot {
     private List<Double> updateCoefficient() {
         final List<Double> coefficients = new ArrayList<>(4);
         for (int i = 0; i < 4; i++) {
+            final String genotype = "BIQK";
             final int value = genotype.charAt(i) - 'A';
             switch (value) {
                 case 0 -> coefficients.add(0.1);
@@ -65,20 +57,6 @@ public class MultiArmedWIthCoefficient extends BasicMonteCarloBot {
             }
         }
         return coefficients;
-    }
-
-    /**
-     * меняет возвращаемое значение функции getType()
-     * до вызова этой функции getType() возвращает строковое представление BotType
-     * после вызова - возвращает геном
-     */
-    static public void startEvolve() {
-        isEvolve = true;
-    }
-
-    public void setGenotype(final String genotype) {
-        this.genotype = genotype;
-        geneticCoefficients = updateCoefficient();
     }
 
     @Override
@@ -105,21 +83,12 @@ public class MultiArmedWIthCoefficient extends BasicMonteCarloBot {
             final double[] priorityFunction = countPriorityFunction(scores, simulationsCounter, i);
             final int index = chooseAction(priorityFunction);
             final GameProcessor processor = new GameProcessor(getId(), arena.getCopy(), getCurrentRound(), USE_RANDOM);
-            final double score = recursiveSimulation(processor, actions.get(index), 0);
+            final double score = recursiveSimulation(processor, actions.get(index));
             i++;
             scores[index] = (scores[index] * simulationsCounter[index] + score) / (simulationsCounter[index] + 1);
             simulationsCounter[index]++;
         }
         return actions.get(findBest(scores)).getCommonAnswer(getId());
-    }
-
-    @Override
-    public String getName() {
-        if (isEvolve) {
-            return genotype;
-        } else {
-            return super.getName();
-        }
     }
 
     private int findBest(final double[] scores) {
@@ -154,18 +123,19 @@ public class MultiArmedWIthCoefficient extends BasicMonteCarloBot {
     /**
      * Рекурсивная функция для построение симуляционного дерева
      */
-    private int recursiveSimulation(final GameProcessor processor, final Answer action,
-                                    final int depth) throws HeroExceptions {
+    private int recursiveSimulation(final GameProcessor processor, final Answer action) throws HeroExceptions {
+        Answer currentAction = action;
+        while (true) {
+            processor.handleAnswer(currentAction);
+            final GameEvent event = processor.matchOver();
 
-        processor.handleAnswer(action);
-        final GameEvent event = processor.matchOver();
-
-        if (event == GameEvent.NOTHING_HAPPEN) {
-            final List<Answer> actions = processor.getAllActionsForCurrentPlayer();
-            final int index = chooseAction(createActionsPriority(actions));
-            return recursiveSimulation(processor, actions.get(index), depth + 1);
-        } else {
-            return calculateHeuristic(processor.getBoard());
+            if (event == GameEvent.NOTHING_HAPPEN) {
+                final List<Answer> actions = processor.getAllActionsForCurrentPlayer();
+                final int index = chooseAction(createActionsPriority(actions));
+                currentAction = actions.get(index);
+            } else {
+                return calculateHeuristic(processor.getBoard());
+            }
         }
     }
 

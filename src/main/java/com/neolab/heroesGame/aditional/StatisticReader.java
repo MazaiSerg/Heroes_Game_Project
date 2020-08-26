@@ -17,6 +17,7 @@ public class StatisticReader {
     static public final Integer ARMY_SIZE;
     public static final String PLAYER_STATISTIC_FILE_PATH;
     public static final String ARMY_STATISTIC_FILE_PATH;
+    public static final String MATCH_UPS_STATISTIC_FILE_PATH;
 
     static {
         Properties prop = null;
@@ -29,9 +30,11 @@ public class StatisticReader {
         if (Files.exists(Paths.get("src/main/resources/"))) {
             PLAYER_STATISTIC_FILE_PATH = String.format("src/main/resources/playerStatistic%d.csv", ARMY_SIZE);
             ARMY_STATISTIC_FILE_PATH = "src/main/resources/armyStatistic.csv";
+            MATCH_UPS_STATISTIC_FILE_PATH = "src/main/resources/table.csv";
         } else {
             PLAYER_STATISTIC_FILE_PATH = String.format("resources/playerStatistic%d.csv", ARMY_SIZE);
             ARMY_STATISTIC_FILE_PATH = "resources/armyStatistic.csv";
+            MATCH_UPS_STATISTIC_FILE_PATH = "resources/table.csv";
         }
     }
 
@@ -61,5 +64,19 @@ public class StatisticReader {
             e.printStackTrace();
         }
         return Optional.ofNullable(result);
+    }
+
+    public static List<String[]> readMatchUpsStatistic() {
+        final File csvInputFile = new File(MATCH_UPS_STATISTIC_FILE_PATH);
+        if (!csvInputFile.exists()) {
+            return Collections.emptyList();
+        }
+        List<String[]> result = Collections.emptyList();
+        try (final CSVReader reader = new CSVReader(new FileReader(csvInputFile))) {
+            result = reader.readAll();
+        } catch (final Exception e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 }

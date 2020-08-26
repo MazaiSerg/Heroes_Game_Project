@@ -1,6 +1,7 @@
 package com.neolab.heroesGame.aditional;
 
 import com.neolab.heroesGame.aditional.plotters.DynamicPlotter;
+import com.neolab.heroesGame.client.ai.version.mechanics.ConverterForFourSizeArmy;
 import com.opencsv.CSVWriter;
 
 import java.io.FileWriter;
@@ -77,7 +78,7 @@ public class AnalyzerTUI {
     private static void createCSV(final Analyzer analyzer) {
         try (final CSVWriter writer = new CSVWriter(new PrintWriter(new FileWriter("table.csv")))) {
             final List<String> allName = createListNames(analyzer);
-            Collections.sort(allName);
+            armySort(allName);
             final String[] init = new String[allName.size() + 1];
             init[0] = "";
             for (int i = 0; i < allName.size(); i++) {
@@ -93,7 +94,8 @@ public class AnalyzerTUI {
                     if (info.isEmpty()) {
                         newLine[i + 1] = "";
                     } else {
-                        newLine[i + 1] = String.format("%.0f/%.0f/%.0f", info.get(0), info.get(1), info.get(2));
+                        newLine[i + 1] = String.valueOf(
+                                (info.get(0) * info.get(3) * 3 + info.get(1) * info.get(3)) / (3 * info.get(3)));
                     }
                 }
                 writer.writeNext(newLine);
@@ -101,6 +103,41 @@ public class AnalyzerTUI {
         } catch (final IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    private static void armySort(List<String> armies) {
+        for (int i = 0; i < armies.size() - 1; i++) {
+            for (int j = i + 1; j < armies.size(); j++) {
+                if (compare(armies.get(i), armies.get(j))) {
+                    String temp = armies.get(i);
+                    armies.set(i, armies.get(j));
+                    armies.set(j, temp);
+                }
+            }
+        }
+    }
+
+    private static boolean compare(String firstArmy, String secondArmy) {
+        char firstWarlord = getWarlord(firstArmy);
+        char secondWarlord = getWarlord(secondArmy);
+        if (firstWarlord != secondWarlord) {
+            return firstWarlord > secondWarlord;
+        }
+        int firstType = ConverterForFourSizeArmy.decide(firstArmy);
+        int secondType = ConverterForFourSizeArmy.decide(secondArmy);
+        if (firstType != secondType) {
+            return firstType > secondType;
+        }
+        return firstArmy.compareTo(secondArmy) > 0;
+    }
+
+    private static char getWarlord(String army) {
+        for (int i = 0; i < army.length(); i++) {
+            if (army.charAt(i) >= 'A' && army.charAt(i) <= 'Z') {
+                return army.charAt(i);
+            }
+        }
+        return ' ';
     }
 
     private static void plotGraphicsForPair(final Analyzer analyzer) {

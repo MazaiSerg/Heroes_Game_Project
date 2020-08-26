@@ -35,7 +35,7 @@ public class SelfPlayServer extends AbstractServer {
     public void matching() throws Exception {
         final ThreadPoolExecutor threadPoolExecutor = createThreadPoolExecutor(new ArrayBlockingQueue<>(getQueueSize()));
         final BotType firstType = BotType.MULTI_ARMED_WITH_COEFFICIENTS;
-        final BotType secondType = BotType.SUPER_DUPER_MANY_ARMED;
+        final BotType secondType = BotType.MULTI_ARMED_WITHOUT_RECURSIVE;
         for (int j = 0; j < differentArmies; j++) {
             final BattleArena arena = CreateBattleArena();
             for (int i = 0; i < numberTries; i++) {

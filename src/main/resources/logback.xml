@@ -20,7 +20,7 @@
         </encoder>
     </appender>
 
-    <root level="INFO">
+    <root level="TRACE">
         <appender-ref ref="SIFT"/>
         <appender-ref ref="STDOUT"/>
     </root>
