@@ -1,9 +1,11 @@
 package com.neolab.heroesGame.client.ai.version.basic;
 
+import com.neolab.heroesGame.aditional.CommonFunction;
 import com.neolab.heroesGame.arena.Army;
 import com.neolab.heroesGame.arena.BattleArena;
 import com.neolab.heroesGame.client.ai.Player;
 import com.neolab.heroesGame.client.ai.version.mechanics.AnswerValidator;
+import com.neolab.heroesGame.client.ai.version.mechanics.MatchUpAnalyzer;
 import com.neolab.heroesGame.errors.HeroExceptions;
 import com.neolab.heroesGame.server.answers.Answer;
 import org.jetbrains.annotations.NotNull;
@@ -14,14 +16,19 @@ import java.util.Random;
 
 public class BasicMonteCarloBot extends Player {
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicMonteCarloBot.class);
+    private static final MatchUpAnalyzer analyzer;
     private final Random RANDOM = new Random();
     private final int timeToThink;
     private int currentRound = -1;
 
+    static {
+        AnswerValidator.initializeHashTable();
+        analyzer = MatchUpAnalyzer.createMatchUpAnalyzer();
+    }
+
     protected BasicMonteCarloBot(final String basicName, final int timeToThink, final int id) {
         super(id, String.format("%s_%d", basicName, timeToThink));
         this.timeToThink = timeToThink;
-        AnswerValidator.initializeHashTable();
     }
 
     @Override
@@ -31,12 +38,20 @@ public class BasicMonteCarloBot extends Player {
 
     @Override
     public String getStringArmyFirst(final int armySize) {
-        return null;
+        if (armySize == 4) {
+            return analyzer.getOneOfBestArmy();
+        } else {
+            return analyzer.getDefaultArmy(armySize);
+        }
     }
 
     @Override
     public String getStringArmySecond(final int armySize, final Army army) {
-        return null;
+        if (armySize == 4) {
+            return analyzer.getBestResponse(CommonFunction.ArmyCodeToString(army));
+        } else {
+            return analyzer.getDefaultArmy(armySize);
+        }
     }
 
     public final int getTimeToThink() {
