@@ -7,13 +7,13 @@ import com.neolab.heroesGame.client.ai.version.third.ArmiesStatisticsCollector;
 import com.neolab.heroesGame.client.ai.version.third.Evolver;
 
 public class Server {
-    private static final int maxCountGameRoom = 1;
+    private static final int maxCountGameRoom = 4;
     private static final int queueSize = 5;
 
     public static void main(final String[] args) throws Exception {
         AbstractServer server;
         if (args.length == 0) {
-            server = createServer(ServerType.ONE_MATCH_UP_TESTS);
+            server = createServer(ServerType.ELO_MATCH_UPS);
         } else {
             server = createServer(ServerType.valueOf(args[0]));
         }

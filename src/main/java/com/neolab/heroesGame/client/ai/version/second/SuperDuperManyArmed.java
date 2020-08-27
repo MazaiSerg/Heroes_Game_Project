@@ -8,8 +8,6 @@ import com.neolab.heroesGame.client.ai.version.mechanics.arena.BattleArena;
 import com.neolab.heroesGame.enumerations.GameEvent;
 import com.neolab.heroesGame.errors.HeroExceptions;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -23,7 +21,6 @@ import static com.neolab.heroesGame.client.ai.enums.BotType.SUPER_DUPER_MANY_ARM
  * Во время симулация бот (!)учитывает возможность промахнуться и колебания урона
  */
 public class SuperDuperManyArmed extends BasicMonteCarloBot {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SuperDuperManyArmed.class);
     private static final int TIME_TO_THINK = 100;
     private static final double LN_2D = Math.log(2d);
     private static final boolean USE_RANDOM = true;
@@ -54,7 +51,6 @@ public class SuperDuperManyArmed extends BasicMonteCarloBot {
         }
         for (int counter = 0; ; ) {
             if (System.currentTimeMillis() - startTime > getTimeToThink()) {
-                LOGGER.trace("Количество симуляций за {}мс: {}", System.currentTimeMillis() - startTime, counter);
                 break;
             }
             final double[] priorityFunction = countPriorityFunction(scores, simulationsCounter, counter);

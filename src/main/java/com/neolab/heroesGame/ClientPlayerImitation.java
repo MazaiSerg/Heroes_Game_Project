@@ -6,6 +6,7 @@ import com.neolab.heroesGame.client.ai.PlayerBot;
 import com.neolab.heroesGame.client.ai.PlayerFactory;
 import com.neolab.heroesGame.client.ai.PlayerHuman;
 import com.neolab.heroesGame.client.ai.enums.BotType;
+import com.neolab.heroesGame.client.ai.version.basic.BasicMonteCarloBot;
 import com.neolab.heroesGame.client.dto.ClientRequest;
 import com.neolab.heroesGame.client.dto.ExtendedServerResponse;
 import com.neolab.heroesGame.client.gui.IGraphics;
@@ -91,6 +92,9 @@ public class ClientPlayerImitation {
     }
 
     public void endGame(final ExtendedServerResponse response) throws IOException {
+        if (player instanceof BasicMonteCarloBot) {
+            ((BasicMonteCarloBot) player).restartCurrentRound();
+        }
         gui.endGame(response);
     }
 

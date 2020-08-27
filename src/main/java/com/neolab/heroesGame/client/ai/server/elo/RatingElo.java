@@ -165,10 +165,10 @@ public class RatingElo {
             ratingMap.put(secondOne, START_RATING);
         }
         final int firstRating = ratingMap.get(firstOne) + (int) (getCoefficient(firstOne)
-                * ((event == YOU_LOSE_GAME ? 0 : event == YOU_WIN_GAME ? 1 : 0.5)
+                * ((event == YOU_LOSE_GAME ? -0.1 : event == YOU_WIN_GAME ? 0.9 : 0.4)
                 - getExpectedPoints(firstOne, secondOne)));
         final int secondRating = ratingMap.get(secondOne) + (int) (getCoefficient(secondOne)
-                * ((event == YOU_LOSE_GAME ? 1 : event == YOU_WIN_GAME ? 0 : 0.5)
+                * ((event == YOU_LOSE_GAME ? 1.1 : event == YOU_WIN_GAME ? 0.1 : 0.6)
                 - getExpectedPoints(secondOne, firstOne)));
         ratingMap.put(firstOne, firstRating);
         ratingMap.put(secondOne, secondRating);

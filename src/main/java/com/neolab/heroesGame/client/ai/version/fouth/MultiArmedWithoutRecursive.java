@@ -75,16 +75,32 @@ public class MultiArmedWithoutRecursive extends BasicMonteCarloBot {
             simulationsCounter[i] = 0;
             scores[i] = modify(actions.get(i));
         }
-        for (int i = 0; ; ) {
-            if (System.currentTimeMillis() - startTime > TIME_TO_THINK) {
-                LOGGER.warn("Количество симуляций за {}мс: {}", System.currentTimeMillis() - startTime, i);
+        for (int i = 0; ; i++) {
+            if (System.currentTimeMillis() - startTime > getTimeToThink()) {
                 break;
             }
             final double[] priorityFunction = countPriorityFunction(scores, simulationsCounter, i);
             final int index = chooseAction(priorityFunction);
             final GameProcessor processor = new GameProcessor(getId(), arena.getCopy(), getCurrentRound(), USE_RANDOM);
-            final double score = recursiveSimulation(processor, actions.get(index));
-            i++;
+            Answer currentAction = actions.get(index);
+            final int score;
+            while (true) {
+                processor.handleAnswer(currentAction);
+                final GameEvent event = processor.matchOver();
+
+                if (event == GameEvent.NOTHING_HAPPEN) {
+                    final List<Answer> newActions = processor.getAllActionsForCurrentPlayer();
+                    final int newIndex = chooseAction(createActionsPriority(newActions));
+                    currentAction = newActions.get(newIndex);
+                } else {
+                    if (event == GameEvent.GAME_END_WITH_A_TIE || event == GameEvent.YOU_WIN_GAME || event == GameEvent.YOU_LOSE_GAME) {
+                        score = calculateHeuristic(processor.getBoard());
+                        break;
+                    } else {
+                        LOGGER.error("WTF");
+                    }
+                }
+            }
             scores[index] = (scores[index] * simulationsCounter[index] + score) / (simulationsCounter[index] + 1);
             simulationsCounter[index]++;
         }
@@ -118,25 +134,6 @@ public class MultiArmedWithoutRecursive extends BasicMonteCarloBot {
             }
         }
         return priorityFunction;
-    }
-
-    /**
-     * Рекурсивная функция для построение симуляционного дерева
-     */
-    private int recursiveSimulation(final GameProcessor processor, final Answer action) throws HeroExceptions {
-        Answer currentAction = action;
-        while (true) {
-            processor.handleAnswer(currentAction);
-            final GameEvent event = processor.matchOver();
-
-            if (event == GameEvent.NOTHING_HAPPEN) {
-                final List<Answer> actions = processor.getAllActionsForCurrentPlayer();
-                final int index = chooseAction(createActionsPriority(actions));
-                currentAction = actions.get(index);
-            } else {
-                return calculateHeuristic(processor.getBoard());
-            }
-        }
     }
 
     private double[] createActionsPriority(@NotNull final List<Answer> actions) {

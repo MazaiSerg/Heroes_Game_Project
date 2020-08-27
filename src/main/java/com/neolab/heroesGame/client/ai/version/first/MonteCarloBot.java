@@ -11,8 +11,6 @@ import com.neolab.heroesGame.enumerations.GameEvent;
 import com.neolab.heroesGame.enumerations.HeroActions;
 import com.neolab.heroesGame.errors.HeroExceptions;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +26,6 @@ import static com.neolab.heroesGame.client.ai.enums.BotType.MONTE_CARLO;
  * Максимальное время должно быть немного ниже реально доступного времени, чтобы гарантированно укладываться
  */
 public class MonteCarloBot extends BasicMonteCarloBot {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MonteCarloBot.class);
     private static final int TIME_TO_THINK = 100;
     private final List<Double> geneticCoefficients;
 
@@ -70,11 +67,7 @@ public class MonteCarloBot extends BasicMonteCarloBot {
         }
         final BattleArena arena = BattleArena.getCopyFromOriginalClass(board);
         final SimulationsTree tree = new SimulationsTree();
-        for (int i = 0; ; i++) {
-            if (System.currentTimeMillis() - startTime > getTimeToThink()) {
-                LOGGER.trace("Количество симуляций за {}мс: {}", System.currentTimeMillis() - startTime, i);
-                break;
-            }
+        while (System.currentTimeMillis() - startTime > getTimeToThink()) {
             final GameProcessor processor = new GameProcessor(getId(), arena.getCopy(), getCurrentRound());
             recursiveSimulation(processor, tree);
             tree.toRoot();

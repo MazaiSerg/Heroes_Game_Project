@@ -12,8 +12,6 @@ import com.neolab.heroesGame.client.ai.version.mechanics.heroes.Magician;
 import com.neolab.heroesGame.client.ai.version.mechanics.nodes.PairAnswerHeuristic;
 import com.neolab.heroesGame.enumerations.GameEvent;
 import com.neolab.heroesGame.errors.HeroExceptions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Random;
@@ -21,9 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class MinMaxWithoutTree extends Player {
     private static final String BOT_NAME = "MIN_MAX_WITHOUT_TREE";
-    private static final Logger LOGGER = LoggerFactory.getLogger(MinMaxWithoutTree.class);
     private final long SEED = 5916;
-    private static final int MAX_TIME = 1000;
     private int maxDepthForFastWork;
     private final Random RANDOM = new Random(SEED);
     private int currentDepth;
@@ -36,18 +32,12 @@ public class MinMaxWithoutTree extends Player {
     @Override
     public com.neolab.heroesGame.server.answers.Answer getAnswer(
             final com.neolab.heroesGame.arena.BattleArena board) throws HeroExceptions {
-        final long startTime = System.currentTimeMillis();
         final BattleArena arena = BattleArena.getCopyFromOriginalClass(board);
         final GameProcessor processor = new GameProcessor(getId(), arena.getCopy());
         countMaxDepthForFastWork(arena);
         currentDepth = 0;
         final PairAnswerHeuristic bestAction = recursiveSimulation(processor,
                 new PairAnswerHeuristic(Answer.getDefaultAnswer(), Integer.MAX_VALUE));
-        if (System.currentTimeMillis() - startTime > MAX_TIME) {
-            LOGGER.trace("На обход дерева глубиной {} потрачено {}мс. Размер армии - {}, количество доступных юнитов - {}",
-                    maxDepthForFastWork, System.currentTimeMillis() - startTime, arena.getArmy(getId()).getHeroes().size(),
-                    arena.getArmy(getId()).getAvailableHeroes().size());
-        }
         return bestAction.getAnswer().getCommonAnswer(getId());
     }
 
@@ -147,28 +137,6 @@ public class MinMaxWithoutTree extends Player {
     }
 
     private void countMaxDepthForFastWork(final BattleArena arena) {
-        /*
-        final long maxCountNode = 200_000_000L;
-        final int numbersHero = Math.max(arena.getArmy(getId()).getHeroes().size(),
-                arena.getEnemyArmy(getId()).getHeroes().size());
-        int numbersAvailableHero = Math.max(arena.getArmy(getId()).getAvailableHeroes().size(),
-                arena.getEnemyArmy(getId()).getAvailableHeroes().size());
-        long countNode = 1;
-        int numbersActionForOne = 2 + numbersAvailableHero / 3;
-        maxDepthForFastWork = 0;
-        while (true) {
-            countNode *= numbersAvailableHero * numbersActionForOne * numbersAvailableHero * numbersActionForOne;
-            if (countNode > maxCountNode) {
-                break;
-            }
-            numbersAvailableHero = numbersAvailableHero == 1 ? numbersHero : numbersAvailableHero - 1;
-            maxDepthForFastWork++;
-            numbersActionForOne = 2 + numbersAvailableHero / 3;
-        }
-        maxDepthForFastWork = Math.max(maxDepthForFastWork, 4);
-        maxDepthForFastWork += (6 - numbersHero);
-
-         */
         final int numbersHero = arena.getArmy(getId()).getHeroes().size() +
                 arena.getEnemyArmy(getId()).getHeroes().size();
         final int numbersAvailableHero = arena.getArmy(getId()).getAvailableHeroes().size() +
@@ -179,10 +147,10 @@ public class MinMaxWithoutTree extends Player {
         }
 
         if (numbersHero >= 9) {
-            maxDepthForFastWork = 4;
+            maxDepthForFastWork = 6;
             return;
         }
 
-        maxDepthForFastWork = 4;
+        maxDepthForFastWork = 8;
     }
 }

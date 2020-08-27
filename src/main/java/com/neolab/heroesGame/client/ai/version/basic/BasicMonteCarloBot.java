@@ -66,6 +66,10 @@ public class BasicMonteCarloBot extends Player {
         currentRound++;
     }
 
+    public void restartCurrentRound() {
+        currentRound = -1;
+    }
+
     /**
      * Выбираем случайное действие с учетом приоретета действий
      */
@@ -76,7 +80,7 @@ public class BasicMonteCarloBot extends Player {
                 return i;
             }
         }
-        LOGGER.trace("WTF!!!");
+        LOGGER.error("WTF with priority!!!");
         for (final double aDouble : actionPriority) {
             LOGGER.trace("RANDOM: {}, Action: {}", random, aDouble);
         }

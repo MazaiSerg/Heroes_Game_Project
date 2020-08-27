@@ -20,11 +20,8 @@
         </encoder>
     </appender>
 
-    <root level="INFO">
+    <root level="DEBUG">
         <appender-ref ref="SIFT"/>
-    </root>
-
-    <root level="WARM">
         <appender-ref ref="STDOUT"/>
     </root>
 

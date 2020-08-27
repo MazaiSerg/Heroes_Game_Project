@@ -3,7 +3,6 @@ package com.neolab.heroesGame.client.ai;
 import com.neolab.heroesGame.client.ai.enums.BotType;
 import com.neolab.heroesGame.client.ai.version.first.MinMaxWithoutTree;
 import com.neolab.heroesGame.client.ai.version.first.MonteCarloBot;
-import com.neolab.heroesGame.client.ai.version.fouth.FinalSuperDuperBot;
 import com.neolab.heroesGame.client.ai.version.fouth.MultiArmedWithoutRecursive;
 import com.neolab.heroesGame.client.ai.version.second.SuperDuperManyArmed;
 import com.neolab.heroesGame.client.ai.version.third.MultiArmedWIthCoefficient;
@@ -20,7 +19,6 @@ public final class PlayerFactory {
             case MIN_MAX_WITHOUT_TREE -> new MinMaxWithoutTree(id);
             case MULTI_ARMED_WITH_COEFFICIENTS -> new MultiArmedWIthCoefficient(id);
             case MULTI_ARMED_WITHOUT_RECURSIVE -> new MultiArmedWithoutRecursive(id);
-            case FINAL_BOT -> new FinalSuperDuperBot(id);
         };
     }
 
@@ -32,7 +30,6 @@ public final class PlayerFactory {
             case MULTI_ARMED_WITHOUT_RECURSIVE -> new MultiArmedWithoutRecursive(id, timeToThink);
             case RANDOM -> new PlayerBot(id);
             case MIN_MAX_WITHOUT_TREE -> new MinMaxWithoutTree(id);
-            case FINAL_BOT -> new FinalSuperDuperBot(id);
         };
     }
 }

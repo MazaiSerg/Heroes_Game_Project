@@ -5,8 +5,7 @@ import com.neolab.heroesGame.arena.Army;
 import com.neolab.heroesGame.arena.BattleArena;
 import com.neolab.heroesGame.arena.StringArmyFactory;
 import com.neolab.heroesGame.client.ai.Player;
-import com.neolab.heroesGame.client.ai.version.fouth.FinalSuperDuperBot;
-import com.neolab.heroesGame.client.ai.version.fouth.MultiArmedWithoutRecursive;
+import com.neolab.heroesGame.client.ai.PlayerBot;
 import com.neolab.heroesGame.errors.HeroExceptions;
 import com.neolab.heroesGame.server.answers.Answer;
 import com.neolab.heroesGame.server.answers.AnswerProcessor;
@@ -28,8 +27,8 @@ public class OneGame {
     private int counter;
 
     public OneGame(final BattleArena arena) {
-        currentPlayer = new FinalSuperDuperBot(1);
-        waitingPlayer = new MultiArmedWithoutRecursive(2);
+        currentPlayer = new PlayerBot(1);
+        waitingPlayer = new PlayerBot(2);
         battleArena = arena;
         answerProcessor = new AnswerProcessor(1, 2, battleArena);
         counter = 0;

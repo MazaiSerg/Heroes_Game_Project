@@ -17,7 +17,7 @@ import java.net.Socket;
  */
 public class Client {
 
-    private static final String IP = "127.0.0.1";//"localhost";
+    private static final String IP = "135.181.85.225";//"localhost";
     private static final int PORT = 8081;
 
     private final String ip; // ip адрес клиента
@@ -41,7 +41,7 @@ public class Client {
 
     private void startClient() {
         try {
-            socket = new Socket(this.ip, this.port);
+            socket = new Socket(ip, port);
         } catch (final IOException e) {
             System.err.println("Socket failed");
             return;
@@ -166,7 +166,7 @@ public class Client {
     public static void main(final String[] args) {
         final Client client = new Client(IP, PORT);
         if (args.length == 0) {
-            client.player = ClientPlayerImitation.createBot(0, BotType.MULTI_ARMED_WITH_COEFFICIENTS);
+            client.player = ClientPlayerImitation.createBot(0, BotType.MULTI_ARMED_WITHOUT_RECURSIVE);
         } else {
             client.player = ClientPlayerImitation.createBot(0, BotType.valueOf(args[0]));
         }
