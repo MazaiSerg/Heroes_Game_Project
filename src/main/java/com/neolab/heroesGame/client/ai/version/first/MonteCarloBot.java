@@ -67,7 +67,7 @@ public class MonteCarloBot extends BasicMonteCarloBot {
         }
         final BattleArena arena = BattleArena.getCopyFromOriginalClass(board);
         final SimulationsTree tree = new SimulationsTree();
-        while (System.currentTimeMillis() - startTime > getTimeToThink()) {
+        while (System.currentTimeMillis() - startTime < getTimeToThink()) {
             final GameProcessor processor = new GameProcessor(getId(), arena.getCopy(), getCurrentRound());
             recursiveSimulation(processor, tree);
             tree.toRoot();

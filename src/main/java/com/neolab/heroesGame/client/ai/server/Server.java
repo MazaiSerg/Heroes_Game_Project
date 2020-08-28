@@ -7,8 +7,8 @@ import com.neolab.heroesGame.client.ai.version.third.ArmiesStatisticsCollector;
 import com.neolab.heroesGame.client.ai.version.third.Evolver;
 
 public class Server {
-    private static final int maxCountGameRoom = 4;
-    private static final int queueSize = 5;
+    private static final int maxCountGameRoom = 5;
+    private static final int queueSize = 10;
 
     public static void main(final String[] args) throws Exception {
         AbstractServer server;

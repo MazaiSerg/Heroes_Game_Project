@@ -44,7 +44,7 @@ public class ServerForCorrectingElo extends AbstractServer {
     }
 
     public ServerForCorrectingElo(final int MAX_COUNT_GAME_ROOMS, final int QUEUE_SIZE) {
-        this(MAX_COUNT_GAME_ROOMS, QUEUE_SIZE, 20);
+        this(MAX_COUNT_GAME_ROOMS, QUEUE_SIZE, 100);
     }
 
     public ServerForCorrectingElo(final int MAX_COUNT_GAME_ROOMS, final int QUEUE_SIZE,

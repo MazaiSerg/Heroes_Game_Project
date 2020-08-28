@@ -73,7 +73,7 @@ public class SelfPlayRoomFroCorrectingElo extends Thread {
                         timeForSecond += System.currentTimeMillis() - start;
                     }
                 } catch (final Exception e) {
-                    LOGGER.error(e.toString());
+                    LOGGER.error("{} {}", e.toString(), currentPlayer.getName());
                 }
             }
             changeCurrentAndWaitingPlayers();
