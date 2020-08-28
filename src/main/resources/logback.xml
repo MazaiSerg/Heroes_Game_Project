@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <appender name="SIFT" class="ch.qos.logback.classic.sift.SiftingAppender">
+        <discriminator class="com.neolab.heroesGame.aditional.ThreadNameBasedDiscriminator"/>
+        <sift>
+            <appender class="ch.qos.logback.core.FileAppender">
+                <file>room-${roomName}.log</file>
+                <layout class="ch.qos.logback.classic.PatternLayout">
+                    <pattern>%d{HH:mm:ss:SSS} | %-5level | %thread | %logger{20} | %msg%n%rEx</pattern>
+                </layout>
+            </appender>
+        </sift>
+    </appender>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <Pattern>%c %d{HH:mm:ss.SSS} %-5p [%t] %c{1}: %m%n
+            </Pattern>
+        </encoder>
+    </appender>
+
+    <root level="DEBUG">
+        <appender-ref ref="SIFT"/>
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+</configuration>
+

@@ -1,0 +1,167 @@
+package com.neolab.heroesGame.client.ai.version.fouth;
+
+import com.neolab.heroesGame.client.ai.version.basic.BasicMonteCarloBot;
+import com.neolab.heroesGame.client.ai.version.mechanics.GameProcessor;
+import com.neolab.heroesGame.client.ai.version.mechanics.arena.Answer;
+import com.neolab.heroesGame.client.ai.version.mechanics.arena.Army;
+import com.neolab.heroesGame.client.ai.version.mechanics.arena.BattleArena;
+import com.neolab.heroesGame.enumerations.GameEvent;
+import com.neolab.heroesGame.enumerations.HeroActions;
+import com.neolab.heroesGame.errors.HeroExceptions;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.neolab.heroesGame.client.ai.enums.BotType.MULTI_ARMED_WITHOUT_RECURSIVE;
+
+public class MultiArmedWithoutRecursive extends BasicMonteCarloBot {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MultiArmedWithoutRecursive.class);
+    private static final int TIME_TO_THINK = 1000;
+    private static final double LN_2D = Math.log(2d);
+    private static final boolean USE_RANDOM = true;
+    private final List<Double> geneticCoefficients;
+
+    public MultiArmedWithoutRecursive(final int id, final int timeToThink) {
+        super(MULTI_ARMED_WITHOUT_RECURSIVE.toString(), timeToThink, id);
+        geneticCoefficients = updateCoefficient();
+    }
+
+    public MultiArmedWithoutRecursive(final int id) {
+        super(MULTI_ARMED_WITHOUT_RECURSIVE.toString(), TIME_TO_THINK, id);
+        geneticCoefficients = updateCoefficient();
+    }
+
+    /**
+     * Массив коэффициентов приорететов действий юнитов:
+     * 0 - защита юнитов второй линии
+     * 1 - защита юнитов первой линии
+     * 2 - модификатор атаки от урона
+     * 3 - модификатор хила
+     * Коэффициент выбирается по строке следующим образом: A - 0.1, B - 0.2, C - 0.5, D - 1, E - 2, F - 3 etc
+     *
+     * @return Массив коэффициентов приорететов действий юнитов
+     */
+    private List<Double> updateCoefficient() {
+        final List<Double> coefficients = new ArrayList<>(4);
+        for (int i = 0; i < 4; i++) {
+            final String genotype = "BIQK";
+            final int value = genotype.charAt(i) - 'A';
+            switch (value) {
+                case 0 -> coefficients.add(0.1);
+                case 1 -> coefficients.add(0.2);
+                case 2 -> coefficients.add(0.5);
+                default -> coefficients.add((double) (value - 2));
+            }
+        }
+        return coefficients;
+    }
+
+    @Override
+    public com.neolab.heroesGame.server.answers.Answer getAnswer(
+            final com.neolab.heroesGame.arena.@NotNull BattleArena board) throws HeroExceptions {
+
+        final long startTime = System.currentTimeMillis();
+        if (board.getArmy(getId()).getHeroes().size() == board.getArmy(getId()).getAvailableHeroes().size()) {
+            increaseCurrentRound();
+        }
+        final BattleArena arena = BattleArena.getCopyFromOriginalClass(board);
+        final List<Answer> actions = arena.getAllActionForPlayer(getId());
+        final int[] simulationsCounter = new int[actions.size()];
+        final double[] scores = new double[actions.size()];
+        for (int i = 0; i < scores.length; i++) {
+            simulationsCounter[i] = 0;
+            scores[i] = modify(actions.get(i));
+        }
+        for (int i = 0; ; i++) {
+            if (System.currentTimeMillis() - startTime > getTimeToThink()) {
+                break;
+            }
+            final double[] priorityFunction = countPriorityFunction(scores, simulationsCounter, i);
+            final int index = chooseAction(priorityFunction);
+            final GameProcessor processor = new GameProcessor(getId(), arena.getCopy(), getCurrentRound(), USE_RANDOM);
+            Answer currentAction = actions.get(index);
+            final int score;
+            while (true) {
+                processor.handleAnswer(currentAction);
+                final GameEvent event = processor.matchOver();
+
+                if (event == GameEvent.NOTHING_HAPPEN) {
+                    final List<Answer> newActions = processor.getAllActionsForCurrentPlayer();
+                    final int newIndex = chooseAction(createActionsPriority(newActions));
+                    currentAction = newActions.get(newIndex);
+                } else {
+                    if (event == GameEvent.GAME_END_WITH_A_TIE || event == GameEvent.YOU_WIN_GAME || event == GameEvent.YOU_LOSE_GAME) {
+                        score = calculateHeuristic(processor.getBoard());
+                        break;
+                    } else {
+                        LOGGER.error("WTF");
+                    }
+                }
+            }
+            scores[index] = (scores[index] * simulationsCounter[index] + score) / (simulationsCounter[index] + 1);
+            simulationsCounter[index]++;
+        }
+        return actions.get(findBest(scores)).getCommonAnswer(getId());
+    }
+
+    private int findBest(final double[] scores) {
+        int max = 0;
+        for (int i = 1; i < scores.length; i++) {
+            if (scores[max] < scores[i]) {
+                max = i;
+            }
+        }
+        return max;
+    }
+
+    private double[] countPriorityFunction(final double[] scores, final int[] simulationsCounter, final int counter) {
+        final double[] priorityFunction = new double[scores.length];
+        if (counter == 0) {
+            priorityFunction[0] = scores[0];
+            for (int i = 1; i < scores.length; i++) {
+                priorityFunction[i] = priorityFunction[i - 1] + scores[i];
+            }
+        } else {
+            priorityFunction[0] = scores[0] + (simulationsCounter[0] == 0 ? 0
+                    : Math.sqrt(2 * Math.log(counter) / simulationsCounter[0] / LN_2D));
+            for (int i = 1; i < scores.length; i++) {
+                priorityFunction[i] = priorityFunction[i - 1] + scores[i]
+                        + (simulationsCounter[i] == 0 ? 0
+                        : Math.sqrt(2 * Math.log(counter) / simulationsCounter[i] / LN_2D));
+            }
+        }
+        return priorityFunction;
+    }
+
+    private double[] createActionsPriority(@NotNull final List<Answer> actions) {
+        final double[] actionPriority = new double[actions.size()];
+        actionPriority[0] = modify(actions.get(0));
+        for (int i = 1; i < actionPriority.length; i++) {
+            actionPriority[i] = actionPriority[i - 1] + modify(actions.get(i));
+        }
+        return actionPriority;
+    }
+
+    private double modify(final Answer answer) {
+        if (answer.getAction() == HeroActions.DEFENCE) {
+            if (answer.getActiveHeroCoordinate().getY() == 0) {
+                return geneticCoefficients.get(0);
+            } else {
+                return geneticCoefficients.get(1);
+            }
+        } else if (answer.getAction() == HeroActions.ATTACK) {
+            return geneticCoefficients.get(2);
+        }
+        return geneticCoefficients.get(3);
+    }
+
+    private int calculateHeuristic(final BattleArena arena) {
+        final Army botArmy = arena.getArmy(getId());
+        final Army enemyArmy = arena.getEnemyArmy(getId());
+
+        return 12 + botArmy.getHeroes().size() - 2 * enemyArmy.getHeroes().size();
+    }
+}
